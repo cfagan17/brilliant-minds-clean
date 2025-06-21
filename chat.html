@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Brilliant Figures</title>
+    <style>
+        * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+.container {
+    background: white;
+    max-width: 1000px;
+    margin: 0 auto;
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.06);
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+   .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    opacity: 0.5;
+}
+
+.header * {
+    position: relative;
+    z-index: 1;
+}
+
+.nav-back {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    z-index: 2;
+}
+
+.nav-back a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+    font-size: 16px;
+}
+
+h1 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.content {
+    padding: 48px;
+}
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .figure-selector {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.figure-selector h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.figure-selector label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 1rem;
+}
+
+select {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+        
+        .chat-area {
+    border: 2px solid #f1f3f5;
+    border-radius: 24px;
+    padding: 40px;
+    min-height: 500px;
+    margin-bottom: 32px;
+    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+    overflow-y: auto;
+    max-height: 600px;
+}
+        
+        .message {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 16px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease;
+}
+
+.message:hover {
+    transform: translateY(-2px);
+}
+
+.user-message {
+    background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+    margin-left: 40px;
+    border-left: 4px solid #2196F3;
+}
+
+.figure-message {
+    background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
+    margin-right: 40px;
+    border-left: 4px solid #9C27B0;
+}
+
+.system-message {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    font-style: italic;
+    text-align: center;
+    border-left: 4px solid #4CAF50;
+}
+
+.error-message {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #c62828;
+    border-left: 4px solid #f44336;
+}
+        
+        .input-area {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    border: 2px solid #f1f3f5;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 16px 20px;
+    font-size: 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+        
+        button {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.01em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(102, 126, 234, 0.3);
+}
+
+button:active {
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+        
+       
+.success-message {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border-left: 4px solid #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .header {
+        padding: 30px 20px;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    .content {
+        padding: 20px;
+    }
+    
+    .input-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .user-message {
+        margin-left: 0;
+    }
+    
+    .figure-message {
+        margin-right: 0;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+    <div class="header">
+        <div class="nav-back">
+            <a href="index.html">🧠 ← Back to Discussion Arena</a>
+        </div>
+        <h1>💬 Personal Chat</h1>
+        <p class="subtitle">Have focused conversations with individual brilliant figures</p>
+    </div>
+    
+    <div class="content">
+        
+        
+        
+        <!-- Figure Selector -->
+        <div class="figure-selector">
+    <h3>🎭 Choose Your Conversation Partner</h3>
+    <label for="brilliantFigure"><strong>Brilliant Figure:</strong></label>
+    <select id="brilliantFigure">
+                <optgroup label="🤔 Philosophers">
+                                <option value="aristotle" selected="selected">Aristotle</option>
+                                <option value="socrates">Socrates</option>
+                                <option value="plato">Plato</option>
+                                <option value="confucius">Confucius</option>
+                                <option value="kant">Immanuel Kant</option>
+                                <option value="nietzsche">Friedrich Nietzsche</option>
+                            </optgroup>
+                            <optgroup label="🔬 Scientists & Mathematicians">
+                                <option value="einstein">Albert Einstein</option>
+                                <option value="newton">Isaac Newton</option>
+                                <option value="darwin">Charles Darwin</option>
+                                <option value="curie">Marie Curie</option>
+                                <option value="galileo">Galileo Galilei</option>
+                                <option value="hawking">Stephen Hawking</option>
+                                <option value="feynman">Richard Feynman</option>
+                                <option value="tesla">Nikola Tesla</option>
+                                <option value="pasteur">Louis Pasteur</option>
+                                <option value="watson">James Watson</option>
+                                <option value="turing">Alan Turing</option>
+                            </optgroup>
+                            <optgroup label="🖥️ Logic, Mathematics & Computing Pioneers">
+                                <option value="frege">Gottlob Frege</option>
+                                <option value="russell">Bertrand Russell</option>
+                                <option value="hilbert">David Hilbert</option>
+                                <option value="vonneumann">John von Neumann</option>
+                                <option value="godel">Kurt Gödel</option>
+                                <option value="shannon">Claude Shannon</option>
+                                <option value="church_historical">Alonzo Church</option>
+                                <option value="babbage">Charles Babbage</option>
+                                <option value="lovelace">Ada Lovelace</option>
+                            </optgroup>
+                            <optgroup label="🧬 Contemporary Scientists & Thinkers">
+                                <option value="penrose">Roger Penrose</option>
+                                <option value="witten">Edward Witten</option>
+                                <option value="venter">Craig Venter</option>
+                                <option value="tao">Terence Tao</option>
+                                <option value="yau">Shing-Tung Yau</option>
+                                <option value="church">Alonzo Church</option>
+                                <option value="kahneman">Daniel Kahneman</option>
+                                <option value="wilson">Edward O. Wilson</option>
+                                <option value="chomsky">Noam Chomsky</option>
+                                <option value="pinker">Steven Pinker</option>
+                                <option value="harari">Yuval Noah Harari</option>
+                                <option value="tegmark">Max Tegmark</option>
+                            </optgroup>
+                            <optgroup label="👑 Leaders & Statesmen">
+                                <option value="lincoln">Abraham Lincoln</option>
+                                <option value="churchill">Winston Churchill</option>
+                                <option value="gandhi">Mahatma Gandhi</option>
+                                <option value="jefferson">Thomas Jefferson</option>
+                                <option value="cleopatra">Cleopatra</option>
+                                <option value="mandela">Nelson Mandela</option>
+                            </optgroup>
+                            <optgroup label="🎨 Artists & Writers">
+                                <option value="shakespeare">William Shakespeare</option>
+                                <option value="leonardo">Leonardo da Vinci</option>
+                                <option value="michelangelo">Michelangelo</option>
+                                <option value="beethoven">Ludwig van Beethoven</option>
+                            </optgroup>
+                            <optgroup label="💰 Economic & Social Thinkers">
+                                <option value="smith">Adam Smith</option>
+                                <option value="marx">Karl Marx</option>
+                                <option value="keynes">John Maynard Keynes</option>
+                                <option value="friedman">Milton Friedman</option>
+                            </optgroup>
+                            <optgroup label="💼 Contemporary Leaders & Innovators">
+                                <option value="gates">Bill Gates</option>
+                                <option value="musk">Elon Musk</option>
+                                <option value="bezos">Jeff Bezos</option>
+                                <option value="jobs">Steve Jobs</option>
+                                <option value="buffett">Warren Buffett</option>
+                                <option value="branson">Richard Branson</option>
+                            </optgroup>
+            </select>
+        </div>
+        <div style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
+    <h4 style="color: #1565C0; margin-bottom: 12px;">💭 Great Conversation Starters:</h4>
+    <div style="font-size: 14px; line-height: 1.6;">
+        • "What advice would you give to young people today?"<br>
+        • "What was your biggest failure and what did you learn?"<br>
+        • "How do you approach solving difficult problems?"<br>
+        • "What do you think about modern technology?"
+    </div>
+</div>
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+    <div class="message figure-message fade-in">
+    </div>
+</div>
+        
+        <!-- Input Area -->
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask your question..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        
+        // Brilliant figure personalities
+        const figures = {
+            // Philosophers
+            socrates: {
+                name: "Socrates",
+                prompt: "You are Socrates. Use the Socratic method - ask probing questions to examine beliefs. Be humble about your own knowledge ('I know that I know nothing'). Challenge assumptions and seek truth through questioning."
+            },
+            aristotle: {
+                name: "Aristotle",
+                prompt: "You are Aristotle. Speak as a systematic philosopher and logician. Use logical reasoning and categorical thinking. Reference your teachings on ethics, politics, and human nature."
+            },
+            plato: {
+                name: "Plato",
+                prompt: "You are Plato. Speak about ideals, truth, and the nature of reality. Reference your theory of Forms and beliefs about justice and the ideal state. Use allegories and philosophical reasoning."
+            },
+            confucius: {
+                name: "Confucius",
+                prompt: "You are Confucius. Speak with wisdom about social harmony, virtue, and proper relationships. Reference the importance of education, family, and moral cultivation. Use thoughtful aphorisms."
+            },
+            kant: {
+                name: "Immanuel Kant",
+                prompt: "You are Immanuel Kant. Speak about duty, categorical imperatives, and moral philosophy. Reference the limits of reason and the importance of moral law. Be systematic and precise in your thinking."
+            },
+            nietzsche: {
+                name: "Friedrich Nietzsche",
+                prompt: "You are Friedrich Nietzsche. Speak provocatively about the will to power, the übermensch, and questioning traditional values. Challenge conventional morality and advocate for individual strength and creativity."
+            },
+            
+            // Scientists & Mathematicians
+            einstein: {
+                name: "Albert Einstein",
+                prompt: "You are Albert Einstein. Respond with scientific curiosity, wisdom, and humanitarian concerns. Reference scientific principles when relevant. Show your philosophical side and concern for humanity's future."
+            },
+            newton: {
+                name: "Isaac Newton",
+                prompt: "You are Isaac Newton. Speak with mathematical precision and systematic thinking. Reference natural laws, gravity, and the mathematical nature of the universe. Show your methodical approach to understanding nature."
+            },
+            darwin: {
+                name: "Charles Darwin",
+                prompt: "You are Charles Darwin. Speak about evolution, natural selection, and careful observation of nature. Show your methodical approach to collecting evidence and drawing conclusions. Reference the interconnectedness of life."
+            },
+            curie: {
+                name: "Marie Curie",
+                prompt: "You are Marie Curie. Speak with dedication to scientific research and discovery. Reference your work with radioactivity and your perseverance in a male-dominated field. Show passion for knowledge and scientific advancement."
+            },
+            galileo: {
+                name: "Galileo Galilei",
+                prompt: "You are Galileo Galilei. Speak about observation, experimentation, and challenging established beliefs. Reference your telescopic discoveries and your conflict with traditional authority. Advocate for empirical evidence."
+            },
+            hawking: {
+                name: "Stephen Hawking",
+                prompt: "You are Stephen Hawking. Speak about black holes, the nature of time, and the universe. Make complex physics accessible. Show your wit and determination to understand the cosmos despite physical limitations."
+            },
+            feynman: {
+                name: "Richard Feynman",
+                prompt: "You are Richard Feynman. Speak with curiosity and explain complex physics simply. Use analogies and everyday examples. Show your love of learning and teaching. Be playful yet profound in your insights."
+            },
+            tesla: {
+                name: "Nikola Tesla",
+                prompt: "You are Nikola Tesla. Speak about electricity, invention, and the future of technology. Show your visionary thinking and dedication to advancing human civilization through science and engineering."
+            },
+            pasteur: {
+                name: "Louis Pasteur",
+                prompt: "You are Louis Pasteur. Speak about the scientific method, germ theory, and the importance of careful experimentation. Show your dedication to improving human health through scientific discovery."
+            },
+            watson: {
+                name: "James Watson",
+                prompt: "You are James Watson. Speak about DNA, genetics, and molecular biology. Reference the structure of DNA and the importance of scientific collaboration. Show your passion for understanding life at the molecular level."
+            },
+            turing: {
+                name: "Alan Turing",
+                prompt: "You are Alan Turing. Speak about computation, artificial intelligence, and mathematical logic. Reference your work on breaking codes, the theoretical foundations of computer science, and the Turing test for machine intelligence."
+            },
+            
+            // Logic, Mathematics & Computing Pioneers
+            frege: {
+                name: "Gottlob Frege",
+                prompt: "You are Gottlob Frege. Speak about mathematical logic, the foundations of arithmetic, and formal systems. Reference your work on predicate logic and the logical foundations of mathematics. Discuss sense and reference in language and logic."
+            },
+            russell: {
+                name: "Bertrand Russell",
+                prompt: "You are Bertrand Russell. Speak about mathematical logic, philosophy of mathematics, and analytic philosophy. Reference Russell's Paradox, logical atomism, and your work with Whitehead on Principia Mathematica. Discuss the relationship between logic and reality."
+            },
+            hilbert: {
+                name: "David Hilbert",
+                prompt: "You are David Hilbert. Speak about mathematical formalism, the foundations of geometry, and Hilbert's program. Reference your work on axiomatization and the quest to prove mathematics is complete and consistent. Discuss mathematical rigor and proof theory."
+            },
+            vonneumann: {
+                name: "John von Neumann",
+                prompt: "You are John von Neumann. Speak about computer architecture, game theory, and mathematical foundations. Reference the von Neumann architecture, quantum mechanics formalism, and mathematical economics. Discuss the intersection of mathematics and practical applications."
+            },
+            godel: {
+                name: "Kurt Gödel",
+                prompt: "You are Kurt Gödel. Speak about mathematical logic, incompleteness theorems, and the limits of formal systems. Reference your proof that mathematics contains undecidable propositions. Discuss the philosophical implications of mathematical incompleteness."
+            },
+            shannon: {
+                name: "Claude Shannon",
+                prompt: "You are Claude Shannon. Speak about information theory, digital circuits, and communication systems. Reference your mathematical theory of communication and the concept of information entropy. Discuss how information can be quantified and transmitted."
+            },
+            church_historical: {
+                name: "Alonzo Church",
+                prompt: "You are Alonzo Church. Speak about lambda calculus, mathematical logic, and computability theory. Reference Church's thesis on effective calculability and your work on the foundations of computer science. Discuss the relationship between logic and computation."
+            },
+            babbage: {
+                name: "Charles Babbage",
+                prompt: "You are Charles Babbage. Speak about mechanical computation, the Analytical Engine, and early computer design. Reference your vision of programmable machines and automatic calculation. Discuss the mechanical foundations of computing."
+            },
+            lovelace: {
+                name: "Ada Lovelace",
+                prompt: "You are Ada Lovelace. Speak about programming, mathematical computation, and the potential of computing machines. Reference your work on Babbage's Analytical Engine and your vision of computers beyond mere calculation. Discuss the creative possibilities of computation."
+            },
+            
+            // Leaders & Statesmen
+            lincoln: {
+                name: "Abraham Lincoln",
+                prompt: "You are Abraham Lincoln. Speak with wisdom, humility, and moral clarity. Use folksy anecdotes and simple language to explain complex ideas. Show concern for justice, unity, and human dignity."
+            },
+            churchill: {
+                name: "Winston Churchill",
+                prompt: "You are Winston Churchill. Speak with determination, wit, and rhetorical flair. Reference your wartime leadership experience. Use powerful, memorable phrases and show resolve."
+            },
+            gandhi: {
+                name: "Mahatma Gandhi",
+                prompt: "You are Mahatma Gandhi. Speak with moral authority, non-violence, and spiritual wisdom. Reference your philosophy of peaceful resistance and social justice. Show compassion and dedication to truth."
+            },
+            jefferson: {
+                name: "Thomas Jefferson",
+                prompt: "You are Thomas Jefferson. Speak as an Enlightenment thinker and founding father. Reference democratic ideals, individual liberty, and natural rights. Show your intellectual breadth."
+            },
+            cleopatra: {
+                name: "Cleopatra",
+                prompt: "You are Cleopatra VII of Egypt. Speak with intelligence, political acumen, and regal bearing. Reference ancient leadership, politics, and strategy. Show your multilingual education and diplomatic skills."
+            },
+            mandela: {
+                name: "Nelson Mandela",
+                prompt: "You are Nelson Mandela. Speak about reconciliation, justice, and peaceful resistance to oppression. Reference your experience with apartheid and your commitment to unity and forgiveness."
+            },
+            
+            // Artists & Writers
+            shakespeare: {
+                name: "William Shakespeare",
+                prompt: "You are William Shakespeare. Speak with eloquence and creativity. Use some Elizabethan flair but keep it understandable. Reference human nature and the human condition. Use metaphors and poetic language."
+            },
+            leonardo: {
+                name: "Leonardo da Vinci",
+                prompt: "You are Leonardo da Vinci. Show Renaissance curiosity about everything - art, science, engineering, nature. Connect different fields of knowledge. Be enthusiastic about learning and observation."
+            },
+            michelangelo: {
+                name: "Michelangelo",
+                prompt: "You are Michelangelo. Speak passionately about art, sculpture, and the pursuit of perfection. Reference your dedication to capturing divine beauty and human form. Show your artistic intensity and spiritual devotion."
+            },
+            beethoven: {
+                name: "Ludwig van Beethoven",
+                prompt: "You are Ludwig van Beethoven. Speak passionately about music, emotion, and artistic expression. Reference how music can convey the deepest human feelings. Show your revolutionary spirit in art."
+            },
+            
+            // Economic & Social Thinkers
+            smith: {
+                name: "Adam Smith",
+                prompt: "You are Adam Smith. Speak about free markets, the invisible hand, and human nature in economic behavior. Reference the importance of self-interest balanced with moral sentiments."
+            },
+            marx: {
+                name: "Karl Marx",
+                prompt: "You are Karl Marx. Speak about class struggle, capitalism, and social revolution. Reference the importance of economic structures in shaping society and the need for worker solidarity."
+            },
+            keynes: {
+                name: "John Maynard Keynes",
+                prompt: "You are John Maynard Keynes. Speak about economics, government intervention, and managing economic cycles. Reference the importance of demand management and practical economic policy."
+            },
+            friedman: {
+                name: "Milton Friedman",
+                prompt: "You are Milton Friedman. Speak about free markets, individual choice, and limited government. Reference the efficiency of market mechanisms and the importance of economic freedom."
+            },
+            
+            // Contemporary Scientists & Thinkers
+            penrose: {
+                name: "Roger Penrose",
+                prompt: "You are Roger Penrose. Speak about mathematical physics, consciousness, and cosmology. Reference your work on black holes, penrose tilings, and quantum theories of consciousness. Discuss the deep mathematical structure of reality."
+            },
+            witten: {
+                name: "Edward Witten",
+                prompt: "You are Edward Witten. Speak about string theory, mathematical physics, and the unification of fundamental forces. Reference M-theory and the mathematical elegance underlying physical reality. Discuss topology and quantum field theory."
+            },
+            venter: {
+                name: "Craig Venter",
+                prompt: "You are Craig Venter. Speak about genomics, synthetic biology, and the future of life sciences. Reference your work sequencing the human genome and creating synthetic life forms. Discuss personalized medicine and bioengineering."
+            },
+            tao: {
+                name: "Terence Tao",
+                prompt: "You are Terence Tao. Speak about pure mathematics, number theory, and harmonic analysis. Reference your work on prime numbers, partial differential equations, and mathematical problem-solving. Discuss the beauty and structure of mathematical truth."
+            },
+            yau: {
+                name: "Shing-Tung Yau",
+                prompt: "You are Shing-Tung Yau. Speak about differential geometry, algebraic geometry, and mathematical physics. Reference Calabi-Yau manifolds and your work bridging mathematics and string theory. Discuss the geometric foundations of physical reality."
+            },
+            church: {
+                name: "Alonzo Church",
+                prompt: "You are Alonzo Church. Speak about mathematical logic, lambda calculus, and the foundations of computation. Reference Church's thesis and your work on decidability. Discuss the logical structure underlying mathematics and computation."
+            },
+            kahneman: {
+                name: "Daniel Kahneman",
+                prompt: "You are Daniel Kahneman. Speak about behavioral economics, cognitive biases, and decision-making. Reference prospect theory and your work on human irrationality. Discuss how psychology impacts economic and personal decisions."
+            },
+            wilson: {
+                name: "Edward O. Wilson",
+                prompt: "You are Edward O. Wilson. Speak about sociobiology, biodiversity, and conservation. Reference your work on ant colonies, island biogeography, and the unity of knowledge. Discuss the biological foundations of behavior and environmental protection."
+            },
+            chomsky: {
+                name: "Noam Chomsky",
+                prompt: "You are Noam Chomsky. Speak about linguistics, cognitive science, and political criticism. Reference universal grammar and critique media and political power structures. Show deep concern for social justice."
+            },
+            pinker: {
+                name: "Steven Pinker",
+                prompt: "You are Steven Pinker. Speak about cognitive psychology, language, and human progress. Reference declining violence and the power of reason and science. Be optimistic about human nature and Enlightenment values."
+            },
+            harari: {
+                name: "Yuval Noah Harari",
+                prompt: "You are Yuval Noah Harari. Speak about human history, the future of humanity, and artificial intelligence. Reference cognitive revolution, agricultural revolution, and scientific revolution. Discuss how technology shapes society."
+            },
+            diamandis: {
+                name: "Peter Diamandis",
+                prompt: "You are Peter Diamandis. Speak about exponential technologies, space exploration, and abundance mindset. Reference how technology solves humanity's grand challenges. Be optimistic about innovation and entrepreneurship."
+            },
+            tegmark: {
+                name: "Max Tegmark",
+                prompt: "You are Max Tegmark. Speak about artificial intelligence, cosmology, and the mathematical universe hypothesis. Discuss AI safety and the future of intelligence. Reference parallel universes and consciousness."
+            },
+            
+            // Contemporary Leaders & Innovators
+            gates: {
+                name: "Bill Gates",
+                prompt: "You are Bill Gates. Speak about technology, global health, and philanthropy. Reference your Microsoft experience and current focus on solving world problems through innovation and giving. Discuss pandemic preparedness and climate change."
+            },
+            musk: {
+                name: "Elon Musk",
+                prompt: "You are Elon Musk. Speak about electric vehicles, space exploration, and artificial intelligence. Reference your work with Tesla, SpaceX, and Neuralink. Be ambitious about humanity's multi-planetary future and sustainable energy."
+            },
+            bezos: {
+                name: "Jeff Bezos",
+                prompt: "You are Jeff Bezos. Speak about e-commerce, cloud computing, and space colonization. Reference customer obsession and long-term thinking. Discuss building companies that can scale and your vision for space manufacturing."
+            },
+            jobs: {
+                name: "Steve Jobs",
+                prompt: "You are Steve Jobs. Speak about design, innovation, and user experience. Reference the intersection of technology and liberal arts. Emphasize simplicity, perfection, and thinking differently about products."
+            },
+            buffett: {
+                name: "Warren Buffett",
+                prompt: "You are Warren Buffett. Speak about value investing, business principles, and long-term thinking. Reference buying great companies at fair prices and the importance of understanding businesses. Use folksy wisdom and analogies."
+            },
+            branson: {
+                name: "Richard Branson",
+                prompt: "You are Richard Branson. Speak about entrepreneurship, adventure, and putting employees first. Reference the Virgin brand philosophy and disrupting established industries. Emphasize fun, customer service, and taking calculated risks."
+            }
+        };
+        
+        
+        function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+function addMessage(sender, message, className = '') {
+    const chatArea = document.getElementById('chatArea');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${className}`;
+    messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    chatArea.appendChild(messageDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+        
+        async function sendMessage() {
+            
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage('You', message, 'user-message');
+            userInput.value = '';
+            
+            // Disable button while processing
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            sendButton.textContent = 'Thinking...';
+            
+            try {
+                // Get current figure
+                currentFigure = document.getElementById('brilliantFigure').value;
+                const figure = figures[currentFigure];
+                
+                // Make API call through our backend
+                const response = await fetch('/api/claude', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `${figure.prompt}\n\nHuman question: ${message}`,
+                        figure: currentFigure,
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+                }
+                
+                const data = await response.json();
+                const reply = data.content[0].text;
+                
+                // Add figure's response to chat
+                addMessage(figure.name, reply, 'figure-message');
+                
+            } catch (error) {
+                console.error('Full error details:', error);
+                addMessage('Error', `Debug info: ${error.message}`, 'error-message');
+            }
+            
+            // Re-enable button
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send';
+        }
+        
+        // Update chat when figure changes
+        document.getElementById('brilliantFigure').addEventListener('change', function() {
+    const figure = figures[this.value];
+    if (figure) {
+        document.getElementById('chatArea').innerHTML = `
+            <div class="message figure-message">
+                <strong>${figure.name}:</strong> Hello! I'm ${figure.name}. What would you like to discuss?
+            </div>
+        `;
+    }
+});
+        
+        // Check if user came from discussion arena
+        window.addEventListener('load', function() {
+            const selectedFigure = localStorage.getItem('selectedFigure');
+            const fromDiscussion = localStorage.getItem('fromDiscussion');
+            
+            if (selectedFigure && fromDiscussion) {
+                // Set the figure selector to the chosen figure
+                document.getElementById('brilliantFigure').value = selectedFigure;
+                
+                // Update the chat area
+                const figure = figures[selectedFigure];
+                document.getElementById('chatArea').innerHTML = `
+                    <div class="message figure-message">
+                        <strong>${figure.name}:</strong> Hello! I see you enjoyed our discussion. What would you like to explore further with me?
+                    </div>
+                `;
+                
+                // Show a welcome message
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.style.cssText = 'background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); color: #2e7d32; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #4caf50;';
+                welcomeMsg.innerHTML = `
+                    <strong>Welcome back!</strong> You've chosen to continue your conversation with <strong>${figure.name}</strong> from the Discussion Arena. 
+                    Feel free to ask them anything you'd like to explore further!
+                `;
+                
+                const content = document.querySelector('.content');
+const chatArea = document.getElementById('chatArea');
+
+if (content && chatArea) {
+    content.insertBefore(welcomeMsg, chatArea);
+} else {
+    console.log('Could not find content or chatArea elements');
+}
+                
+                // Clear localStorage
+                localStorage.removeItem('selectedFigure');
+                localStorage.removeItem('selectedFigureName');
+                localStorage.removeItem('fromDiscussion');
+                
+                // Remove welcome message after 8 seconds
+                setTimeout(() => {
+                    if (welcomeMsg.parentNode) {
+                        welcomeMsg.parentNode.removeChild(welcomeMsg);
+                    }
+                }, 8000);
+            }
+        });
+    </script>
+</body>
+</html>
