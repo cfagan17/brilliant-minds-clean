@@ -1,7 +1,10 @@
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY || 'your-fallback-key';
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
+
+const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+
 
 // Enable CORS and JSON parsing
 app.use(cors());
@@ -47,7 +50,13 @@ app.post('/api/claude', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
+app.get('/chat.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'chat.html'));
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
