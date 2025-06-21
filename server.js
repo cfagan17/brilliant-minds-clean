@@ -5,7 +5,6 @@ const app = express();
 
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 
-
 // Enable CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
@@ -50,6 +49,7 @@ app.post('/api/claude', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -57,8 +57,15 @@ app.get('/', (req, res) => {
 app.get('/chat.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'chat.html'));
 });
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Open your app at: http://localhost:${PORT}`);
-});
+
+// Export the app for Vercel (remove the app.listen for serverless)
+module.exports = app;
+
+// Only listen when running locally (not on Vercel)
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Open your app at: http://localhost:${PORT}`);
+    });
+}
