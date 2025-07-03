@@ -94,7 +94,6 @@
             padding: 48px;
         }
         
-        
         .setup-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 20px;
@@ -154,6 +153,39 @@
             color: #495057;
         }
         
+        /* Toggle buttons for selection mode */
+        .selection-mode {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .mode-button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+        
+        .mode-button.active {
+            background: white;
+            color: #495057;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .mode-button:hover:not(.active) {
+            color: #495057;
+        }
+        
         select {
             width: 100%;
             padding: 16px 20px;
@@ -170,6 +202,46 @@
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+        }
+        
+        .custom-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            background: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none;
+        }
+        
+        .custom-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+        }
+        
+        .custom-input::placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .suggestion-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        
+        .suggestion-box strong {
+            color: #495057;
+            display: block;
+            margin-bottom: 6px;
         }
         
         optgroup {
@@ -665,12 +737,17 @@
         </div>
     </div>
 
-
                     <div class="figure-selection figure-1">
                         <h4>🎤 First Speaker</h4>
+                        
+                        <!-- Selection Mode Toggle -->
+                        <div class="selection-mode">
+                            <button type="button" class="mode-button active" onclick="toggleMode(1, 'preset')">📋 Preset Figures</button>
+                            <button type="button" class="mode-button" onclick="toggleMode(1, 'custom')">✏️ Write Your Own</button>
+                        </div>
+                        
                         <label>Brilliant Figure:</label>
-                        <select id="figure1">
-                    
+                        <select id="figure1" class="preset-select">
                              <optgroup label="🤔 Philosophers">
                                 <option value="aristotle" selected="selected">Aristotle</option>
                                 <option value="socrates">Socrates</option>
@@ -746,13 +823,26 @@
                                 <option value="branson">Richard Branson</option>
                             </optgroup>
                         </select>
+                        
+                        <input type="text" id="figure1Custom" class="custom-input" placeholder="Enter any name (e.g., Taylor Swift, Napoleon, Frida Kahlo, your grandmother...)">
+                        
+                        <div class="suggestion-box" id="suggestion1" style="display: none;">
+                            <strong>💡 Custom Figure Tips:</strong>
+                            Try historical figures, celebrities, fictional characters, or even people you know! The AI will research and embody their personality, knowledge, and speaking style.
+                        </div>
                     </div>
                     
                     <div class="figure-selection figure-2">
                         <h4>🎯 Second Speaker</h4>
+                        
+                        <!-- Selection Mode Toggle -->
+                        <div class="selection-mode">
+                            <button type="button" class="mode-button active" onclick="toggleMode(2, 'preset')">📋 Preset Figures</button>
+                            <button type="button" class="mode-button" onclick="toggleMode(2, 'custom')">✏️ Write Your Own</button>
+                        </div>
+                        
                         <label>Brilliant Figure:</label>
-                        <select id="figure2">
-                            <option value="aristotle">Aristotle</option>
+                        <select id="figure2" class="preset-select">
                              <optgroup label="🤔 Philosophers">
                                 <option value="aristotle">Aristotle</option>
                                 <option value="socrates" selected="selected">Socrates</option>
@@ -828,6 +918,13 @@
                                 <option value="branson">Richard Branson</option>
                             </optgroup>
                         </select>
+                        
+                        <input type="text" id="figure2Custom" class="custom-input" placeholder="Enter any name (e.g., Marie Antoinette, Carl Sagan, Maya Angelou...)">
+                        
+                        <div class="suggestion-box" id="suggestion2" style="display: none;">
+                            <strong>💡 Custom Figure Tips:</strong>
+                            Try historical figures, celebrities, fictional characters, or even people you know! The AI will research and embody their personality, knowledge, and speaking style.
+                        </div>
                     </div>
                 </div>
                 
@@ -882,13 +979,55 @@
 
     <script>
         let discussionState = {
-    figure1: null,
-    figure2: null,
-    currentQuestion: '',
-    isExtended: false,
-    currentContainer: null
-};
-        // Enhanced brilliant figures with scientists and thought leaders
+            figure1: null,
+            figure2: null,
+            currentQuestion: '',
+            isExtended: false,
+            currentContainer: null,
+            figure1Mode: 'preset',
+            figure2Mode: 'preset'
+        };
+
+        // Toggle between preset and custom input modes
+        function toggleMode(figureNum, mode) {
+            discussionState[`figure${figureNum}Mode`] = mode;
+            
+            const presetSelect = document.getElementById(`figure${figureNum}`);
+            const customInput = document.getElementById(`figure${figureNum}Custom`);
+            const suggestionBox = document.getElementById(`suggestion${figureNum}`);
+            const modeButtons = document.querySelectorAll(`.figure-selection:nth-child(${figureNum + 1}) .mode-button`);
+            
+            // Update button states
+            modeButtons.forEach((btn, index) => {
+                if ((index === 0 && mode === 'preset') || (index === 1 && mode === 'custom')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Show/hide appropriate input
+            if (mode === 'preset') {
+                presetSelect.style.display = 'block';
+                customInput.style.display = 'none';
+                suggestionBox.style.display = 'none';
+            } else {
+                presetSelect.style.display = 'none';
+                customInput.style.display = 'block';
+                suggestionBox.style.display = 'block';
+                customInput.focus();
+            }
+        }
+
+        // Create custom figure object from name
+        function createCustomFigure(name) {
+            return {
+                name: name,
+                prompt: `You are ${name}. Embody their personality, knowledge, speaking style, and perspective as accurately as possible. If this is a real person, draw on their known views, experiences, and way of communicating. If this is a fictional character, embody their personality from their source material. If this is someone the user knows personally, ask clarifying questions if needed, but generally respond as a thoughtful, intelligent person with that name would. Stay in character throughout the conversation and bring their unique perspective to the discussion.`
+            };
+        }
+
+        // Enhanced brilliant figures with scientists and thought leaders (keeping all your existing figures)
         const figures = {
             // Philosophers
             socrates: {
@@ -1143,20 +1282,43 @@
             }
         };
         
-        
         function startDiscussion() { 
-
+            let figure1, figure2;
             
-            const figure1Id = document.getElementById('figure1').value;
-            const figure2Id = document.getElementById('figure2').value;
+            // Get figure 1
+            if (discussionState.figure1Mode === 'preset') {
+                const figure1Id = document.getElementById('figure1').value;
+                figure1 = figures[figure1Id];
+            } else {
+                const figure1Name = document.getElementById('figure1Custom').value.trim();
+                if (!figure1Name) {
+                    alert('Please enter a name for the first speaker!');
+                    return;
+                }
+                figure1 = createCustomFigure(figure1Name);
+            }
             
-            if (figure1Id === figure2Id) {
-                alert('Please select different brilliant figures!');
+            // Get figure 2
+            if (discussionState.figure2Mode === 'preset') {
+                const figure2Id = document.getElementById('figure2').value;
+                figure2 = figures[figure2Id];
+            } else {
+                const figure2Name = document.getElementById('figure2Custom').value.trim();
+                if (!figure2Name) {
+                    alert('Please enter a name for the second speaker!');
+                    return;
+                }
+                figure2 = createCustomFigure(figure2Name);
+            }
+            
+            // Check if same figure selected/entered
+            if (figure1.name.toLowerCase() === figure2.name.toLowerCase()) {
+                alert('Please select or enter different figures for an interesting discussion!');
                 return;
             }
             
-            discussionState.figure1 = figures[figure1Id];
-            discussionState.figure2 = figures[figure2Id];
+            discussionState.figure1 = figure1;
+            discussionState.figure2 = figure2;
             
             // Update display
             document.getElementById('participant1Name').textContent = discussionState.figure1.name;
@@ -1388,23 +1550,23 @@ Keep each section concise but insightful. Use clear headings and organize your t
         }
         
         async function callClaude(prompt) {
-    const response = await fetch('/api/claude', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            message: prompt,
-            figure: 'discussion'
-        })
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
-    }
-    
-    const data = await response.json();
-    return data.content[0].text;
-}
+            const response = await fetch('/api/claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: prompt,
+                    figure: 'discussion'
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+            }
+            
+            const data = await response.json();
+            return data.content[0].text;
+        }
         
         function showQuestionInput() {
             document.getElementById('questionSection').style.display = 'block';
@@ -1592,20 +1754,30 @@ Keep each section concise but profound. Use clear headings and organize your tho
             
             const figureButtons = document.getElementById('figureButtons');
             figureButtons.innerHTML = `
-                <button class="figure-chat-button" onclick="startDirectChat('${Object.keys(figures).find(key => figures[key] === discussionState.figure1)}')">
+                <button class="figure-chat-button" onclick="startDirectChat('${discussionState.figure1.name}')">
                     Chat with ${discussionState.figure1.name}
                 </button>
-                <button class="figure-chat-button" onclick="startDirectChat('${Object.keys(figures).find(key => figures[key] === discussionState.figure2)}')">
+                <button class="figure-chat-button" onclick="startDirectChat('${discussionState.figure2.name}')">
                     Chat with ${discussionState.figure2.name}
                 </button>
             `;
         }
         
-        function startDirectChat(figureId) {
+        function startDirectChat(figureName) {
             // Store the selected figure in localStorage so the chat page can access it
-            localStorage.setItem('selectedFigure', figureId);
-            localStorage.setItem('selectedFigureName', figures[figureId].name);
+            localStorage.setItem('selectedFigureName', figureName);
             localStorage.setItem('fromDiscussion', 'true');
+            
+            // Check if it's a preset figure or custom figure
+            const presetFigure = Object.values(figures).find(f => f.name === figureName);
+            if (presetFigure) {
+                const figureId = Object.keys(figures).find(key => figures[key].name === figureName);
+                localStorage.setItem('selectedFigure', figureId);
+            } else {
+                // It's a custom figure, store as custom
+                localStorage.setItem('selectedFigure', 'custom');
+                localStorage.setItem('customFigureName', figureName);
+            }
             
             // Redirect to chat page
             window.location.href = 'chat.html';
