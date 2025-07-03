@@ -1,437 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Brilliant Figures</title>
-    <style>
-        * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-    min-height: 100vh;
-    padding: 20px;
-    line-height: 1.6;
-    color: #2c3e50;
-}
-
-.container {
-    background: white;
-    max-width: 1000px;
-    margin: 0 auto;
-    border-radius: 24px;
-    box-shadow: 0 32px 80px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.06);
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-   .header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 48px 40px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-    opacity: 0.5;
-}
-
-.header * {
-    position: relative;
-    z-index: 1;
-}
-
-.nav-back {
-    position: absolute;
-    top: 20px;
-    left: 30px;
-    z-index: 2;
-}
-
-.nav-back a {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    opacity: 0.9;
-    transition: opacity 0.3s ease;
-    font-size: 16px;
-}
-
-h1 {
-    font-size: 3.2rem;
-    font-weight: 800;
-    margin-bottom: 16px;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    letter-spacing: -0.02em;
-}
-
-.subtitle {
-    font-size: 1.2rem;
-    opacity: 0.9;
-    font-weight: 300;
-}
-
-.content {
-    padding: 48px;
-}
-
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .figure-selector {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 30px;
-    border: 1px solid #e9ecef;
-}
-
-.figure-selector h3 {
-    color: #2c3e50;
-    margin-bottom: 20px;
-    font-size: 1.3rem;
-    text-align: center;
-}
-
-.figure-selector label {
-    display: block;
-    margin-bottom: 12px;
-    font-weight: 600;
-    color: #495057;
-    font-size: 1rem;
-}
-
-select {
-    width: 100%;
-    padding: 16px 20px;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-select:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
-}
-        
-        .chat-area {
-    border: 2px solid #f1f3f5;
-    border-radius: 24px;
-    padding: 40px;
-    min-height: 500px;
-    margin-bottom: 32px;
-    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
-    overflow-y: auto;
-    max-height: 600px;
-}
-        
-        .message {
-    margin-bottom: 20px;
-    padding: 20px;
-    border-radius: 16px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    transition: transform 0.2s ease;
-}
-
-.message:hover {
-    transform: translateY(-2px);
-}
-
-.user-message {
-    background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
-    margin-left: 40px;
-    border-left: 4px solid #2196F3;
-}
-
-.figure-message {
-    background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
-    margin-right: 40px;
-    border-left: 4px solid #9C27B0;
-}
-
-.system-message {
-    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-    font-style: italic;
-    text-align: center;
-    border-left: 4px solid #4CAF50;
-}
-
-.error-message {
-    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-    color: #c62828;
-    border-left: 4px solid #f44336;
-}
-        
-        .input-area {
-    display: flex;
-    gap: 15px;
-    align-items: flex-end;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-    border: 2px solid #f1f3f5;
-}
-
-input[type="text"] {
-    flex: 1;
-    padding: 16px 20px;
-    font-size: 16px;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: inherit;
-}
-
-input[type="text"]:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
-}
-        
-        button {
-    padding: 16px 32px;
-    font-size: 16px;
-    font-weight: 600;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-    position: relative;
-    overflow: hidden;
-    letter-spacing: 0.01em;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:hover::before {
-    left: 100%;
-}
-
-button:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(102, 126, 234, 0.3);
-}
-
-button:active {
-    transform: translateY(-2px);
-}
-
-button:disabled {
-    background: #ccc !important;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-        
-       
-.success-message {
-    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    color: #155724;
-    padding: 15px 20px;
-    border-radius: 10px;
-    margin: 15px 0;
-    border-left: 4px solid #28a745;
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@media (max-width: 768px) {
-    .container {
-        margin: 10px;
-        border-radius: 15px;
-    }
-    
-    .header {
-        padding: 30px 20px;
-    }
-    
-    h1 {
-        font-size: 2.2rem;
-    }
-    
-    .content {
-        padding: 20px;
-    }
-    
-    .input-area {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    button {
-        width: 100%;
-    }
-    
-    .user-message {
-        margin-left: 0;
-    }
-    
-    .figure-message {
-        margin-right: 0;
-    }
-}
-    </style>
-</head>
-<body>
-    <div class="container">
+<div class="container">
     <div class="header">
         <div class="nav-back">
             <a href="index.html">🧠 ← Back to Discussion Arena</a>
         </div>
         <h1>💬 Personal Chat</h1>
-        <p class="subtitle">Have focused conversations with individual brilliant figures</p>
+        <p class="subtitle">Have focused conversations with any brilliant figure you can imagine</p>
     </div>
     
     <div class="content">
-        
-        
-        
         <!-- Figure Selector -->
         <div class="figure-selector">
-    <h3>🎭 Choose Your Conversation Partner</h3>
-    <label for="brilliantFigure"><strong>Brilliant Figure:</strong></label>
-    <select id="brilliantFigure">
+            <h3>🎭 Choose Your Conversation Partner</h3>
+            
+            <!-- Selection Mode Toggle -->
+            <div class="selection-mode">
+                <button type="button" class="mode-button active" onclick="toggleMode('preset')">📋 Preset Figures</button>
+                <button type="button" class="mode-button" onclick="toggleMode('custom')">✏️ Write Your Own</button>
+            </div>
+            
+            <label for="brilliantFigure"><strong>Brilliant Figure:</strong></label>
+            <select id="brilliantFigure">
                 <optgroup label="🤔 Philosophers">
-                                <option value="aristotle" selected="selected">Aristotle</option>
-                                <option value="socrates">Socrates</option>
-                                <option value="plato">Plato</option>
-                                <option value="confucius">Confucius</option>
-                                <option value="kant">Immanuel Kant</option>
-                                <option value="nietzsche">Friedrich Nietzsche</option>
-                            </optgroup>
-                            <optgroup label="🔬 Scientists & Mathematicians">
-                                <option value="einstein">Albert Einstein</option>
-                                <option value="newton">Isaac Newton</option>
-                                <option value="darwin">Charles Darwin</option>
-                                <option value="curie">Marie Curie</option>
-                                <option value="galileo">Galileo Galilei</option>
-                                <option value="hawking">Stephen Hawking</option>
-                                <option value="feynman">Richard Feynman</option>
-                                <option value="tesla">Nikola Tesla</option>
-                                <option value="pasteur">Louis Pasteur</option>
-                                <option value="watson">James Watson</option>
-                                <option value="turing">Alan Turing</option>
-                            </optgroup>
-                            <optgroup label="🖥️ Logic, Mathematics & Computing Pioneers">
-                                <option value="frege">Gottlob Frege</option>
-                                <option value="russell">Bertrand Russell</option>
-                                <option value="hilbert">David Hilbert</option>
-                                <option value="vonneumann">John von Neumann</option>
-                                <option value="godel">Kurt Gödel</option>
-                                <option value="shannon">Claude Shannon</option>
-                                <option value="church_historical">Alonzo Church</option>
-                                <option value="babbage">Charles Babbage</option>
-                                <option value="lovelace">Ada Lovelace</option>
-                            </optgroup>
-                            <optgroup label="🧬 Contemporary Scientists & Thinkers">
-                                <option value="penrose">Roger Penrose</option>
-                                <option value="witten">Edward Witten</option>
-                                <option value="venter">Craig Venter</option>
-                                <option value="tao">Terence Tao</option>
-                                <option value="yau">Shing-Tung Yau</option>
-                                <option value="church">Alonzo Church</option>
-                                <option value="kahneman">Daniel Kahneman</option>
-                                <option value="wilson">Edward O. Wilson</option>
-                                <option value="chomsky">Noam Chomsky</option>
-                                <option value="pinker">Steven Pinker</option>
-                                <option value="harari">Yuval Noah Harari</option>
-                                <option value="tegmark">Max Tegmark</option>
-                            </optgroup>
-                            <optgroup label="👑 Leaders & Statesmen">
-                                <option value="lincoln">Abraham Lincoln</option>
-                                <option value="churchill">Winston Churchill</option>
-                                <option value="gandhi">Mahatma Gandhi</option>
-                                <option value="jefferson">Thomas Jefferson</option>
-                                <option value="cleopatra">Cleopatra</option>
-                                <option value="mandela">Nelson Mandela</option>
-                            </optgroup>
-                            <optgroup label="🎨 Artists & Writers">
-                                <option value="shakespeare">William Shakespeare</option>
-                                <option value="leonardo">Leonardo da Vinci</option>
-                                <option value="michelangelo">Michelangelo</option>
-                                <option value="beethoven">Ludwig van Beethoven</option>
-                            </optgroup>
-                            <optgroup label="💰 Economic & Social Thinkers">
-                                <option value="smith">Adam Smith</option>
-                                <option value="marx">Karl Marx</option>
-                                <option value="keynes">John Maynard Keynes</option>
-                                <option value="friedman">Milton Friedman</option>
-                            </optgroup>
-                            <optgroup label="💼 Contemporary Leaders & Innovators">
-                                <option value="gates">Bill Gates</option>
-                                <option value="musk">Elon Musk</option>
-                                <option value="bezos">Jeff Bezos</option>
-                                <option value="jobs">Steve Jobs</option>
-                                <option value="buffett">Warren Buffett</option>
-                                <option value="branson">Richard Branson</option>
-                            </optgroup>
+                    <option value="aristotle" selected="selected">Aristotle</option>
+                    <option value="socrates">Socrates</option>
+                    <option value="plato">Plato</option>
+                    <option value="confucius">Confucius</option>
+                    <option value="kant">Immanuel Kant</option>
+                    <option value="nietzsche">Friedrich Nietzsche</option>
+                </optgroup>
+                <optgroup label="🔬 Scientists & Mathematicians">
+                    <option value="einstein">Albert Einstein</option>
+                    <option value="newton">Isaac Newton</option>
+                    <option value="darwin">Charles Darwin</option>
+                    <option value="curie">Marie Curie</option>
+                    <option value="galileo">Galileo Galilei</option>
+                    <option value="hawking">Stephen Hawking</option>
+                    <option value="feynman">Richard Feynman</option>
+                    <option value="tesla">Nikola Tesla</option>
+                    <option value="pasteur">Louis Pasteur</option>
+                    <option value="watson">James Watson</option>
+                    <option value="turing">Alan Turing</option>
+                </optgroup>
+                <optgroup label="🖥️ Logic, Mathematics & Computing Pioneers">
+                    <option value="frege">Gottlob Frege</option>
+                    <option value="russell">Bertrand Russell</option>
+                    <option value="hilbert">David Hilbert</option>
+                    <option value="vonneumann">John von Neumann</option>
+                    <option value="godel">Kurt Gödel</option>
+                    <option value="shannon">Claude Shannon</option>
+                    <option value="church_historical">Alonzo Church</option>
+                    <option value="babbage">Charles Babbage</option>
+                    <option value="lovelace">Ada Lovelace</option>
+                </optgroup>
+                <optgroup label="🧬 Contemporary Scientists & Thinkers">
+                    <option value="penrose">Roger Penrose</option>
+                    <option value="witten">Edward Witten</option>
+                    <option value="venter">Craig Venter</option>
+                    <option value="tao">Terence Tao</option>
+                    <option value="yau">Shing-Tung Yau</option>
+                    <option value="church">Alonzo Church</option>
+                    <option value="kahneman">Daniel Kahneman</option>
+                    <option value="wilson">Edward O. Wilson</option>
+                    <option value="chomsky">Noam Chomsky</option>
+                    <option value="pinker">Steven Pinker</option>
+                    <option value="harari">Yuval Noah Harari</option>
+                    <option value="tegmark">Max Tegmark</option>
+                </optgroup>
+                <optgroup label="👑 Leaders & Statesmen">
+                    <option value="lincoln">Abraham Lincoln</option>
+                    <option value="churchill">Winston Churchill</option>
+                    <option value="gandhi">Mahatma Gandhi</option>
+                    <option value="jefferson">Thomas Jefferson</option>
+                    <option value="cleopatra">Cleopatra</option>
+                    <option value="mandela">Nelson Mandela</option>
+                </optgroup>
+                <optgroup label="🎨 Artists & Writers">
+                    <option value="shakespeare">William Shakespeare</option>
+                    <option value="leonardo">Leonardo da Vinci</option>
+                    <option value="michelangelo">Michelangelo</option>
+                    <option value="beethoven">Ludwig van Beethoven</option>
+                </optgroup>
+                <optgroup label="💰 Economic & Social Thinkers">
+                    <option value="smith">Adam Smith</option>
+                    <option value="marx">Karl Marx</option>
+                    <option value="keynes">John Maynard Keynes</option>
+                    <option value="friedman">Milton Friedman</option>
+                </optgroup>
+                <optgroup label="💼 Contemporary Leaders & Innovators">
+                    <option value="gates">Bill Gates</option>
+                    <option value="musk">Elon Musk</option>
+                    <option value="bezos">Jeff Bezos</option>
+                    <option value="jobs">Steve Jobs</option>
+                    <option value="buffett">Warren Buffett</option>
+                    <option value="branson">Richard Branson</option>
+                </optgroup>
             </select>
+            
+            <input type="text" id="customFigureInput" class="custom-input" placeholder="Enter any name (e.g., Taylor Swift, Napoleon, Frida Kahlo, your friend Sarah...)">
+            
+            <div class="suggestion-box" id="suggestionBox">
+                <strong>💡 Custom Figure Tips:</strong>
+                Try historical figures, celebrities, fictional characters, scientists, artists, leaders, or even people you know personally! The AI will research and embody their personality, knowledge, and speaking style.
+                <br><br>
+                <strong>Examples:</strong> Marie Antoinette, Carl Sagan, Hermione Granger, Maya Angelou, Robin Williams, your grandmother, Barack Obama, J.K. Rowling, etc.
+            </div>
         </div>
+        
         <div style="background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid #2196F3;">
-    <h4 style="color: #1565C0; margin-bottom: 12px;">💭 Great Conversation Starters:</h4>
-    <div style="font-size: 14px; line-height: 1.6;">
-        • "What advice would you give to young people today?"<br>
-        • "What was your biggest failure and what did you learn?"<br>
-        • "How do you approach solving difficult problems?"<br>
-        • "What do you think about modern technology?"
-    </div>
-</div>
+            <h4 style="color: #1565C0; margin-bottom: 12px;">💭 Great Conversation Starters:</h4>
+            <div style="font-size: 14px; line-height: 1.6;">
+                • "What advice would you give to young people today?"<br>
+                • "What was your biggest failure and what did you learn?"<br>
+                • "How do you approach solving difficult problems?"<br>
+                • "What do you think about modern technology?"<br>
+                • "What's the most important thing you want people to remember about you?"
+            </div>
+        </div>
+        
         <!-- Chat Area -->
         <div class="chat-area" id="chatArea">
-    <div class="message figure-message fade-in">
-    </div>
-</div>
+            <div class="message figure-message fade-in">
+                <strong id="currentFigureName">Aristotle</strong>: Hello! I'm Aristotle. What would you like to discuss?
+            </div>
+        </div>
         
         <!-- Input Area -->
         <div class="input-area">
@@ -441,8 +132,96 @@ button:disabled {
     </div>
 
     <script>
+        let currentMode = 'preset';
+        let currentFigure = null;
         
-        // Brilliant figure personalities
+        // Toggle between preset and custom input modes
+        function toggleMode(mode) {
+            currentMode = mode;
+            
+            const presetSelect = document.getElementById('brilliantFigure');
+            const customInput = document.getElementById('customFigureInput');
+            const suggestionBox = document.getElementById('suggestionBox');
+            const modeButtons = document.querySelectorAll('.mode-button');
+            
+            // Update button states
+            modeButtons.forEach((btn, index) => {
+                if ((index === 0 && mode === 'preset') || (index === 1 && mode === 'custom')) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Show/hide appropriate input
+            if (mode === 'preset') {
+                presetSelect.style.display = 'block';
+                customInput.style.display = 'none';
+                suggestionBox.style.display = 'none';
+                
+                // Update current figure to selected preset
+                updateCurrentFigure();
+            } else {
+                presetSelect.style.display = 'none';
+                customInput.style.display = 'block';
+                suggestionBox.style.display = 'block';
+                customInput.focus();
+                
+                // If there's already a custom name, use it
+                const customName = customInput.value.trim();
+                if (customName) {
+                    setCustomFigure(customName);
+                }
+            }
+        }
+
+        // Create custom figure object from name
+        function createCustomFigure(name) {
+            return {
+                name: name,
+                prompt: `You are ${name}. Embody their personality, knowledge, speaking style, and perspective as accurately as possible. If this is a real person, draw on their known views, experiences, and way of communicating. If this is a fictional character, embody their personality from their source material. If this is someone the user knows personally, ask clarifying questions if needed, but generally respond as a thoughtful, intelligent person with that name would. Stay in character throughout the conversation and bring their unique perspective to the discussion.`
+            };
+        }
+
+        // Set custom figure and update chat
+        function setCustomFigure(name) {
+            currentFigure = createCustomFigure(name);
+            document.getElementById('currentFigureName').textContent = currentFigure.name;
+            
+            // Update chat area with new greeting
+            document.getElementById('chatArea').innerHTML = `
+                <div class="message figure-message fade-in">
+                    <strong>${currentFigure.name}</strong>: Hello! I'm ${currentFigure.name}. What would you like to discuss?
+                </div>
+            `;
+        }
+
+        // Update current figure based on selection
+        function updateCurrentFigure() {
+            if (currentMode === 'preset') {
+                const figureId = document.getElementById('brilliantFigure').value;
+                currentFigure = figures[figureId];
+            } else {
+                const customName = document.getElementById('customFigureInput').value.trim();
+                if (customName) {
+                    currentFigure = createCustomFigure(customName);
+                }
+            }
+            
+            if (currentFigure) {
+                document.getElementById('currentFigureName').textContent = currentFigure.name;
+            }
+        }
+
+        // Handle custom input changes
+        document.getElementById('customFigureInput').addEventListener('input', function() {
+            const customName = this.value.trim();
+            if (customName && currentMode === 'custom') {
+                setCustomFigure(customName);
+            }
+        });
+
+        // Brilliant figure personalities (your existing figures object)
         const figures = {
             // Philosophers
             socrates: {
@@ -661,10 +440,6 @@ button:disabled {
                 name: "Yuval Noah Harari",
                 prompt: "You are Yuval Noah Harari. Speak about human history, the future of humanity, and artificial intelligence. Reference cognitive revolution, agricultural revolution, and scientific revolution. Discuss how technology shapes society."
             },
-            diamandis: {
-                name: "Peter Diamandis",
-                prompt: "You are Peter Diamandis. Speak about exponential technologies, space exploration, and abundance mindset. Reference how technology solves humanity's grand challenges. Be optimistic about innovation and entrepreneurship."
-            },
             tegmark: {
                 name: "Max Tegmark",
                 prompt: "You are Max Tegmark. Speak about artificial intelligence, cosmology, and the mathematical universe hypothesis. Discuss AI safety and the future of intelligence. Reference parallel universes and consciousness."
@@ -697,28 +472,36 @@ button:disabled {
             }
         };
         
-        
         function handleKeyPress(event) {
-    if (event.key === 'Enter') {
-        sendMessage();
-    }
-}
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
 
-function addMessage(sender, message, className = '') {
-    const chatArea = document.getElementById('chatArea');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${className}`;
-    messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
-    chatArea.appendChild(messageDiv);
-    chatArea.scrollTop = chatArea.scrollHeight;
-}
+        function addMessage(sender, message, className = '') {
+            const chatArea = document.getElementById('chatArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
         
         async function sendMessage() {
-            
             const userInput = document.getElementById('userInput');
             const message = userInput.value.trim();
             
             if (!message) return;
+            
+            // Ensure we have a current figure
+            if (!currentFigure) {
+                updateCurrentFigure();
+            }
+            
+            if (!currentFigure) {
+                alert('Please select or enter a figure to chat with!');
+                return;
+            }
             
             // Add user message to chat
             addMessage('You', message, 'user-message');
@@ -730,10 +513,6 @@ function addMessage(sender, message, className = '') {
             sendButton.textContent = 'Thinking...';
             
             try {
-                // Get current figure
-                currentFigure = document.getElementById('brilliantFigure').value;
-                const figure = figures[currentFigure];
-                
                 // Make API call through our backend
                 const response = await fetch('/api/claude', {
                     method: 'POST',
@@ -741,8 +520,8 @@ function addMessage(sender, message, className = '') {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `${figure.prompt}\n\nHuman question: ${message}`,
-                        figure: currentFigure,
+                        message: `${currentFigure.prompt}\n\nHuman question: ${message}`,
+                        figure: currentFigure.name,
                     })
                 });
                 
@@ -755,7 +534,7 @@ function addMessage(sender, message, className = '') {
                 const reply = data.content[0].text;
                 
                 // Add figure's response to chat
-                addMessage(figure.name, reply, 'figure-message');
+                addMessage(currentFigure.name, reply, 'figure-message');
                 
             } catch (error) {
                 console.error('Full error details:', error);
@@ -769,53 +548,81 @@ function addMessage(sender, message, className = '') {
         
         // Update chat when figure changes
         document.getElementById('brilliantFigure').addEventListener('change', function() {
-    const figure = figures[this.value];
-    if (figure) {
-        document.getElementById('chatArea').innerHTML = `
-            <div class="message figure-message">
-                <strong>${figure.name}:</strong> Hello! I'm ${figure.name}. What would you like to discuss?
-            </div>
-        `;
-    }
-});
+            if (currentMode === 'preset') {
+                updateCurrentFigure();
+                if (currentFigure) {
+                    document.getElementById('chatArea').innerHTML = `
+                        <div class="message figure-message">
+                            <strong>${currentFigure.name}:</strong> Hello! I'm ${currentFigure.name}. What would you like to discuss?
+                        </div>
+                    `;
+                }
+            }
+        });
         
         // Check if user came from discussion arena
         window.addEventListener('load', function() {
             const selectedFigure = localStorage.getItem('selectedFigure');
+            const selectedFigureName = localStorage.getItem('selectedFigureName');
+            const customFigureName = localStorage.getItem('customFigureName');
             const fromDiscussion = localStorage.getItem('fromDiscussion');
             
-            if (selectedFigure && fromDiscussion) {
-                // Set the figure selector to the chosen figure
-                document.getElementById('brilliantFigure').value = selectedFigure;
+            if (fromDiscussion && selectedFigureName) {
+                if (selectedFigure === 'custom' && customFigureName) {
+                    // It's a custom figure
+                    toggleMode('custom');
+                    document.getElementById('customFigureInput').value = customFigureName;
+                    setCustomFigure(customFigureName);
+                } else if (selectedFigure && figures[selectedFigure]) {
+                    // It's a preset figure
+                    toggleMode('preset');
+                    document.getElementById('brilliantFigure').value = selectedFigure;
+                    updateCurrentFigure();
+                } else {
+                    // Fallback: try to find by name in preset figures
+                    const foundFigure = Object.keys(figures).find(key => figures[key].name === selectedFigureName);
+                    if (foundFigure) {
+                        toggleMode('preset');
+                        document.getElementById('brilliantFigure').value = foundFigure;
+                        updateCurrentFigure();
+                    } else {
+                        // Create as custom figure
+                        toggleMode('custom');
+                        document.getElementById('customFigureInput').value = selectedFigureName;
+                        setCustomFigure(selectedFigureName);
+                    }
+                }
                 
                 // Update the chat area
-                const figure = figures[selectedFigure];
-                document.getElementById('chatArea').innerHTML = `
-                    <div class="message figure-message">
-                        <strong>${figure.name}:</strong> Hello! I see you enjoyed our discussion. What would you like to explore further with me?
-                    </div>
-                `;
+                if (currentFigure) {
+                    document.getElementById('chatArea').innerHTML = `
+                        <div class="message figure-message">
+                            <strong>${currentFigure.name}:</strong> Hello! I see you enjoyed our discussion. What would you like to explore further with me?
+                        </div>
+                    `;
+                }
                 
                 // Show a welcome message
                 const welcomeMsg = document.createElement('div');
                 welcomeMsg.style.cssText = 'background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); color: #2e7d32; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #4caf50;';
                 welcomeMsg.innerHTML = `
-                    <strong>Welcome back!</strong> You've chosen to continue your conversation with <strong>${figure.name}</strong> from the Discussion Arena. 
+                    <strong>Welcome back!</strong> You've chosen to continue your conversation with <strong>${currentFigure.name}</strong> from the Discussion Arena. 
                     Feel free to ask them anything you'd like to explore further!
                 `;
                 
                 const content = document.querySelector('.content');
-const chatArea = document.getElementById('chatArea');
+                const chatArea = document.getElementById('chatArea');
 
-if (content && chatArea) {
-    content.insertBefore(welcomeMsg, chatArea);
-} else {
-    console.log('Could not find content or chatArea elements');
-}
+                if (content && chatArea) {
+                    content.insertBefore(welcomeMsg, chatArea);
+                } else {
+                    console.log('Could not find content or chatArea elements');
+                }
                 
                 // Clear localStorage
                 localStorage.removeItem('selectedFigure');
                 localStorage.removeItem('selectedFigureName');
+                localStorage.removeItem('customFigureName');
                 localStorage.removeItem('fromDiscussion');
                 
                 // Remove welcome message after 8 seconds
@@ -824,8 +631,399 @@ if (content && chatArea) {
                         welcomeMsg.parentNode.removeChild(welcomeMsg);
                     }
                 }, 8000);
+            } else {
+                // Initialize with default figure
+                updateCurrentFigure();
             }
         });
     </script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Brilliant Figures</title>
+    <style>
+        * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+.container {
+    background: white;
+    max-width: 1000px;
+    margin: 0 auto;
+    border-radius: 24px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.12), 0 8px 32px rgba(0,0,0,0.06);
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+   .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    opacity: 0.5;
+}
+
+.header * {
+    position: relative;
+    z-index: 1;
+}
+
+.nav-back {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    z-index: 2;
+}
+
+.nav-back a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+    font-size: 16px;
+}
+
+h1 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.content {
+    padding: 48px;
+}
+
+.figure-selector {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.figure-selector h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.figure-selector label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 1rem;
+}
+
+/* Toggle buttons for selection mode */
+.selection-mode {
+    display: flex;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #e9ecef;
+}
+
+.mode-button {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    color: #6c757d;
+}
+
+.mode-button.active {
+    background: white;
+    color: #495057;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.mode-button:hover:not(.active) {
+    color: #495057;
+}
+
+select {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+
+.custom-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
+}
+
+.custom-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+
+.custom-input::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.suggestion-box {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #6c757d;
+    line-height: 1.4;
+    display: none;
+}
+
+.suggestion-box strong {
+    color: #495057;
+    display: block;
+    margin-bottom: 6px;
+}
+        
+        .chat-area {
+    border: 2px solid #f1f3f5;
+    border-radius: 24px;
+    padding: 40px;
+    min-height: 500px;
+    margin-bottom: 32px;
+    background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
+    overflow-y: auto;
+    max-height: 600px;
+}
+        
+        .message {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 16px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    transition: transform 0.2s ease;
+}
+
+.message:hover {
+    transform: translateY(-2px);
+}
+
+.user-message {
+    background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+    margin-left: 40px;
+    border-left: 4px solid #2196F3;
+}
+
+.figure-message {
+    background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
+    margin-right: 40px;
+    border-left: 4px solid #9C27B0;
+}
+
+.system-message {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    font-style: italic;
+    text-align: center;
+    border-left: 4px solid #4CAF50;
+}
+
+.error-message {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    color: #c62828;
+    border-left: 4px solid #f44336;
+}
+        
+        .input-area {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    border: 2px solid #f1f3f5;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 16px 20px;
+    font-size: 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+        
+        button {
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.01em;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(102, 126, 234, 0.3);
+}
+
+button:active {
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+        
+       
+.success-message {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    border-left: 4px solid #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+    .container {
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .header {
+        padding: 30px 20px;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    .content {
+        padding: 20px;
+    }
+    
+    .input-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    button {
+        width: 100%;
+    }
+    
+    .user-message {
+        margin-left: 0;
+    }
+    
+    .figure-message {
+        margin-right: 0;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+    <div class="
