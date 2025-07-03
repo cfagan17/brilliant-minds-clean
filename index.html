@@ -2124,12 +2124,18 @@ Format: Just the numbered questions, nothing else.`;
                 custom: 'Custom'
             };
             
-            questionsList.innerHTML = questions.map((question, index) => `
-                <div class="question-suggestion" onclick="selectGeneratedQuestion('${question.replace(/'/g, "\\'")}')">
+            questionsList.innerHTML = questions.map((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question-suggestion';
+                questionDiv.onclick = () => selectGeneratedQuestion(question);
+                
+                questionDiv.innerHTML = `
                     <div class="question-category-tag">${categoryEmojis[category]} ${categoryNames[category]}</div>
                     <div class="question-text">${question}</div>
-                </div>
-            `).join('');
+                `;
+                
+                return questionDiv.outerHTML;
+            }).join('');
         }
         
         function selectGeneratedQuestion(question) {
