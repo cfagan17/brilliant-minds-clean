@@ -1116,8 +1116,8 @@
 // ============================================================================
 
 // Stripe configuration
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE'; // Replace with your actual key
-const STRIPE_PRICE_ID = 'price_YOUR_PRICE_ID_HERE'; // Replace with your actual price ID
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhLmZCDMgddFpkCd8CBKwCBzTOsx2Aoj2a86E9cGH8HdZLymEMbZBhthz4SpbMjc386psUahOO6Omy7FJclINca00QrgoPJE0'; 
+const STRIPE_PRICE_ID = 'price_1RhLvvCDMgddFpkCyUvK9e9q'; 
 const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
 
@@ -1476,14 +1476,35 @@ function closeUpgradeModal() {
     }
 }
 
-function upgradeToProDemo() {
+async function upgradeToProDemo() {
     try {
-        // For now, simulate the upgrade since we need backend setup
-        alert('Stripe integration ready! Backend setup needed for live payments.\n\nFor now, enjoy unlimited access.');
-        usageState.isProUser = true;
-        saveUsageState();
-        updateUsageDisplay();
-        closeUpgradeModal();
+        // Create checkout session
+        const response = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                priceId: STRIPE_PRICE_ID  // Make sure this is set in your config
+            })
+        });
+        
+        const session = await response.json();
+        
+        if (session.error) {
+            alert('Error creating checkout session: ' + session.error);
+            return;
+        }
+        
+        // Redirect to Stripe Checkout
+        const result = await stripe.redirectToCheckout({
+            sessionId: session.sessionId
+        });
+        
+        if (result.error) {
+            alert('Payment error: ' + result.error.message);
+        }
+        
     } catch (error) {
         console.error('Upgrade error:', error);
         alert('Something went wrong. Please try again.');
