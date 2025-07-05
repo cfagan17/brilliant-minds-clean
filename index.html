@@ -1417,6 +1417,34 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// Add this function to check for successful payments
+function checkPaymentSuccess() {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('success') === 'true') {
+        // Payment was successful!
+        usageState.isProUser = true;
+        saveUsageState();
+        updateUsageDisplay();
+        
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show success message
+        showNotification('🎉 Welcome to Brilliant Minds Pro! You now have unlimited discussions.', 'success');
+        
+        console.log('Payment successful - user upgraded to Pro');
+    }
+    
+    if (urlParams.get('canceled') === 'true') {
+        // Payment was canceled
+        showNotification('Payment canceled. You can upgrade anytime!', 'info');
+        
+        // Clean up the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
 // ADD THE NEW USAGE FUNCTIONS RIGHT HERE
 function updateUsageDisplay() {
     const indicator = document.getElementById('usageIndicator');
@@ -3070,6 +3098,7 @@ if (chatCustom) chatCustom.addEventListener('input', checkReadiness);
     
      // Initialize usage tracking
     initializeUsageTracking();
+    checkPaymentSuccess();
 
     // Add a small delay to ensure elements are ready, then check readiness
     setTimeout(() => {
