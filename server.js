@@ -1,9 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const app = express();
 
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+// ADD THIS LINE - Initialize Stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Enable CORS and JSON parsing
 app.use(cors());
@@ -50,12 +53,48 @@ app.post('/api/claude', async (req, res) => {
     }
 });
 
+// ADD THIS NEW STRIPE ENDPOINT HERE
+app.post('/api/create-checkout-session', async (req, res) => {
+    try {
+        const { priceId } = req.body;
+        
+        console.log('Creating checkout session for price:', priceId);
+
+        const session = await stripe.checkout.sessions.create({
+            mode: 'subscription',
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
+            success_url: `${req.headers.origin || req.headers.referer || 'https://your-app.vercel.app'}?success=true`,
+            cancel_url: `${req.headers.origin || req.headers.referer || 'https://your-app.vercel.app'}?canceled=true`,
+        });
+
+        res.json({ sessionId: session.id });
+    } catch (error) {
+        console.error('Error creating checkout session:', error);
+        res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/chat.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'chat.html'));
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        hasApiKey: !!CLAUDE_API_KEY
+    });
 });
 
 // Export the app for Vercel (remove the app.listen for serverless)

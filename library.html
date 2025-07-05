@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Library - Brilliant Minds</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        
+        .container {
+            background: white;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 24px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 48px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .nav-back {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+        }
+        
+        .nav-back a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 48px;
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .filters-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+        }
+        
+        .filter-input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .discussions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .discussion-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #f1f3f5;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+        
+        .discussion-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+        
+        .discussion-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .discussion-participants {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .participant-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .discussion-question {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .discussion-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .discussion-analytics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .analytics-item {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .analytics-number {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+        
+        .analytics-label {
+            font-size: 0.7rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        
+        .discussion-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .primary-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .secondary-action {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .danger-action {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .trending-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .trending-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+        
+        .trending-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .trending-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #4caf50;
+        }
+        
+        .trending-topic {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .trending-count {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f5;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+            padding: 5px;
+        }
+        
+        .close-button:hover {
+            color: #2c3e50;
+        }
+        
+        .recommendations-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .recommendations-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #e65100;
+            margin-bottom: 15px;
+        }
+        
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .recommendation-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .recommendation-type {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #f57c00;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-text {
+            color: #2c3e50;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .recommendation-figures {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .figure-chip {
+            background: #ffe0b2;
+            color: #e65100;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-back">
+                <a href="index.html">🧠 ← Back to Discussion Arena</a>
+            </div>
+            <h1>📚 Discussion Library</h1>
+            <p class="subtitle">Explore your saved conversations and discover insights</p>
+        </div>
+        
+        <div class="content">
+            <!-- Stats Overview -->
+            <div class="stats-overview" id="statsOverview">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDiscussions">0</div>
+                    <div class="stat-label">Total Discussions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTime">0h</div>
+                    <div class="stat-label">Time Spent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uniqueFigures">0</div>
+                    <div class="stat-label">Unique Figures</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgLength">0</div>
+                    <div class="stat-label">Avg Messages</div>
+                </div>
+            </div>
+            
+            <!-- Trending Topics -->
+            <div class="trending-section">
+                <div class="trending-title">🔥 Trending Discussion Topics</div>
+                <div class="trending-items" id="trendingTopics">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="filter-group">
+                    <div class="filter-label">Search</div>
+                    <input type="text" class="filter-input" id="searchFilter" placeholder="Search discussions...">
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Figure</div>
+                    <select class="filter-input" id="figureFilter">
+                        <option value="">All Figures</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Date</div>
+                    <select class="filter-input" id="dateFilter">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Sort By</div>
+                    <select class="filter-input" id="sortFilter">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="longest">Longest Discussions</option>
+                        <option value="most-engaging">Most Engaging</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Discussions Grid -->
+            <div class="discussions-grid" id="discussionsGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+            
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-icon">💭</div>
+                <h3>No Discussions Yet</h3>
+                <p>Start your first discussion in the Discussion Arena!</p>
+                <br>
+                <a href="index.html" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    🚀 Start a Discussion
+                </a>
+            </div>
+            
+            <!-- AI Recommendations -->
+            <div class="recommendations-section">
+                <div class="recommendations-title">🤖 Personalized Recommendations</div>
+                <p style="color: #bf360c; margin-bottom: 20px;">Based on your discussion patterns, here are some topics you might enjoy:</p>
+                <div class="recommendation-grid" id="recommendationsGrid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Discussion Preview Modal -->
+    <div class="modal" id="discussionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Discussion Preview</h3>
+                <button class="close-button" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent">
+                <!-- Discussion content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allDiscussions = [];
+        let filteredDiscussions = [];
+        
+        // Load discussions from localStorage
+        function loadDiscussions() {
+            const saved = localStorage.getItem('savedDiscussions');
+            allDiscussions = saved ? JSON.parse(saved) : generateSampleDiscussions();
+            filteredDiscussions = [...allDiscussions];
+            
+            updateStats();
+            updateTrendingTopics();
+            populateFigureFilter();
+            renderDiscussions();
+            generateRecommendations();
+        }
+        
+        // Generate sample discussions for demo purposes
+        function generateSampleDiscussions() {
+            const sampleDiscussions = [
+                {
+                    id: 1,
+                    timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                    participants: ['Socrates', 'Einstein'],
+                    question: 'What is the nature of knowledge and reality?',
+                    analytics: { duration: '15 minutes', messageCount: 8, engagementLevel: 'High' },
+                    template: { title: 'Ancient Philosophy Meets Modern Science', category: 'cross-era' },
+                    content: '<div>Sample discussion content...</div>'
+                },
+                {
+                    id: 2,
+                    timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+                    participants: ['Churchill', 'Lincoln'],
+                    question: 'How should leaders communicate during times of crisis?',
+                    analytics: { duration: '22 minutes', messageCount: 12, engagementLevel: 'High' },
+                    template: { title: 'Leadership in Crisis', category: 'modern' },
+                    content: '<div>Sample discussion content...</div>'
+                },
+                {
+                    id: 3,
+                    timestamp: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
+                    participants: ['Turing', 'Musk'],
+                    question: 'What are the ethical implications of artificial intelligence?',
+                    analytics: { duration: '18 minutes', messageCount: 10, engagementLevel: 'Medium' },
+                    template: { title: 'AI Ethics Debate', category: 'ethical' },
+                    content: '<div>Sample discussion content...</div>'
+                }
+            ];
+            
+            // Save sample discussions
+            localStorage.setItem('savedDiscussions', JSON.stringify(sampleDiscussions));
+            return sampleDiscussions;
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalDiscussions = allDiscussions.length;
+            const totalMessages = allDiscussions.reduce((sum, d) => sum + (d.analytics?.messageCount || 0), 0);
+            const uniqueFigures = new Set(allDiscussions.flatMap(d => d.participants)).size;
+            const avgMessages = totalDiscussions > 0 ? Math.round(totalMessages / totalDiscussions) : 0;
+            
+            // Estimate total time (rough calculation)
+            const totalMinutes = allDiscussions.reduce((sum, d) => {
+                const duration = d.analytics?.duration || '0 minutes';
+                const minutes = parseInt(duration.match(/\d+/) || [0]);
+                return sum + minutes;
+            }, 0);
+            const totalHours = Math.round(totalMinutes / 60 * 10) / 10;
+            
+            document.getElementById('totalDiscussions').textContent = totalDiscussions;
+            document.getElementById('totalTime').textContent = totalHours + 'h';
+            document.getElementById('uniqueFigures').textContent = uniqueFigures;
+            document.getElementById('avgLength').textContent = avgMessages;
+        }
+        
+        // Update trending topics
+        function updateTrendingTopics() {
+            const topicCounts = {};
+            
+            allDiscussions.forEach(discussion => {
+                const category = discussion.template?.category || 'general';
+                topicCounts[category] = (topicCounts[category] || 0) + 1;
+            });
+            
+            const trending = Object.entries(topicCounts)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 4);
+            
+            const container = document.getElementById('trendingTopics');
+            container.innerHTML = trending.map(([topic, count]) => `
+                <div class="trending-item">
+                    <div class="trending-topic">${formatCategoryName(topic)}</div>
+                    <div class="trending-count">${count} discussion${count !== 1 ? 's' : ''}</div>
+                </div>
+            `).join('');
+        }
+        
+        function formatCategoryName(category) {
+            const names = {
+                'ethical': 'Ethical Dilemmas',
+                'historical': 'Historical What-If',
+                'modern': 'Modern Problems',
+                'cross-era': 'Cross-Era Collaborations',
+                'general': 'General Discussions'
+            };
+            return names[category] || category;
+        }
+        
+        // Populate figure filter dropdown
+        function populateFigureFilter() {
+            const figures = new Set(allDiscussions.flatMap(d => d.participants));
+            const select = document.getElementById('figureFilter');
+            
+            select.innerHTML = '<option value="">All Figures</option>';
+            Array.from(figures).sort().forEach(figure => {
+                select.innerHTML += `<option value="${figure}">${figure}</option>`;
+            });
+        }
+        
+        // Render discussions
+        function renderDiscussions() {
+            const container = document.getElementById('discussionsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filteredDiscussions.length === 0) {
+                container.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = filteredDiscussions.map(discussion => `
+                <div class="discussion-card">
+                    <div class="discussion-header">
+                        <div class="discussion-meta">
+                            <span>${formatDate(discussion.timestamp)}</span>
+                            <span>${discussion.template?.category || 'General'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="discussion-participants">
+                        ${discussion.participants.map(p => `<span class="participant-tag">${p}</span>`).join('')}
+                    </div>
+                    
+                    <div class="discussion-question">"${discussion.question}"</div>
+                    
+                    <div class="discussion-analytics">
+                        <div class="analytics-item">
+                            <div class="analytics-number">${discussion.analytics?.duration || 'N/A'}</div>
+                            <div class="analytics-label">Duration</div>
+                        </div>
+                        <div class="analytics-item">
+                            <div class="analytics-number">${discussion.analytics?.messageCount || 0}</div>
+                            <div class="analytics-label">Messages</div>
+                        </div>
+                        <div class="analytics-item">
+                            <div class="analytics-number">${discussion.analytics?.engagementLevel || 'Low'}</div>
+                            <div class="analytics-label">Engagement</div>
+                        </div>
+                    </div>
+                    
+                    <div class="discussion-actions">
+                        <button class="action-button primary-action" onclick="viewDiscussion(${discussion.id})">
+                            👁️ View
+                        </button>
+                        <button class="action-button secondary-action" onclick="continueDiscussion(${discussion.id})">
+                            🔄 Continue
+                        </button>
+                        <button class="action-button secondary-action" onclick="shareDiscussion(${discussion.id})">
+                            🔗 Share
+                        </button>
+                        <button class="action-button danger-action" onclick="deleteDiscussion(${discussion.id})">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Format date for display
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInHours = (now - date) / (1000 * 60 * 60);
+            
+            if (diffInHours < 24) {
+                return `${Math.floor(diffInHours)}h ago`;
+            } else if (diffInHours < 24 * 7) {
+                return `${Math.floor(diffInHours / 24)}d ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
+        
+        // Filter discussions
+        function applyFilters() {
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            const figure = document.getElementById('figureFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            
+            filteredDiscussions = allDiscussions.filter(discussion => {
+                // Search filter
+                if (search && !discussion.question.toLowerCase().includes(search) && 
+                    !discussion.participants.some(p => p.toLowerCase().includes(search))) {
+                    return false;
+                }
+                
+                // Figure filter
+                if (figure && !discussion.participants.includes(figure)) {
+                    return false;
+                }
+                
+                // Date filter
+                if (dateFilter) {
+                    const discussionDate = new Date(discussion.timestamp);
+                    const now = new Date();
+                    const diffInMs = now - discussionDate;
+                    
+                    switch (dateFilter) {
+                        case 'today':
+                            if (diffInMs > 24 * 60 * 60 * 1000) return false;
+                            break;
+                        case 'week':
+                            if (diffInMs > 7 * 24 * 60 * 60 * 1000) return false;
+                            break;
+                        case 'month':
+                            if (diffInMs > 30 * 24 * 60 * 60 * 1000) return false;
+                            break;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // Sort discussions
+            filteredDiscussions.sort((a, b) => {
+                switch (sort) {
+                    case 'newest':
+                        return new Date(b.timestamp) - new Date(a.timestamp);
+                    case 'oldest':
+                        return new Date(a.timestamp) - new Date(b.timestamp);
+                    case 'longest':
+                        return (b.analytics?.messageCount || 0) - (a.analytics?.messageCount || 0);
+                    case 'most-engaging':
+                        const engagementScore = { 'High': 3, 'Medium': 2, 'Low': 1 };
+                        return (engagementScore[b.analytics?.engagementLevel] || 0) - 
+                               (engagementScore[a.analytics?.engagementLevel] || 0);
+                    default:
+                        return 0;
+                }
+            });
+            
+            renderDiscussions();
+        }
+        
+        // Generate AI recommendations
+        function generateRecommendations() {
+            const container = document.getElementById('recommendationsGrid');
+            
+            // Analyze user preferences
+            const categories = allDiscussions.map(d => d.template?.category).filter(Boolean);
+            const figures = allDiscussions.flatMap(d => d.participants);
+            
+            // Generate smart recommendations
+            const recommendations = [
+                {
+                    type: 'Figure Pairing',
+                    text: 'Try pairing ancient philosophers with modern scientists for cross-era insights',
+                    figures: ['Aristotle', 'Hawking']
+                },
+                {
+                    type: 'Topic Suggestion',
+                    text: 'Explore how historical leaders would handle modern social media',
+                    figures: ['Lincoln', 'Jobs']
+                },
+                {
+                    type: 'Deep Dive',
+                    text: 'Continue exploring AI ethics with more contemporary voices',
+                    figures: ['Turing', 'Tegmark']
+                }
+            ];
+            
+            container.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-card">
+                    <div class="recommendation-type">${rec.type}</div>
+                    <div class="recommendation-text">${rec.text}</div>
+                    <div class="recommendation-figures">
+                        ${rec.figures.map(f => `<span class="figure-chip">${f}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Discussion actions
+        function viewDiscussion(id) {
+            const discussion = allDiscussions.find(d => d.id === id);
+            if (!discussion) return;
+            
+            document.getElementById('modalContent').innerHTML = `
+                <h4>${discussion.participants.join(' vs ')}</h4>
+                <p style="font-style: italic; margin: 10px 0;">"${discussion.question}"</p>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    ${discussion.content}
+                </div>
+                <div style="display: flex; gap: 20px; margin-top: 20px; font-size: 0.9rem; color: #6c757d;">
+                    <span>Duration: ${discussion.analytics?.duration}</span>
+                    <span>Messages: ${discussion.analytics?.messageCount}</span>
+                    <span>Engagement: ${discussion.analytics?.engagementLevel}</span>
+                </div>
+            `;
+            
+            document.getElementById('discussionModal').style.display = 'flex';
+        }
+        
+        function continueDiscussion(id) {
+            const discussion = allDiscussions.find(d => d.id === id);
+            if (!discussion) return;
+            
+            // Store discussion data for continuation
+            localStorage.setItem('continueDiscussion', JSON.stringify(discussion));
+            window.location.href = 'index.html?continue=true';
+        }
+        
+        function shareDiscussion(id) {
+            const discussion = allDiscussions.find(d => d.id === id);
+            if (!discussion) return;
+            
+            const shareText = `Check out this discussion: "${discussion.question}" between ${discussion.participants.join(' and ')}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Brilliant Minds Discussion',
+                    text: shareText,
+                    url: window.location.href + '?discussion=' + id
+                });
+            } else {
+                navigator.clipboard.writeText(shareText + ' - ' + window.location.href + '?discussion=' + id);
+                alert('Discussion link copied to clipboard!');
+            }
+        }
+        
+        function deleteDiscussion(id) {
+            if (!confirm('Are you sure you want to delete this discussion?')) return;
+            
+            allDiscussions = allDiscussions.filter(d => d.id !== id);
+            localStorage.setItem('savedDiscussions', JSON.stringify(allDiscussions));
+            
+            loadDiscussions(); // Refresh the view
+        }
+        
+        function closeModal() {
+            document.getElementById('discussionModal').style.display = 'none';
+        }
+        
+        // Event listeners
+        document.getElementById('searchFilter').addEventListener('input', applyFilters);
+        document.getElementById('figureFilter').addEventListener('change', applyFilters);
+        document.getElementById('dateFilter').addEventListener('change', applyFilters);
+        document.getElementById('sortFilter').addEventListener('change', applyFilters);
+        
+        // Close modal on outside click
+        document.getElementById('discussionModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', loadDiscussions);
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group Discussion - Brilliant Minds</title>
+    <title>Brilliant Minds - Discussion Arena</title>
     <style>
         * {
             box-sizing: border-box;
@@ -18,10 +18,106 @@
             padding: 20px;
             color: #2c3e50;
         }
-        
+        /* Discussion Controls */
+.discussion-controls {
+    display: none;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 30px;
+    margin-top: 30px;
+    text-align: center;
+    border: 2px solid #e9ecef;
+}
+
+.discussion-controls.active {
+    display: block;
+}
+
+.controls-header {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.control-button {
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.control-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.continue-button {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+}
+
+.new-discussion-button {
+    background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+    color: white;
+}
+
+.save-button {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+}
+
+.share-button {
+    background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+    color: white;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.notification.success {
+    background: #4caf50;
+}
+
+.notification.info {
+    background: #2196f3;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+
         .container {
             background: white;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             border-radius: 24px;
             box-shadow: 0 32px 80px rgba(0,0,0,0.12);
@@ -31,12 +127,28 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 48px 40px;
+            padding: 40px;
             text-align: center;
         }
         
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 800;
             margin-bottom: 16px;
         }
@@ -50,32 +162,30 @@
             padding: 48px;
         }
         
-        .group-setup {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
+        /* Format Selection Styles */
+        .format-selection {
+            margin-bottom: 40px;
         }
         
-        .setup-header {
+        .format-header {
             text-align: center;
             margin-bottom: 30px;
         }
         
-        .setup-header h3 {
+        .format-header h3 {
             color: #2c3e50;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             margin-bottom: 10px;
         }
         
-        .discussion-types {
+        .format-types {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
         
-        .discussion-type {
+        .format-type {
             background: white;
             padding: 25px;
             border-radius: 15px;
@@ -85,144 +195,234 @@
             text-align: center;
         }
         
-        .discussion-type:hover {
+        .format-type:hover {
             border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
         }
         
-        .discussion-type.selected {
+        .format-type.selected {
             border-color: #667eea;
             background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
         }
         
-        .type-icon {
-            font-size: 2rem;
-            margin-bottom: 15px;
+        .format-icon {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
         }
         
-        .type-title {
+        .format-title {
             font-weight: 700;
             font-size: 1.1rem;
             margin-bottom: 8px;
             color: #2c3e50;
         }
         
-        .type-description {
+        .format-description {
             font-size: 0.9rem;
             color: #6c757d;
+            line-height: 1.4;
         }
         
-        .participants-grid {
+        /* Speaker Selection Styles */
+        .speaker-selection {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .speaker-selection.active {
+            display: block;
+        }
+        
+        .speaker-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .speaker-header h4 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+        
+        /* Two-person discussion layout */
+        .two-person-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        /* Multi-person discussion layout */
+        .multi-person-layout {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
         }
         
-        .participant-slot {
+        .figure-selection {
             background: white;
-            padding: 20px;
-            border-radius: 15px;
+            padding: 25px;
+            border-radius: 16px;
             border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
         }
         
-        .slot-header {
+        .figure-selection:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .selection-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
-        .participant-number {
+        .figure-number {
             background: #667eea;
             color: white;
-            width: 30px;
-            height: 30px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            margin-right: 10px;
+            margin-right: 12px;
         }
         
-        .slot-title {
+        .figure-title {
             font-weight: 600;
             color: #2c3e50;
+            font-size: 1.1rem;
         }
         
-        select, input {
+        .mode-toggle {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 15px;
+        }
+        
+        .mode-button {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-button.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #495057;
+        }
+        
+        select, .custom-input {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 14px;
             transition: border-color 0.3s ease;
+            margin-bottom: 10px;
         }
         
-        select:focus, input:focus {
+        select:focus, .custom-input:focus {
             outline: none;
             border-color: #667eea;
         }
         
-        .moderator-setup {
-            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border-left: 4px solid #ff9800;
+        .suggestion-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #1565c0;
+            border-left: 3px solid #2196f3;
         }
         
-        .moderator-title {
-            font-weight: 700;
-            color: #e65100;
-            margin-bottom: 10px;
-        }
-        
-        .moderator-options {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .moderator-option {
-            padding: 8px 16px;
-            background: white;
-            border: 2px solid #ff9800;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-        }
-        
-        .moderator-option:hover {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .moderator-option.selected {
-            background: #ff9800;
-            color: white;
-        }
-        
-        .topic-setup {
+        /* Role Assignment Styles */
+        .role-assignment {
             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #4caf50;
         }
         
-        .topic-title {
+        .role-title {
             font-weight: 700;
             color: #2e7d32;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
         }
         
-        textarea {
+        .role-description {
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        
+        /* Question/Topic Section Styles */
+        .question-section {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .question-section.active {
+            display: block;
+        }
+        
+        .question-header h4 {
+            color: #e65100;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .question-mode-toggle {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .question-mode-button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+        
+        .question-mode-button.active {
+            background: white;
+            color: #495057;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .manual-question-section textarea {
             width: 100%;
             padding: 15px;
-            border: 2px solid #4caf50;
+            border: 2px solid #ff9800;
             border-radius: 10px;
             min-height: 100px;
             font-family: inherit;
@@ -230,34 +430,89 @@
             resize: vertical;
         }
         
-        .suggested-topics {
-            margin-top: 15px;
-        }
-        
-        .topic-suggestions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .topic-suggestion {
-            padding: 6px 12px;
-            background: rgba(76, 175, 80, 0.1);
-            border: 1px solid #4caf50;
+        .ai-suggestion-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
             border-radius: 15px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
+            padding: 20px;
+            border: 2px solid #2196F3;
+            display: none;
         }
         
-        .topic-suggestion:hover {
-            background: #4caf50;
+        .suggestion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        
+        .suggestion-header p {
+            color: #1565C0;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .generate-suggestions-btn {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
             color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            white-space: nowrap;
         }
         
+        .generate-suggestions-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+        }
+        
+        .suggested-questions {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .question-suggestion {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .question-suggestion:hover {
+            border-color: #2196F3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.15);
+        }
+        
+        .question-suggestion.selected {
+            border-color: #2196F3;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+        }
+        
+        .question-text {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .question-explanation {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        
+        /* Controls */
         .controls {
             text-align: center;
+            margin-top: 30px;
         }
         
         .start-button {
@@ -285,36 +540,7 @@
             box-shadow: none;
         }
         
-        .preview-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 30px;
-            display: none;
-        }
-        
-        .preview-title {
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-        
-        .participants-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .participant-preview {
-            background: white;
-            padding: 12px 20px;
-            border-radius: 20px;
-            border: 2px solid #667eea;
-            font-weight: 600;
-            color: #667eea;
-        }
-        
+        /* Discussion Arena Styles */
         .discussion-arena {
             display: none;
             background: #f8f9fa;
@@ -323,258 +549,2520 @@
             margin-top: 30px;
             min-height: 400px;
         }
+        
+        .discussion-round {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+        
+        .round-header {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+            border-radius: 10px;
+        }
+        
+        .phase-indicator {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #e65100;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .speaker {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        
+        .speaker-name {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .speaker-content p {
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+.speaker-content p:last-child {
+    margin-bottom: 0;
+}
+
+.speaker-content h4 {
+    color: #495057;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 15px 0 8px 0;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 4px;
+}
+
+.speaker-content h4:first-child {
+    margin-top: 0;
+}
+
+
+        .speaker-content {
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        
+        .speaker:nth-child(odd) {
+            border-left-color: #667eea;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e1f5fe 100%);
+        }
+        
+        .speaker:nth-child(even) {
+            border-left-color: #764ba2;
+            background: linear-gradient(135deg, #f3e5f5 0%, #fce4ec 100%);
+        }
+        
+        .moderator-speaker {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fff8f0 0%, #fff3e0 100%);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+ /* ADD THE NEW FREEMIUM CSS HERE, AT THE END */
+        .usage-indicator {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1565c0;
+            border: 1px solid #90caf9;
+        }
+
+        .usage-indicator.low {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            color: #ef6c00;
+            border-color: #ffb74d;
+        }
+
+        .upgrade-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .upgrade-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
     </style>
+     <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎭 Group Discussion Arena</h1>
-            <p class="subtitle">Create multi-person conversations between brilliant minds</p>
+    <div class="header">
+        <div class="nav-links">
+            <a href="topics.html">🎯 Topics</a>
+            <a href="chat.html">💬 Personal Chat</a>
+            <a href="library.html">📚 Library</a>
+            <div class="usage-indicator" id="usageIndicator">
+                <span id="usageCount">5</span> discussions left today
+            </div>
         </div>
+        <h1>🧠 Brilliant Minds</h1>
+        <p class="subtitle">Choose your discussion format and engage with history's greatest thinkers</p>
+    </div>
         
         <div class="content">
-            <div class="group-setup">
-                <div class="setup-header">
-                    <h3>Choose Discussion Format</h3>
-                    <p>Select how many participants and what style of discussion you'd like</p>
+            <!-- Format Selection -->
+            <div class="format-selection">
+                <div class="format-header">
+                    <h3>🎭 Choose Discussion Format</h3>
+                    <p>Each format creates a unique conversation experience</p>
                 </div>
                 
-                <div class="discussion-types">
-                    <div class="discussion-type" onclick="selectDiscussionType('panel', 3)">
-                        <div class="type-icon">🎪</div>
-                        <div class="type-title">Panel Discussion</div>
-                        <div class="type-description">3-4 experts sharing different perspectives on a topic</div>
+                <div class="format-types">
+                    <div class="format-type selected" onclick="selectFormat('arena', 2)">
+                        <div class="format-icon">💬</div>
+                        <div class="format-title">Discussion Arena</div>
+                        <div class="format-description">Classic one-on-one intellectual discussion</div>
                     </div>
                     
-                    <div class="discussion-type" onclick="selectDiscussionType('debate', 4)">
-                        <div class="type-icon">⚖️</div>
-                        <div class="type-title">Formal Debate</div>
-                        <div class="type-description">Structured debate with opposing sides and rebuttals</div>
+                    <div class="format-type" onclick="selectFormat('panel', 3)">
+                        <div class="format-icon">🎪</div>
+                        <div class="format-title">Panel Discussion</div>
+                        <div class="format-description">3 experts share knowledge and perspectives</div>
                     </div>
                     
-                    <div class="discussion-type" onclick="selectDiscussionType('roundtable', 5)">
-                        <div class="type-icon">🔄</div>
-                        <div class="type-title">Roundtable</div>
-                        <div class="type-description">Collaborative exploration of complex topics</div>
+                    <div class="format-type" onclick="selectFormat('symposium', 4)">
+                        <div class="format-icon">🏛️</div>
+                        <div class="format-title">Academic Symposium</div>
+                        <div class="format-description">4 scholars present research and peer review</div>
                     </div>
                     
-                    <div class="discussion-type" onclick="selectDiscussionType('symposium', 6)">
-                        <div class="type-icon">🏛️</div>
-                        <div class="type-title">Symposium</div>
-                        <div class="type-description">Academic-style presentation and discussion</div>
+                    <div class="format-type" onclick="selectFormat('debate', 4)">
+                        <div class="format-icon">⚖️</div>
+                        <div class="format-title">Formal Debate</div>
+                        <div class="format-description">4 participants argue opposing positions</div>
                     </div>
+                    
+                    <div class="format-type" onclick="selectFormat('roundtable', 5)">
+                        <div class="format-icon">🔄</div>
+                        <div class="format-title">Roundtable</div>
+                        <div class="format-description">5 minds collaborate to build solutions</div>
+                    </div>
+                    <div class="format-type" onclick="selectFormat('chat', 1)">
+        <div class="format-icon">🗣️</div>
+        <div class="format-title">Personal Chat</div>
+        <div class="format-description">One-on-one conversation with any brilliant mind</div>
+    </div>
+                </div>
+            </div>
+            
+
+            <!-- Speaker Selection Sections -->
+            
+            <!-- Discussion Arena (2-person) -->
+            <div class="speaker-selection active" id="arena-selection">
+                <div class="speaker-header">
+                    <h4>🎯 Select Your Discussion Partners</h4>
+                    <p>Choose two brilliant minds for an intellectual conversation</p>
                 </div>
                 
-                <div class="participants-grid" id="participantsGrid">
-                    <!-- Participant slots will be generated here -->
-                </div>
-                
-                <div class="moderator-setup">
-                    <div class="moderator-title">🎯 Discussion Moderator</div>
-                    <div class="moderator-options">
-                        <div class="moderator-option selected" onclick="selectModerator('ai')">AI Moderator</div>
-                        <div class="moderator-option" onclick="selectModerator('socrates')">Socratic Guide</div>
-                        <div class="moderator-option" onclick="selectModerator('journalist')">Investigative Journalist</div>
-                        <div class="moderator-option" onclick="selectModerator('philosopher')">Philosophy Professor</div>
+                <div class="two-person-layout">
+                    <div class="figure-selection">
+                        <div class="selection-header">
+                            <div class="figure-number">1</div>
+                            <div class="figure-title">First Speaker</div>
+                        </div>
+                        
+                        <div class="mode-toggle">
+                            <button class="mode-button active" onclick="toggleMode(1, 'preset')">Preset Figures</button>
+                            <button class="mode-button" onclick="toggleMode(1, 'custom')">Custom Name</button>
+                        </div>
+                        
+                        <select id="figure1">
+    <option value="">Choose a brilliant mind...</option>
+    <optgroup label="🤔 Philosophers">
+        <option value="confucius">Confucius (551-479 BCE)</option>
+        <option value="plato">Plato (428-348 BCE)</option>
+        <option value="aristotle">Aristotle (384-322 BCE)</option>
+        <option value="descartes">René Descartes (1596-1650)</option>
+        <option value="spinoza">Baruch Spinoza (1632-1677)</option>
+        <option value="kant">Immanuel Kant (1724-1804)</option>
+        <option value="nietzsche">Friedrich Nietzsche (1844-1900)</option>
+    </optgroup>
+    <optgroup label="🖥️ Logic & Computing Pioneers">
+        <option value="boole">George Boole (1815-1864)</option>
+        <option value="frege">Gottlob Frege (1848-1925)</option>
+        <option value="russell">Bertrand Russell (1872-1970)</option>
+        <option value="godel">Kurt Gödel (1906-1978)</option>
+        <option value="vonneumann">John von Neumann (1903-1957)</option>
+        <option value="turing" selected="selected">Alan Turing (1912-1954)</option>
+        <option value="shannon">Claude Shannon (1916-2001)</option>
+    </optgroup>
+    <optgroup label="📐 Mathematicians">
+        <option value="leibniz">Gottfried Wilhelm Leibniz (1646-1716)</option>
+        <option value="euler">Leonhard Euler (1707-1783)</option>
+        <option value="gauss">Carl Friedrich Gauss (1777-1855)</option>
+        <option value="riemann">Bernhard Riemann (1826-1866)</option>
+        <option value="cantor">Georg Cantor (1845-1918)</option>
+        <option value="hilbert">David Hilbert (1862-1943)</option>
+        <option value="tao">Terence Tao (1975-present)</option>
+    </optgroup>
+    <optgroup label="⚛️ Physicists">
+        <option value="maxwell">James Clerk Maxwell (1831-1879)</option>
+        <option value="einstein">Albert Einstein (1879-1955)</option>
+        <option value="bohr">Niels Bohr (1885-1962)</option>
+        <option value="heisenberg">Werner Heisenberg (1901-1976)</option>
+        <option value="feynman">Richard Feynman (1918-1988)</option>
+        <option value="hawking">Stephen Hawking (1942-2018)</option>
+        <option value="witten">Edward Witten (1951-present)</option>
+    </optgroup>
+    <optgroup label="🎨 Artists">
+        <option value="homer">Homer (8th century BCE)</option>
+        <option value="davinci">Leonardo da Vinci (1452-1519)</option>
+        <option value="michelangelo">Michelangelo Buonarroti (1475-1564)</option>
+        <option value="shakespeare">William Shakespeare (1564-1616)</option>
+        <option value="bach">Johann Sebastian Bach (1685-1750)</option>
+        <option value="beethoven">Ludwig van Beethoven (1770-1827)</option>
+        <option value="picasso">Pablo Picasso (1881-1973)</option>
+    </optgroup>
+    <optgroup label="👑 Political Leaders">
+        <option value="caesar">Julius Caesar (100-44 BCE)</option>
+        <option value="washington">George Washington (1732-1799)</option>
+        <option value="bonaparte">Napoleon Bonaparte (1769-1821)</option>
+        <option value="lincoln">Abraham Lincoln (1809-1865)</option>
+        <option value="gandhi">Mahatma Gandhi (1869-1948)</option>
+        <option value="roosevelt">Franklin D. Roosevelt (1882-1945)</option>
+        <option value="churchill">Winston Churchill (1874-1965)</option>
+    </optgroup>
+    <optgroup label="💰 Economists">
+        <option value="adamsmith">Adam Smith (1723-1790)</option>
+        <option value="ricardo">David Ricardo (1772-1823)</option>
+        <option value="marx">Karl Marx (1818-1883)</option>
+        <option value="marshall">Alfred Marshall (1842-1924)</option>
+        <option value="keynes">John Maynard Keynes (1883-1946)</option>
+        <option value="samuelson">Paul Samuelson (1915-2009)</option>
+        <option value="friedman">Milton Friedman (1912-2006)</option>
+    </optgroup>
+    <optgroup label="📈 Investors">
+        <option value="valentine">Don Valentine (1932-2019)</option>
+        <option value="buffett">Warren Buffett (1930-present)</option>
+        <option value="druckenmiller">Stanley Druckenmiller (1953-present)</option>
+        <option value="doerr">John Doerr (1951-present)</option>
+        <option value="dalio">Ray Dalio (1949-present)</option>
+        <option value="thiel">Peter Thiel (1967-present)</option>
+        <option value="andreessen">Marc Andreessen (1971-present)</option>
+    </optgroup>
+    <optgroup label="💻 Technology Leaders">
+        <option value="jobs">Steve Jobs (1955-2011)</option>
+        <option value="bezos">Jeff Bezos (1964-present)</option>
+        <option value="brin">Sergey Brin (1973-present)</option>
+        <option value="nadella">Satya Nadella (1967-present)</option>
+        <option value="hwang">Jensen Huang (1963-present)</option>
+        <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
+        <option value="altman">Sam Altman (1985-present)</option>
+    </optgroup>
+</select>
+                        </select>
+                        
+                        <input type="text" id="figure1Custom" class="custom-input" placeholder="Enter any name..." style="display: none;">
+                        
+                        <div class="suggestion-box" id="suggestion1" style="display: none;">
+                            <strong>💡 Custom Figure Tips:</strong>
+                            Try historical figures, celebrities, fictional characters, or people you know!
+                        </div>
                     </div>
-                </div>
-                
-                <div class="topic-setup">
-                    <div class="topic-title">💭 Discussion Topic</div>
-                    <textarea id="topicInput" placeholder="What should they discuss? Be specific about the angle or question you want explored..."></textarea>
                     
-                    <div class="suggested-topics">
-                        <strong>💡 Suggested Topics:</strong>
-                        <div class="topic-suggestions">
-                            <div class="topic-suggestion" onclick="setTopic('What is the nature of consciousness and free will?')">Consciousness & Free Will</div>
-                            <div class="topic-suggestion" onclick="setTopic('How should AI development be governed?')">AI Governance</div>
-                            <div class="topic-suggestion" onclick="setTopic('What makes a life well-lived?')">The Good Life</div>
-                            <div class="topic-suggestion" onclick="setTopic('Is democracy the best form of government?')">Democracy & Governance</div>
-                            <div class="topic-suggestion" onclick="setTopic('How do we solve climate change?')">Climate Solutions</div>
-                            <div class="topic-suggestion" onclick="setTopic('What is the future of human evolution?')">Human Evolution</div>
+                    <div class="figure-selection">
+                        <div class="selection-header">
+                            <div class="figure-number">2</div>
+                            <div class="figure-title">Second Speaker</div>
+                        </div>
+                        
+                        <div class="mode-toggle">
+                            <button class="mode-button active" onclick="toggleMode(2, 'preset')">Preset Figures</button>
+                            <button class="mode-button" onclick="toggleMode(2, 'custom')">Custom Name</button>
+                        </div>
+                        
+                        <select id="figure2">
+    <option value="">Choose a brilliant mind...</option>
+    <optgroup label="🤔 Philosophers">
+        <option value="confucius">Confucius (551-479 BCE)</option>
+        <option value="plato">Plato (428-348 BCE)</option>
+        <option value="aristotle">Aristotle (384-322 BCE)</option>
+        <option value="descartes">René Descartes (1596-1650)</option>
+        <option value="spinoza">Baruch Spinoza (1632-1677)</option>
+        <option value="kant">Immanuel Kant (1724-1804)</option>
+        <option value="nietzsche">Friedrich Nietzsche (1844-1900)</option>
+    </optgroup>
+    <optgroup label="🖥️ Logic & Computing Pioneers">
+        <option value="boole">George Boole (1815-1864)</option>
+        <option value="frege">Gottlob Frege (1848-1925)</option>
+        <option value="russell">Bertrand Russell (1872-1970)</option>
+        <option value="godel">Kurt Gödel (1906-1978)</option>
+        <option value="vonneumann">John von Neumann (1903-1957)</option>
+        <option value="turing">Alan Turing (1912-1954)</option>
+        <option value="shannon">Claude Shannon (1916-2001)</option>
+    </optgroup>
+    <optgroup label="📐 Mathematicians">
+        <option value="leibniz">Gottfried Wilhelm Leibniz (1646-1716)</option>
+        <option value="euler">Leonhard Euler (1707-1783)</option>
+        <option value="gauss">Carl Friedrich Gauss (1777-1855)</option>
+        <option value="riemann">Bernhard Riemann (1826-1866)</option>
+        <option value="cantor">Georg Cantor (1845-1918)</option>
+        <option value="hilbert">David Hilbert (1862-1943)</option>
+        <option value="tao">Terence Tao (1975-present)</option>
+    </optgroup>
+    <optgroup label="⚛️ Physicists">
+        <option value="maxwell">James Clerk Maxwell (1831-1879)</option>
+        <option value="einstein">Albert Einstein (1879-1955)</option>
+        <option value="bohr">Niels Bohr (1885-1962)</option>
+        <option value="heisenberg">Werner Heisenberg (1901-1976)</option>
+        <option value="feynman"selected="selected">Richard Feynman (1918-1988)</option>
+        <option value="hawking">Stephen Hawking (1942-2018)</option>
+        <option value="witten">Edward Witten (1951-present)</option>
+    </optgroup>
+    <optgroup label="🎨 Artists">
+        <option value="homer">Homer (8th century BCE)</option>
+        <option value="davinci">Leonardo da Vinci (1452-1519)</option>
+        <option value="michelangelo">Michelangelo Buonarroti (1475-1564)</option>
+        <option value="shakespeare">William Shakespeare (1564-1616)</option>
+        <option value="bach">Johann Sebastian Bach (1685-1750)</option>
+        <option value="beethoven">Ludwig van Beethoven (1770-1827)</option>
+        <option value="picasso">Pablo Picasso (1881-1973)</option>
+    </optgroup>
+    <optgroup label="👑 Political Leaders">
+        <option value="caesar">Julius Caesar (100-44 BCE)</option>
+        <option value="washington">George Washington (1732-1799)</option>
+        <option value="bonaparte">Napoleon Bonaparte (1769-1821)</option>
+        <option value="lincoln">Abraham Lincoln (1809-1865)</option>
+        <option value="gandhi">Mahatma Gandhi (1869-1948)</option>
+        <option value="roosevelt">Franklin D. Roosevelt (1882-1945)</option>
+        <option value="churchill">Winston Churchill (1874-1965)</option>
+    </optgroup>
+    <optgroup label="💰 Economists">
+        <option value="adamsmith">Adam Smith (1723-1790)</option>
+        <option value="ricardo">David Ricardo (1772-1823)</option>
+        <option value="marx">Karl Marx (1818-1883)</option>
+        <option value="marshall">Alfred Marshall (1842-1924)</option>
+        <option value="keynes">John Maynard Keynes (1883-1946)</option>
+        <option value="samuelson">Paul Samuelson (1915-2009)</option>
+        <option value="friedman">Milton Friedman (1912-2006)</option>
+    </optgroup>
+    <optgroup label="📈 Investors">
+        <option value="valentine">Don Valentine (1932-2019)</option>
+        <option value="buffett">Warren Buffett (1930-present)</option>
+        <option value="druckenmiller">Stanley Druckenmiller (1953-present)</option>
+        <option value="doerr">John Doerr (1951-present)</option>
+        <option value="dalio">Ray Dalio (1949-present)</option>
+        <option value="thiel">Peter Thiel (1967-present)</option>
+        <option value="andreessen">Marc Andreessen (1971-present)</option>
+    </optgroup>
+    <optgroup label="💻 Technology Leaders">
+        <option value="jobs">Steve Jobs (1955-2011)</option>
+        <option value="bezos">Jeff Bezos (1964-present)</option>
+        <option value="brin">Sergey Brin (1973-present)</option>
+        <option value="nadella">Satya Nadella (1967-present)</option>
+        <option value="hwang">Jensen Huang (1963-present)</option>
+        <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
+        <option value="altman">Sam Altman (1985-present)</option>
+    </optgroup>
+
+                        </select>
+                        
+                        <input type="text" id="figure2Custom" class="custom-input" placeholder="Enter any name..." style="display: none;">
+                        
+                        <div class="suggestion-box" id="suggestion2" style="display: none;">
+                            <strong>💡 Custom Figure Tips:</strong>
+                            Try historical figures, celebrities, fictional characters, or people you know!
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Personal Chat (1-person) -->
+            <div class="speaker-selection" id="chat-selection">
+                <div class="speaker-header">
+                    <h4>🗣️ Choose Your Conversation Partner</h4>
+                    <p>Select any brilliant mind for a personal conversation</p>
+                </div>
                 
-                <div class="preview-section" id="previewSection">
-                    <div class="preview-title">🔍 Discussion Preview</div>
-                    <div class="participants-preview" id="participantsPreview"></div>
-                    <div id="formatPreview"></div>
+                <div style="max-width: 400px; margin: 0 auto;">
+                    <div class="figure-selection">
+                        <div class="selection-header">
+                            <div class="figure-number">🗣️</div>
+                            <div class="figure-title">Your Conversation Partner</div>
+                        </div>
+                        
+                        <div class="mode-toggle">
+                            <button class="mode-button active" onclick="toggleChatMode('preset')">Preset Figures</button>
+                            <button class="mode-button" onclick="toggleChatMode('custom')">Custom Name</button>
+                        </div>
+                        
+                        <select id="chatFigure">
+                            <option value="">Choose a brilliant mind...</option>
+                            <option value="confucius" selected>Confucius (551-479 BCE)</option>
+                            <!-- You can copy all the options from figure1 select -->
+                        </select>
+                        
+                        <input type="text" id="chatFigureCustom" class="custom-input" placeholder="Enter any name..." style="display: none;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Multi-person formats -->
+            <div class="speaker-selection" id="multi-selection">
+                <div class="speaker-header">
+                    <h4 id="multiTitle">🎪 Select Your Panelists</h4>
+                    <p id="multiDescription">Choose experts for the discussion</p>
+                </div>
+                
+                <div id="roleAssignment" class="role-assignment" style="display: none;">
+                    <div class="role-title" id="roleTitle">🏛️ Format Structure</div>
+                    <div class="role-description" id="roleDescription">Role assignments will appear here</div>
+                </div>
+                
+                <div class="multi-person-layout" id="participantsGrid">
+                    <!-- Participant slots will be generated here -->
+                </div>
+            </div>
+            
+            <!-- Question/Topic Section -->
+            <div class="question-section" id="questionSection">
+                <div class="question-header">
+                    <h4>💭 What should they discuss?</h4>
+                </div>
+                
+                <div class="question-mode-toggle">
+                    <button type="button" class="question-mode-button active" onclick="toggleQuestionMode('manual')">
+                        ✏️ Write Your Own
+                    </button>
+                    <button type="button" class="question-mode-button" onclick="toggleQuestionMode('ai')">
+                        🤖 AI Suggestions
+                    </button>
+                </div>
+                
+                <div class="manual-question-section" id="manualQuestionSection">
+                    <textarea id="questionInput" placeholder="Enter your question or topic here..."></textarea>
+                </div>
+                
+                <div class="ai-suggestion-section" id="aiSuggestionSection">
+                    <div class="suggestion-header">
+                        <p>Based on your selected participants, here are tailored discussion topics:</p>
+                        <button class="generate-suggestions-btn" onclick="generateAIQuestions()" id="generateBtn">
+                            🎯 Generate Questions
+                        </button>
+                    </div>
+                    
+                    <div class="suggested-questions" id="suggestedQuestions">
+                        <!-- AI suggestions will appear here -->
+                    </div>
                 </div>
                 
                 <div class="controls">
-                    <button class="start-button" onclick="startGroupDiscussion()" id="startButton" disabled>
-                        ✨ Start Group Discussion
+                    <button class="start-button" onclick="startDiscussion()" id="startButton" disabled>
+                        🚀 Start Discussion
                     </button>
                 </div>
             </div>
             
+            <!-- Discussion Arena -->
             <div class="discussion-arena" id="discussionArena">
-                <!-- Group discussion will appear here -->
+                <!-- Discussion content will appear here -->
+            </div>
+       
+
+    <!-- Discussion Controls -->
+<div class="discussion-controls" id="discussionControls">
+    <div class="controls-header">🎯 Discussion Complete!</div>
+    <div class="controls-grid">
+        <button class="control-button continue-button" onclick="continueDiscussion()">
+            🔄 Continue Discussion
+        </button>
+        <button class="control-button new-discussion-button" onclick="startNewDiscussion()">
+            ✨ New Discussion
+        </button>
+        <button class="control-button save-button" onclick="saveDiscussion()">
+            💾 Save Discussion
+        </button>
+        <button class="control-button share-button" onclick="shareDiscussion()">
+            🔗 Share Discussion
+        </button>
+    </div>
+</div>
+
+ </div>
+</div>
+    <script>
+// ============================================================================
+// 1. GLOBAL STATE AND CONFIGURATION
+// ============================================================================
+
+// Stripe configuration
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE'; // Replace with your actual key
+const STRIPE_PRICE_ID = 'price_YOUR_PRICE_ID_HERE'; // Replace with your actual price ID
+const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+
+// Enhanced discussion state to store responses
+let discussionState = {
+    // ... your existing state
+};
+
+// Enhanced discussion state to store responses
+let discussionState = {
+    format: 'arena',
+    participantCount: 2,
+    participants: [],
+    topic: '',
+    figure1Mode: 'preset',
+    figure2Mode: 'preset',
+    chatMode: 'preset',
+    responses: [], // Store all responses
+    continuationRound: 0, // Track continuation rounds
+    totalExchanges: 0 // Track total exchanges
+};
+
+// Usage tracking for freemium model
+let usageState = {
+    dailyDiscussions: 0,
+    lastResetDate: new Date().toDateString(),
+    totalDiscussions: 0,
+    isProUser: false
+};
+
+// Question mode management
+let currentQuestionMode = 'manual';
+let selectedAIQuestion = null;
+
+// Load usage from localStorage
+function loadUsageState() {
+    const saved = localStorage.getItem('usageState');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        
+        // Reset daily count if it's a new day
+        if (parsed.lastResetDate !== new Date().toDateString()) {
+            parsed.dailyDiscussions = 0;
+            parsed.lastResetDate = new Date().toDateString();
+        }
+        
+        usageState = { ...usageState, ...parsed };
+    }
+    saveUsageState();
+}
+
+function saveUsageState() {
+    localStorage.setItem('usageState', JSON.stringify(usageState));
+}
+
+// Figures database
+const figures = {
+    // Philosophers
+    confucius: { name: "Confucius", prompt: "You are Confucius. Speak with wisdom about social harmony, virtue, and proper relationships. Reference the importance of education, family, and moral cultivation." },
+    plato: { name: "Plato", prompt: "You are Plato. Speak about ideals, truth, and the nature of reality. Reference your theory of Forms and beliefs about justice and the ideal state. Use allegories and philosophical reasoning." },
+    aristotle: { name: "Aristotle", prompt: "You are Aristotle. Speak as a systematic philosopher and logician. Use logical reasoning and categorical thinking. Reference your teachings on ethics, politics, and human nature." },
+    descartes: { name: "René Descartes", prompt: "You are René Descartes. Speak about doubt, certainty, and the separation of mind and body. Reference your method of systematic doubt and 'cogito ergo sum'." },
+    spinoza: { name: "Baruch Spinoza", prompt: "You are Baruch Spinoza. Speak about the unity of mind and body, determinism, and ethics. Reference your geometric method and pantheistic philosophy." },
+    kant: { name: "Immanuel Kant", prompt: "You are Immanuel Kant. Speak about duty, categorical imperatives, and moral philosophy. Reference the limits of reason and the importance of moral law." },
+    nietzsche: { name: "Friedrich Nietzsche", prompt: "You are Friedrich Nietzsche. Speak provocatively about the will to power, the übermensch, and questioning traditional values. Challenge conventional morality." },
+    
+    // Logic & Computing Pioneers
+    boole: { name: "George Boole", prompt: "You are George Boole. Speak about mathematical logic, Boolean algebra, and the laws of thought. Reference how logic can be expressed mathematically." },
+    frege: { name: "Gottlob Frege", prompt: "You are Gottlob Frege. Speak about mathematical logic, the foundations of arithmetic, and formal systems. Reference your work on predicate logic and sense vs. reference." },
+    russell: { name: "Bertrand Russell", prompt: "You are Bertrand Russell. Speak about mathematical logic, philosophy of mathematics, and analytic philosophy. Reference Russell's Paradox and logical atomism." },
+    vonneumann: { name: "John von Neumann", prompt: "You are John von Neumann. Speak about computer architecture, game theory, and mathematical foundations. Reference the von Neumann architecture and mathematical rigor." },
+    godel: { name: "Kurt Gödel", prompt: "You are Kurt Gödel. Speak about mathematical logic, incompleteness theorems, and the limits of formal systems. Reference undecidable propositions in mathematics." },
+    turing: { name: "Alan Turing", prompt: "You are Alan Turing. Speak about computation, artificial intelligence, and mathematical logic. Reference the Turing machine, computability, and the Turing test." },
+    shannon: { name: "Claude Shannon", prompt: "You are Claude Shannon. Speak about information theory, digital circuits, and communication systems. Reference entropy, bits, and the mathematical theory of communication." },
+    
+    // Mathematicians  
+    leibniz: { name: "Gottfried Wilhelm Leibniz", prompt: "You are Gottfried Wilhelm Leibniz. Speak about calculus, philosophy, and the principle of sufficient reason. Reference infinitesimals and the best of all possible worlds." },
+    euler: { name: "Leonhard Euler", prompt: "You are Leonhard Euler. Speak about mathematics with incredible breadth - number theory, analysis, geometry, and applied mathematics. Reference your prolific contributions and mathematical insight." },
+    gauss: { name: "Carl Friedrich Gauss", prompt: "You are Carl Friedrich Gauss. Speak about number theory, analysis, and mathematical precision. Reference your work as the 'Prince of Mathematics' and emphasis on rigor." },
+    riemann: { name: "Bernhard Riemann", prompt: "You are Bernhard Riemann. Speak about complex analysis, differential geometry, and the Riemann hypothesis. Reference non-Euclidean geometry and mathematical abstraction." },
+    cantor: { name: "Georg Cantor", prompt: "You are Georg Cantor. Speak about set theory, infinity, and different sizes of infinity. Reference your revolutionary work on transfinite numbers and mathematical foundations." },
+    hilbert: { name: "David Hilbert", prompt: "You are David Hilbert. Speak about mathematical formalism, axiomatization, and Hilbert's program. Reference mathematical rigor and the quest for complete, consistent foundations." },
+    tao: { name: "Terence Tao", prompt: "You are Terence Tao. Speak about modern mathematics, harmonic analysis, and problem-solving. Reference your work on prime numbers and mathematical collaboration." },
+    
+    // Physicists
+    maxwell: { name: "James Clerk Maxwell", prompt: "You are James Clerk Maxwell. Speak about electromagnetic theory, statistical mechanics, and the unity of physical laws. Reference Maxwell's equations and the electromagnetic field." },
+    einstein: { name: "Albert Einstein", prompt: "You are Albert Einstein. Speak about relativity, the nature of space and time, and the unity of physics. Reference thought experiments and the search for fundamental principles." },
+    bohr: { name: "Niels Bohr", prompt: "You are Niels Bohr. Speak about quantum mechanics, complementarity, and the Copenhagen interpretation. Reference the dual nature of matter and measurement in quantum systems." },
+    heisenberg: { name: "Werner Heisenberg", prompt: "You are Werner Heisenberg. Speak about quantum mechanics, uncertainty principles, and matrix mechanics. Reference the fundamental limits of measurement and knowledge." },
+    feynman: { name: "Richard Feynman", prompt: "You are Richard Feynman. Speak with curiosity about physics, using simple explanations and analogies. Reference quantum electrodynamics and the joy of discovery." },
+    hawking: { name: "Stephen Hawking", prompt: "You are Stephen Hawking. Speak about black holes, cosmology, and the nature of time. Reference Hawking radiation and the quest to understand the universe." },
+    witten: { name: "Edward Witten", prompt: "You are Edward Witten. Speak about string theory, mathematical physics, and the unification of forces. Reference M-theory and the mathematical beauty of physical laws." },
+    
+    // Artists
+    homer: { name: "Homer", prompt: "You are Homer, the ancient Greek poet. Speak about epic storytelling, heroism, and the human condition. Reference the Iliad, Odyssey, and the power of narrative." },
+    davinci: { name: "Leonardo da Vinci", prompt: "You are Leonardo da Vinci. Show Renaissance curiosity about art, science, engineering, and nature. Connect different fields of knowledge with enthusiasm for observation." },
+    michelangelo: { name: "Michelangelo Buonarroti", prompt: "You are Michelangelo. Speak passionately about sculpture, painting, and artistic perfection. Reference the divine beauty of human form and artistic dedication." },
+    shakespeare: { name: "William Shakespeare", prompt: "You are William Shakespeare. Speak with eloquence about human nature, drama, and the power of language. Reference character, conflict, and the human condition." },
+    bach: { name: "Johann Sebastian Bach", prompt: "You are Johann Sebastian Bach. Speak about musical composition, mathematical beauty in music, and spiritual expression through art. Reference counterpoint and musical architecture." },
+    beethoven: { name: "Ludwig van Beethoven", prompt: "You are Ludwig van Beethoven. Speak passionately about music as emotional expression and artistic revolution. Reference the power of music to convey deep human feelings." },
+    picasso: { name: "Pablo Picasso", prompt: "You are Pablo Picasso. Speak about artistic innovation, breaking traditional forms, and seeing the world in new ways. Reference cubism and constant artistic evolution." },
+    
+    // Political Leaders
+    caesar: { name: "Julius Caesar", prompt: "You are Julius Caesar. Speak about leadership, military strategy, and political power. Reference the complexities of governance and the burden of command." },
+    washington: { name: "George Washington", prompt: "You are George Washington. Speak about leadership, duty, and the founding of nations. Reference the challenges of establishing democratic institutions and peaceful transfer of power." },
+    bonaparte: { name: "Napoleon Bonaparte", prompt: "You are Napoleon Bonaparte. Speak about military genius, political reform, and the pursuit of glory. Reference strategy, meritocracy, and the reshaping of Europe." },
+    lincoln: { name: "Abraham Lincoln", prompt: "You are Abraham Lincoln. Speak with wisdom about unity, justice, and moral leadership. Use simple language to explain complex ideas and show concern for human dignity." },
+    gandhi: { name: "Mahatma Gandhi", prompt: "You are Mahatma Gandhi. Speak about non-violence, moral authority, and social change. Reference satyagraha, civil disobedience, and the power of peaceful resistance." },
+    roosevelt: { name: "Franklin D. Roosevelt", prompt: "You are Franklin D. Roosevelt. Speak about leadership during crisis, optimism, and government's role in society. Reference the New Deal and wartime leadership." },
+    churchill: { name: "Winston Churchill", prompt: "You are Winston Churchill. Speak with determination, wit, and rhetorical power. Reference wartime leadership, the defense of democracy, and the power of words." },
+    
+    // Economists
+    adamsmith: { name: "Adam Smith", prompt: "You are Adam Smith. Speak about free markets, the invisible hand, and moral sentiments. Reference how individual self-interest can benefit society when properly channeled." },
+    ricardo: { name: "David Ricardo", prompt: "You are David Ricardo. Speak about comparative advantage, trade theory, and the distribution of wealth. Reference how nations benefit from specialization and trade." },
+    marx: { name: "Karl Marx", prompt: "You are Karl Marx. Speak about class struggle, capitalism, and historical materialism. Reference the contradictions of capitalism and the need for worker solidarity." },
+    marshall: { name: "Alfred Marshall", prompt: "You are Alfred Marshall. Speak about supply and demand, marginal utility, and microeconomic principles. Reference the mathematical foundations of modern economics." },
+    keynes: { name: "John Maynard Keynes", prompt: "You are John Maynard Keynes. Speak about macroeconomics, government intervention, and managing economic cycles. Reference the importance of demand management and practical policy." },
+    friedman: { name: "Milton Friedman", prompt: "You are Milton Friedman. Speak about free markets, monetarism, and individual choice. Reference the efficiency of markets and the importance of economic freedom." },
+    samuelson: { name: "Paul Samuelson", prompt: "You are Paul Samuelson. Speak about mathematical economics, synthesis of economic thought, and rigorous analysis. Reference the scientific approach to economics." },
+    
+    // Investors
+    valentine: { name: "Don Valentine", prompt: "You are Don Valentine. Speak about venture capital, pattern recognition, and building great companies. Reference the importance of large markets and exceptional teams." },
+    buffett: { name: "Warren Buffett", prompt: "You are Warren Buffett. Speak about value investing, business principles, and long-term thinking. Reference buying great companies at fair prices and understanding businesses deeply." },
+    dalio: { name: "Ray Dalio", prompt: "You are Ray Dalio. Speak about principles, systematic investing, and understanding economic cycles. Reference radical transparency and evidence-based decision making." },
+    doerr: { name: "John Doerr", prompt: "You are John Doerr. Speak about venture capital, OKRs, and scaling technology companies. Reference the intersection of great teams, large markets, and breakthrough technology." },
+    druckenmiller: { name: "Stanley Druckenmiller", prompt: "You are Stanley Druckenmiller. Speak about macro investing, risk management, and reading market cycles. Reference the importance of being wrong quickly and right big." },
+    thiel: { name: "Peter Thiel", prompt: "You are Peter Thiel. Speak about contrarian thinking, monopolies, and technological progress. Reference the importance of secrets, zero to one innovation, and long-term vision." },
+    andreessen: { name: "Marc Andreessen", prompt: "You are Marc Andreessen. Speak about technology investing, software transformation, and venture capital. Reference how software is eating the world and technological disruption." },
+    
+    // Technology Leaders
+    jobs: { name: "Steve Jobs", prompt: "You are Steve Jobs. Speak about design, innovation, and user experience. Reference the intersection of technology and liberal arts, simplicity, and thinking differently." },
+    hwang: { name: "Jensen Huang", prompt: "You are Jensen Huang. Speak about GPU computing, AI acceleration, and parallel processing. Reference the transformation from graphics to general-purpose computing." },
+    bezos: { name: "Jeff Bezos", prompt: "You are Jeff Bezos. Speak about customer obsession, long-term thinking, and building scalable systems. Reference the importance of working backwards from customer needs." },
+    nadella: { name: "Satya Nadella", prompt: "You are Satya Nadella. Speak about cloud computing, cultural transformation, and empowering others. Reference growth mindset and the democratization of technology." },
+    brin: { name: "Sergey Brin", prompt: "You are Sergey Brin. Speak about search, organizing information, and ambitious technological projects. Reference the mission to make information universally accessible." },
+    zuckerberg: { name: "Mark Zuckerberg", prompt: "You are Mark Zuckerberg. Speak about connecting people, social networks, and the metaverse. Reference the power of giving people voice and building global communities." },
+    altman: { name: "Sam Altman", prompt: "You are Sam Altman. Speak about artificial general intelligence, startup ecosystems, and technological progress. Reference the potential and risks of transformative AI." }
+};
+
+// Discussion formats configuration
+const discussionFormats = {
+    arena: {
+        name: "Discussion Arena",
+        participants: 2,
+        description: "Classic one-on-one intellectual discussion",
+        isMultiPerson: false
+    },
+    chat: {
+        name: "Personal Chat",
+        participants: 1,
+        description: "One-on-one conversation with any brilliant mind",
+        isMultiPerson: false,
+        isPersonalChat: true
+    },
+    panel: {
+        name: "Panel Discussion",
+        participants: 3,
+        description: "Expert knowledge sharing session",
+        isMultiPerson: true,
+        roleDescription: "Each participant will share their professional perspective, followed by cross-discussion."
+    },
+    symposium: {
+        name: "Academic Symposium",
+        participants: 4,
+        description: "Scholarly presentations with peer review",
+        isMultiPerson: true,
+        roleDescription: "Each scholar will present research, then engage in academic peer review and discussion."
+    },
+    debate: {
+        name: "Formal Debate",
+        participants: 4,
+        description: "Structured argumentative discussion",
+        isMultiPerson: true,
+        roleDescription: "Participants 1 & 2 will argue FOR the position. Participants 3 & 4 will argue AGAINST."
+    },
+    roundtable: {
+        name: "Roundtable",
+        participants: 5,
+        description: "Collaborative exploration and consensus building",
+        isMultiPerson: true,
+        roleDescription: "All participants will collaborate to explore ideas and build solutions together."
+    }
+};
+
+// ============================================================================
+// 2. UTILITY FUNCTIONS
+// ============================================================================
+
+function formatResponse(response) {
+    if (!response || response.length < 100) {
+        return `<p>${response}</p>`;
+    }
+    
+    // Split by sentence endings
+    let sentences = response.split(/(?<=[.!?])\s+/);
+    let paragraphs = [];
+    let currentParagraph = [];
+    
+    for (let i = 0; i < sentences.length; i++) {
+        currentParagraph.push(sentences[i]);
+        
+        // Create paragraph breaks at natural transition points
+        if (currentParagraph.length >= 2 && 
+            (sentences[i].includes('However') || 
+             sentences[i].includes('Furthermore') || 
+             sentences[i].includes('Moreover') || 
+             sentences[i].includes('In contrast') ||
+             sentences[i].includes('On the other hand') ||
+             sentences[i].includes('That said') ||
+             sentences[i].includes('Nevertheless') ||
+             sentences[i].includes('Additionally') ||
+             sentences[i].includes('In conclusion') ||
+             sentences[i].includes('Finally') ||
+             currentParagraph.length >= 3)) {
+            
+            paragraphs.push(currentParagraph.join(' '));
+            currentParagraph = [];
+        }
+    }
+    
+    // Add any remaining sentences
+    if (currentParagraph.length > 0) {
+        paragraphs.push(currentParagraph.join(' '));
+    }
+    
+    // If we still have just one long paragraph, try to split it in the middle
+    if (paragraphs.length === 1 && sentences.length > 4) {
+        const midPoint = Math.ceil(sentences.length / 2);
+        paragraphs = [
+            sentences.slice(0, midPoint).join(' '),
+            sentences.slice(midPoint).join(' ')
+        ];
+    }
+    
+    // Return formatted paragraphs
+    return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+}
+
+function formatModeratorResponse(response) {
+    // Handle structured moderator responses with headers
+    let formatted = response.replace(/####\s+([^\n]+)/g, '<h4>$1</h4>');
+    formatted = formatted.replace(/###\s+([^\n]+)/g, '<h4>$1</h4>');
+    formatted = formatted.replace(/##\s+([^\n]+)/g, '<h4>$1</h4>');
+    
+    // Split into paragraphs
+    let paragraphs = formatted.split('\n\n').filter(p => p.trim());
+    
+    return paragraphs.map(p => {
+        p = p.trim();
+        if (p.includes('<h4>')) {
+            return p;
+        } else {
+            return `<p>${p}</p>`;
+        }
+    }).join('');
+}
+
+function getFormatIcon(format) {
+    const icons = {
+        arena: '💬',
+        panel: '🎪',
+        symposium: '🏛️',
+        debate: '⚖️',
+        roundtable: '🔄'
+    };
+    return icons[format] || '🎭';
+}
+
+function getParticipantLabel(format) {
+    const labels = {
+        panel: 'Panelists',
+        symposium: 'Scholars',
+        debate: 'Debaters',
+        roundtable: 'Participants'
+    };
+    return labels[format] || 'Participants';
+}
+
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    document.querySelectorAll('.notification').forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Hide notification after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// ADD THE NEW USAGE FUNCTIONS RIGHT HERE
+function updateUsageDisplay() {
+    const indicator = document.getElementById('usageIndicator');
+    const countSpan = document.getElementById('usageCount');
+    
+    if (!indicator || !countSpan) return;
+    
+    const remaining = Math.max(0, 5 - usageState.dailyDiscussions);
+    
+    if (usageState.isProUser) {
+        indicator.innerHTML = '✨ Unlimited Pro';
+        indicator.className = 'usage-indicator';
+    } else {
+        countSpan.textContent = remaining;
+        indicator.className = remaining <= 1 ? 'usage-indicator low' : 'usage-indicator';
+    }
+}
+
+function showUpgradeModal() {
+    // Remove any existing modal first
+    const existingModal = document.querySelector('.upgrade-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'upgrade-modal';
+    modal.innerHTML = `
+        <div class="upgrade-content">
+            <h2>🚀 You've reached your daily limit!</h2>
+            <p>You've used all 5 free discussions today. Upgrade to Pro for unlimited access to brilliant minds.</p>
+            <div style="margin: 30px 0;">
+                <div style="font-size: 24px; font-weight: bold; color: #1976d2;">$12/month</div>
+                <div style="color: #666; margin-top: 5px;">Unlimited discussions • Priority responses • Advanced features</div>
+            </div>
+            <button onclick="upgradeToProDemo()" style="background: #1976d2; color: white; padding: 15px 30px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-right: 10px;">
+                Upgrade to Pro
+            </button>
+            <button onclick="closeUpgradeModal()" style="background: #f5f5f5; color: #666; padding: 15px 30px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer;">
+                Maybe Later
+            </button>
+            <div style="margin-top: 20px; font-size: 14px; color: #999;">
+                Your limit resets tomorrow at midnight
             </div>
         </div>
-    </div>
+    `;
+    
+    document.body.appendChild(modal);
+    console.log('Upgrade modal created and added to page');
+}
 
-    <script>
-        let discussionState = {
-            type: null,
-            participantCount: 0,
-            participants: [],
-            moderator: 'ai',
-            topic: ''
+function closeUpgradeModal() {
+    const modal = document.querySelector('.upgrade-modal');
+    if (modal) {
+        modal.remove();
+        console.log('Upgrade modal closed');
+    }
+}
+
+function upgradeToProDemo() {
+    try {
+        // For now, simulate the upgrade since we need backend setup
+        alert('Stripe integration ready! Backend setup needed for live payments.\n\nFor now, enjoy unlimited access.');
+        usageState.isProUser = true;
+        saveUsageState();
+        updateUsageDisplay();
+        closeUpgradeModal();
+    } catch (error) {
+        console.error('Upgrade error:', error);
+        alert('Something went wrong. Please try again.');
+    }
+}
+
+function closeUpgradeModal() {
+    document.querySelector('.upgrade-modal')?.remove();
+}
+
+
+function initializeUsageTracking() {
+    loadUsageState();
+    updateUsageDisplay();
+}
+
+// ============================================================================
+// 3. FORMAT SELECTION FUNCTIONS
+// ============================================================================
+
+function selectFormat(format, count) {
+    // Update visual selection
+    document.querySelectorAll('.format-type').forEach(el => {
+        el.classList.remove('selected');
+    });
+    event.target.closest('.format-type').classList.add('selected');
+    
+    // Update state
+    discussionState.format = format;
+    discussionState.participantCount = count;
+    
+    // Show appropriate speaker selection layout
+    showSpeakerSelection(format);
+    
+    // Show question section
+    document.getElementById('questionSection').classList.add('active');
+    
+    checkReadiness();
+}
+
+function showSpeakerSelection(format) {
+    const formatConfig = discussionFormats[format];
+    
+    // Hide all speaker selection sections
+    document.querySelectorAll('.speaker-selection').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    if (formatConfig.isPersonalChat) {
+        // Show personal chat layout
+        document.getElementById('chat-selection').classList.add('active');
+    } else if (formatConfig.isMultiPerson) {
+        // Show multi-person layout
+        document.getElementById('multi-selection').classList.add('active');
+        setupMultiPersonLayout(format);
+    } else {
+        // Show two-person layout
+        document.getElementById('arena-selection').classList.add('active');
+    }
+}
+
+// ============================================================================
+// 4. PARTICIPANT SELECTION FUNCTIONS
+// ============================================================================
+
+function toggleMode(figureNum, mode) {
+    discussionState[`figure${figureNum}Mode`] = mode;
+    
+    const buttons = document.querySelectorAll(`#arena-selection .figure-selection:nth-child(${figureNum}) .mode-button`);
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const select = document.getElementById(`figure${figureNum}`);
+    const input = document.getElementById(`figure${figureNum}Custom`);
+    const suggestion = document.getElementById(`suggestion${figureNum}`);
+    
+    if (mode === 'preset') {
+        select.style.display = 'block';
+        input.style.display = 'none';
+        suggestion.style.display = 'none';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        suggestion.style.display = 'block';
+        input.focus();
+    }
+}
+
+function toggleMultiMode(participantNum, mode) {
+    // Find the correct participant slot
+    const participantSlot = document.querySelector(`#participant${participantNum}`).closest('.figure-selection');
+    
+    // Update button states within this specific slot
+    const buttons = participantSlot.querySelectorAll('.mode-button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Show/hide the appropriate input elements
+    const select = document.getElementById(`participant${participantNum}`);
+    const input = document.getElementById(`participant${participantNum}Custom`);
+    
+    if (mode === 'preset') {
+        select.style.display = 'block';
+        input.style.display = 'none';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        input.focus();
+    }
+}
+function toggleChatMode(mode) {
+    discussionState.chatMode = mode;
+    
+    const buttons = document.querySelectorAll('#chat-selection .mode-button');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const select = document.getElementById('chatFigure');
+    const input = document.getElementById('chatFigureCustom');
+    
+    if (mode === 'preset') {
+        select.style.display = 'block';
+        input.style.display = 'none';
+    } else {
+        select.style.display = 'none';
+        input.style.display = 'block';
+        input.focus();
+    }
+}
+
+function updateMultiParticipant(slot, figureId) {
+    if (figureId) {
+        discussionState.participants[slot - 1] = figures[figureId];
+    } else {
+        // Set to null instead of delete to maintain array structure
+        discussionState.participants[slot - 1] = null;
+    }
+    checkReadiness();
+}
+
+function updateCustomMultiParticipant(slot, customName) {
+    if (customName.trim()) {
+        discussionState.participants[slot - 1] = {
+            name: customName.trim(),
+            prompt: `You are ${customName.trim()}. Embody their personality, knowledge, and speaking style as accurately as possible.`
         };
+    } else {
+        // Remove the participant if name is cleared
+        discussionState.participants[slot - 1] = null;
+    }
+    checkReadiness();
+}
 
-        function selectDiscussionType(type, count) {
-            // Remove previous selections
-            document.querySelectorAll('.discussion-type').forEach(el => {
-                el.classList.remove('selected');
-            });
+function generateParticipantSlots(count, format) {
+    const grid = document.getElementById('participantsGrid');
+    grid.innerHTML = '';
+    
+    for (let i = 1; i <= count; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'figure-selection';
+        
+        let roleLabel = `Participant ${i}`;
+        if (format === 'debate') {
+            roleLabel = i <= 2 ? `Pro Side ${i}` : `Con Side ${i-2}`;
+        } else if (format === 'symposium') {
+            roleLabel = `Scholar ${i}`;
+        } else if (format === 'panel') {
+            roleLabel = `Expert ${i}`;
+        }
+        
+        slot.innerHTML = `
+            <div class="selection-header">
+                <div class="figure-number">${i}</div>
+                <div class="figure-title">${roleLabel}</div>
+            </div>
             
-            // Select new type
-            event.target.closest('.discussion-type').classList.add('selected');
+            <div class="mode-toggle">
+                <button class="mode-button active" onclick="toggleMultiMode(${i}, 'preset')">Preset</button>
+                <button class="mode-button" onclick="toggleMultiMode(${i}, 'custom')">Custom</button>
+            </div>
             
-            discussionState.type = type;
-            discussionState.participantCount = count;
+            <select id="participant${i}" onchange="updateMultiParticipant(${i}, this.value)">
+                <option value="">Choose a brilliant mind...</option>
+                <optgroup label="🤔 Philosophers">
+                    <option value="confucius">Confucius (551-479 BCE)</option>
+                    <option value="plato">Plato (428-348 BCE)</option>
+                    <option value="aristotle">Aristotle (384-322 BCE)</option>
+                    <option value="descartes">René Descartes (1596-1650)</option>
+                    <option value="spinoza">Baruch Spinoza (1632-1677)</option>
+                    <option value="kant">Immanuel Kant (1724-1804)</option>
+                    <option value="nietzsche">Friedrich Nietzsche (1844-1900)</option>
+                </optgroup>
+                <optgroup label="🖥️ Logic & Computing Pioneers">
+                    <option value="boole">George Boole (1815-1864)</option>
+                    <option value="frege">Gottlob Frege (1848-1925)</option>
+                    <option value="russell">Bertrand Russell (1872-1970)</option>
+                    <option value="godel">Kurt Gödel (1906-1978)</option>
+                    <option value="vonneumann">John von Neumann (1903-1957)</option>
+                    <option value="turing">Alan Turing (1912-1954)</option>
+                    <option value="shannon">Claude Shannon (1916-2001)</option>
+                </optgroup>
+                <optgroup label="📐 Mathematicians">
+                    <option value="leibniz">Gottfried Wilhelm Leibniz (1646-1716)</option>
+                    <option value="euler">Leonhard Euler (1707-1783)</option>
+                    <option value="gauss">Carl Friedrich Gauss (1777-1855)</option>
+                    <option value="riemann">Bernhard Riemann (1826-1866)</option>
+                    <option value="cantor">Georg Cantor (1845-1918)</option>
+                    <option value="hilbert">David Hilbert (1862-1943)</option>
+                    <option value="tao">Terence Tao (1975-present)</option>
+                </optgroup>
+                <optgroup label="⚛️ Physicists">
+                    <option value="maxwell">James Clerk Maxwell (1831-1879)</option>
+                    <option value="einstein">Albert Einstein (1879-1955)</option>
+                    <option value="bohr">Niels Bohr (1885-1962)</option>
+                    <option value="heisenberg">Werner Heisenberg (1901-1976)</option>
+                    <option value="feynman">Richard Feynman (1918-1988)</option>
+                    <option value="hawking">Stephen Hawking (1942-2018)</option>
+                    <option value="witten">Edward Witten (1951-present)</option>
+                </optgroup>
+                <optgroup label="🎨 Artists">
+                    <option value="homer">Homer (8th century BCE)</option>
+                    <option value="davinci">Leonardo da Vinci (1452-1519)</option>
+                    <option value="michelangelo">Michelangelo Buonarroti (1475-1564)</option>
+                    <option value="shakespeare">William Shakespeare (1564-1616)</option>
+                    <option value="bach">Johann Sebastian Bach (1685-1750)</option>
+                    <option value="beethoven">Ludwig van Beethoven (1770-1827)</option>
+                    <option value="picasso">Pablo Picasso (1881-1973)</option>
+                </optgroup>
+                <optgroup label="👑 Political Leaders">
+                    <option value="caesar">Julius Caesar (100-44 BCE)</option>
+                    <option value="washington">George Washington (1732-1799)</option>
+                    <option value="bonaparte">Napoleon Bonaparte (1769-1821)</option>
+                    <option value="lincoln">Abraham Lincoln (1809-1865)</option>
+                    <option value="gandhi">Mahatma Gandhi (1869-1948)</option>
+                    <option value="roosevelt">Franklin D. Roosevelt (1882-1945)</option>
+                    <option value="churchill">Winston Churchill (1874-1965)</option>
+                </optgroup>
+                <optgroup label="💰 Economists">
+                    <option value="adamsmith">Adam Smith (1723-1790)</option>
+                    <option value="ricardo">David Ricardo (1772-1823)</option>
+                    <option value="marx">Karl Marx (1818-1883)</option>
+                    <option value="marshall">Alfred Marshall (1842-1924)</option>
+                    <option value="keynes">John Maynard Keynes (1883-1946)</option>
+                    <option value="samuelson">Paul Samuelson (1915-2009)</option>
+                    <option value="friedman">Milton Friedman (1912-2006)</option>
+                </optgroup>
+                <optgroup label="📈 Investors">
+                    <option value="valentine">Don Valentine (1932-2019)</option>
+                    <option value="buffett">Warren Buffett (1930-present)</option>
+                    <option value="druckenmiller">Stanley Druckenmiller (1953-present)</option>
+                    <option value="doerr">John Doerr (1951-present)</option>
+                    <option value="dalio">Ray Dalio (1949-present)</option>
+                    <option value="thiel">Peter Thiel (1967-present)</option>
+                    <option value="andreessen">Marc Andreessen (1971-present)</option>
+                </optgroup>
+                <optgroup label="💻 Technology Leaders">
+                    <option value="jobs">Steve Jobs (1955-2011)</option>
+                    <option value="bezos">Jeff Bezos (1964-present)</option>
+                    <option value="brin">Sergey Brin (1973-present)</option>
+                    <option value="nadella">Satya Nadella (1967-present)</option>
+                    <option value="hwang">Jensen Huang (1963-present)</option>
+                    <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
+                    <option value="altman">Sam Altman (1985-present)</option>
+                </optgroup>
+            </select>
             
-            generateParticipantSlots(count);
-            updatePreview();
-            checkReadiness();
-        }
-
-        function generateParticipantSlots(count) {
-            const grid = document.getElementById('participantsGrid');
-            grid.innerHTML = '';
-            
-            for (let i = 1; i <= count; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'participant-slot';
-                slot.innerHTML = `
-                    <div class="slot-header">
-                        <div class="participant-number">${i}</div>
-                        <div class="slot-title">Participant ${i}</div>
-                    </div>
-                    <select onchange="updateParticipant(${i}, this.value)">
-                        <option value="">Choose a brilliant mind...</option>
-                        <optgroup label="🤔 Philosophers">
-                            <option value="socrates">Socrates</option>
-                            <option value="aristotle">Aristotle</option>
-                            <option value="plato">Plato</option>
-                            <option value="kant">Immanuel Kant</option>
-                            <option value="nietzsche">Friedrich Nietzsche</option>
-                        </optgroup>
-                        <optgroup label="🔬 Scientists">
-                            <option value="einstein">Albert Einstein</option>
-                            <option value="darwin">Charles Darwin</option>
-                            <option value="curie">Marie Curie</option>
-                            <option value="hawking">Stephen Hawking</option>
-                            <option value="feynman">Richard Feynman</option>
-                        </optgroup>
-                        <optgroup label="👑 Leaders">
-                            <option value="lincoln">Abraham Lincoln</option>
-                            <option value="churchill">Winston Churchill</option>
-                            <option value="gandhi">Mahatma Gandhi</option>
-                            <option value="mandela">Nelson Mandela</option>
-                        </optgroup>
-                        <optgroup label="💼 Innovators">
-                            <option value="jobs">Steve Jobs</option>
-                            <option value="musk">Elon Musk</option>
-                            <option value="gates">Bill Gates</option>
-                        </optgroup>
-                    </select>
-                    <input type="text" placeholder="Or enter any name..." onchange="updateCustomParticipant(${i}, this.value)">
-                `;
-                grid.appendChild(slot);
-            }
-        }
-
-        function updateParticipant(slot, figureId) {
-            // Figure data would come from your existing figures object
-            const figureName = event.target.selectedOptions[0].text;
-            discussionState.participants[slot - 1] = { id: figureId, name: figureName };
-            updatePreview();
-            checkReadiness();
-        }
-
-        function updateCustomParticipant(slot, customName) {
-            if (customName.trim()) {
-                discussionState.participants[slot - 1] = { id: 'custom', name: customName.trim() };
-                updatePreview();
-                checkReadiness();
-            }
-        }
-
-        function selectModerator(type) {
-            document.querySelectorAll('.moderator-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            event.target.classList.add('selected');
-            discussionState.moderator = type;
-        }
-
-        function setTopic(topic) {
-            document.getElementById('topicInput').value = topic;
-            discussionState.topic = topic;
-            checkReadiness();
-        }
-
-        function updatePreview() {
-            const previewSection = document.getElementById('previewSection');
-            const participantsPreview = document.getElementById('participantsPreview');
-            const formatPreview = document.getElementById('formatPreview');
-            
-            if (discussionState.participants.length > 0) {
-                previewSection.style.display = 'block';
-                
-                // Show participants
-                participantsPreview.innerHTML = '';
-                discussionState.participants.forEach(participant => {
-                    if (participant) {
-                        const div = document.createElement('div');
-                        div.className = 'participant-preview';
-                        div.textContent = participant.name;
-                        participantsPreview.appendChild(div);
-                    }
-                });
-                
-                // Show format description
-                const formats = {
-                    panel: 'Each participant will share their perspective, followed by cross-discussion and Q&A',
-                    debate: 'Structured debate with opening statements, rebuttals, and closing arguments',
-                    roundtable: 'Collaborative discussion with equal participation and idea building',
-                    symposium: 'Academic presentations followed by scholarly discussion'
-                };
-                
-                formatPreview.innerHTML = `<strong>Format:</strong> ${formats[discussionState.type] || ''}`;
-            }
-        }
-
-        function checkReadiness() {
-            const button = document.getElementById('startButton');
-            const topic = document.getElementById('topicInput').value.trim();
-            const hasParticipants = discussionState.participants.filter(p => p).length >= 2;
-            
-            if (hasParticipants && topic && discussionState.type) {
-                button.disabled = false;
-                discussionState.topic = topic;
-            } else {
-                button.disabled = true;
-            }
-        }
-
-        function startGroupDiscussion() {
-            const arena = document.getElementById('discussionArena');
-            arena.style.display = 'block';
-            arena.innerHTML = '<div style="text-align: center; padding: 40px;"><h3>🚀 Starting group discussion...</h3><p>This would integrate with your existing Claude API to run a multi-participant discussion!</p></div>';
-            
-            // Scroll to arena
-            arena.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Listen for topic input changes
-        document.getElementById('topicInput').addEventListener('input', function() {
-            discussionState.topic = this.value.trim();
-            checkReadiness();
+            <input type="text" id="participant${i}Custom" class="custom-input" placeholder="Enter any name..." 
+                   style="display: none;">
+        `;
+        grid.appendChild(slot);
+        
+        // Add event listener for the custom input - THIS IS THE KEY FIX
+        const customInput = document.getElementById(`participant${i}Custom`);
+        customInput.addEventListener('input', function() {
+            updateCustomMultiParticipant(i, this.value);
         });
-    </script>
+        
+        // Add event listener for the select dropdown - THIS IS ALSO KEY
+        const selectElement = document.getElementById(`participant${i}`);
+        selectElement.addEventListener('change', function() {
+            updateMultiParticipant(i, this.value);
+        });
+    }
+    
+    // CRITICAL: Add a final check after all elements are created
+    setTimeout(() => {
+        checkReadiness();
+    }, 100);
+}
+
+// ============================================================================
+// 5. QUESTION MANAGEMENT FUNCTIONS
+// ============================================================================
+
+function toggleQuestionMode(mode) {
+    currentQuestionMode = mode;
+    
+    // Update button states
+    document.querySelectorAll('.question-mode-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[onclick="toggleQuestionMode('${mode}')"]`).classList.add('active');
+    
+    // Show/hide sections
+    const manualSection = document.getElementById('manualQuestionSection');
+    const aiSection = document.getElementById('aiSuggestionSection');
+    
+    if (mode === 'manual') {
+        manualSection.style.display = 'block';
+        aiSection.style.display = 'none';
+    } else {
+        manualSection.style.display = 'none';
+        aiSection.style.display = 'block';
+    }
+}
+
+async function generateAIQuestions() {
+    const generateBtn = document.getElementById('generateBtn');
+    const questionsContainer = document.getElementById('suggestedQuestions');
+    
+    // Check if participants are selected (different logic for arena vs multi-person)
+    let participantCount = 0;
+    let participantNames = [];
+    
+    if (discussionState.format === 'chat') {
+    // Check personal chat participant
+    const chatFigureElement = document.getElementById('chatFigure');
+    const chatCustomElement = document.getElementById('chatFigureCustom');
+    
+    const chatFigure = discussionState.chatMode === 'preset' 
+        ? (chatFigureElement && chatFigureElement.value ? figures[chatFigureElement.value] : null)
+        : (chatCustomElement && chatCustomElement.value.trim() ? { name: chatCustomElement.value.trim() } : null);
+    
+    if (chatFigure) {
+        participantCount = 1;
+        participantNames = [chatFigure.name];
+    }
+} else if (discussionState.format === 'arena') {
+    // ... existing arena participant checking code ...
+} else {
+    // Check multi-person participants
+    participantCount = discussionState.participants.filter(p => p).length;
+    participantNames = discussionState.participants.filter(p => p).map(p => p.name);
+}
+
+// Different minimum requirements for different formats
+const minParticipants = discussionState.format === 'chat' ? 1 : 2;
+if (participantCount < minParticipants) {
+    const message = discussionState.format === 'chat' 
+        ? 'Please select a conversation partner first!' 
+        : 'Please select at least 2 participants first!';
+    alert(message);
+    return;
+}
+    
+    // Show loading state
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '🔄 Generating...';
+    
+    const participantNamesString = participantNames.join(', ');
+    questionsContainer.innerHTML = `
+        <div style="text-align: center; padding: 30px; color: #6c757d;">
+            <span class="loading-spinner"></span>
+            Generating personalized questions for ${participantNamesString}...
+        </div>
+    `;
+    
+    try {
+        const formatName = discussionFormats[discussionState.format].name;
+        const prompt = `You are an expert discussion moderator. Generate 4 fascinating discussion questions specifically tailored for a ${formatName} between ${participantNamesString}.
+
+Consider their different backgrounds, areas of expertise, time periods, and philosophical perspectives. The questions should:
+1. Highlight their different viewpoints
+2. Be intellectually stimulating  
+3. Allow participants to showcase their unique knowledge
+4. Create opportunity for meaningful disagreement or synthesis
+
+For each question, provide:
+- A clear, engaging question (1-2 sentences)
+- A brief explanation of why this would be interesting for these participants (1 sentence)
+
+Format your response as:
+QUESTION 1: [question text]
+EXPLANATION 1: [brief explanation]
+
+QUESTION 2: [question text]
+EXPLANATION 2: [brief explanation]
+
+etc.`;
+
+        const response = await callClaude(prompt);
+        displayAIQuestions(response);
+        
+    } catch (error) {
+        questionsContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #dc3545;">
+                ❌ Error generating questions: ${error.message}
+                <br><br>
+                <button onclick="generateAIQuestions()" style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer;">
+                    Try Again
+                </button>
+            </div>
+        `;
+    } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '🎯 Generate New Questions';
+    }
+}
+
+function displayAIQuestions(response) {
+    const questionsContainer = document.getElementById('suggestedQuestions');
+    
+    // Parse the response
+    const questions = parseAIQuestions(response);
+    
+    if (questions.length === 0) {
+        questionsContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #6c757d;">
+                No questions could be generated. Please try again.
+            </div>
+        `;
+        return;
+    }
+    
+    questionsContainer.innerHTML = questions.map((q, index) => `
+        <div class="question-suggestion" onclick="selectAIQuestion(${index}, '${q.question.replace(/'/g, "\\'")}')">
+            <div class="question-text">${q.question}</div>
+            <div class="question-explanation">${q.explanation}</div>
+        </div>
+    `).join('');
+}
+
+function parseAIQuestions(response) {
+    const questions = [];
+    const lines = response.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('QUESTION')) {
+            const questionText = line.replace(/^QUESTION \d+:\s*/, '');
+            
+            // Look for the explanation on the next line
+            let explanation = '';
+            if (i + 1 < lines.length) {
+                const nextLine = lines[i + 1].trim();
+                if (nextLine.startsWith('EXPLANATION')) {
+                    explanation = nextLine.replace(/^EXPLANATION \d+:\s*/, '');
+                }
+            }
+            
+            if (questionText) {
+                questions.push({
+                    question: questionText,
+                    explanation: explanation || 'This question explores their different perspectives.'
+                });
+            }
+        }
+    }
+    
+    return questions;
+}
+
+function selectAIQuestion(index, questionText) {
+    // Remove previous selections
+    document.querySelectorAll('.question-suggestion').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Select this question
+    event.target.closest('.question-suggestion').classList.add('selected');
+    selectedAIQuestion = questionText;
+    
+    // Update the manual input field (in case user wants to edit)
+    document.getElementById('questionInput').value = questionText;
+}
+
+// ============================================================================
+// 6. READINESS CHECK
+// ============================================================================
+
+function checkReadiness() {
+    const button = document.getElementById('startButton');
+    if (!button) return; // Safety check
+    
+    const topic = document.getElementById('questionInput')?.value.trim() || '';
+    
+    let hasEnoughParticipants = false;
+    
+    if (discussionState.format === 'chat') {
+        // Check personal chat setup - just need one figure selected
+        const chatFigureElement = document.getElementById('chatFigure');
+        const chatCustomElement = document.getElementById('chatFigureCustom');
+        
+        let chatFigure = null;
+        
+        if (discussionState.chatMode === 'preset') {
+            if (chatFigureElement && chatFigureElement.value) {
+                chatFigure = figures[chatFigureElement.value];
+            }
+        } else {
+            if (chatCustomElement && chatCustomElement.value.trim()) {
+                chatFigure = { name: chatCustomElement.value.trim() };
+            }
+        }
+        
+        hasEnoughParticipants = !!chatFigure;
+        
+    } else if (discussionState.format === 'arena') {
+        // Check two-person setup
+        const figure1Element = document.getElementById('figure1');
+        const figure1CustomElement = document.getElementById('figure1Custom');
+        const figure2Element = document.getElementById('figure2');
+        const figure2CustomElement = document.getElementById('figure2Custom');
+        
+        let figure1 = null;
+        let figure2 = null;
+        
+        // Check figure 1
+        if (discussionState.figure1Mode === 'preset') {
+            if (figure1Element && figure1Element.value) {
+                figure1 = figures[figure1Element.value];
+            }
+        } else {
+            if (figure1CustomElement && figure1CustomElement.value.trim()) {
+                figure1 = { name: figure1CustomElement.value.trim() };
+            }
+        }
+        
+        // Check figure 2
+        if (discussionState.figure2Mode === 'preset') {
+            if (figure2Element && figure2Element.value) {
+                figure2 = figures[figure2Element.value];
+            }
+        } else {
+            if (figure2CustomElement && figure2CustomElement.value.trim()) {
+                figure2 = { name: figure2CustomElement.value.trim() };
+            }
+        }
+        
+        hasEnoughParticipants = figure1 && figure2;
+        
+    } else {
+        // Check multi-person setup
+        hasEnoughParticipants = discussionState.participants.filter(p => p).length >= 2;
+    }
+    
+    const hasQuestion = currentQuestionMode === 'manual' ? topic : (selectedAIQuestion || topic);
+    
+    if (hasEnoughParticipants && hasQuestion) {
+        button.disabled = false;
+        button.style.opacity = '1';
+        button.style.cursor = 'pointer';
+    } else {
+        button.disabled = true;
+        button.style.opacity = '0.5';
+        button.style.cursor = 'not-allowed';
+    }
+}
+
+// ============================================================================
+// 7. DISCUSSION EXECUTION FUNCTIONS
+// ============================================================================
+
+async function startDiscussion() {
+    console.log('Start discussion called, daily discussions:', usageState.dailyDiscussions);
+    // Check usage limits for free users
+    if (!usageState.isProUser && usageState.dailyDiscussions >= 5) {
+        showUpgradeModal();
+        return;
+    }
+    
+    // Increment usage counter
+    usageState.dailyDiscussions++;
+    usageState.totalDiscussions++;
+    saveUsageState();
+    updateUsageDisplay();
+
+    let question;
+    
+    if (currentQuestionMode === 'manual') {
+        question = document.getElementById('questionInput').value.trim();
+    } else {
+        question = selectedAIQuestion || document.getElementById('questionInput').value.trim();
+    }
+    
+    if (!question) {
+        alert('Please enter a question or select an AI suggestion!');
+        return;
+    }
+    
+    discussionState.topic = question;
+    // Reset continuation tracking for new discussions
+    discussionState.continuationRound = 0;
+    discussionState.totalExchanges = 0;
+    
+ // Prepare participants based on format
+if (discussionState.format === 'chat') {
+    // Handle personal chat
+    const chatFigure = discussionState.chatMode === 'preset' 
+        ? figures[document.getElementById('chatFigure').value]
+        : { name: document.getElementById('chatFigureCustom').value.trim(), prompt: `You are ${document.getElementById('chatFigureCustom').value.trim()}. Embody their personality and knowledge.` };
+    
+    discussionState.participants = [chatFigure];
+    await runPersonalChat();
+} else if (discussionState.format === 'arena') {
+    // Handle two-person discussion
+    const figure1 = discussionState.figure1Mode === 'preset' 
+        ? figures[document.getElementById('figure1').value]
+        : { name: document.getElementById('figure1Custom').value.trim(), prompt: `You are ${document.getElementById('figure1Custom').value.trim()}. Embody their personality and knowledge.` };
+        
+    const figure2 = discussionState.figure2Mode === 'preset'
+        ? figures[document.getElementById('figure2').value]
+        : { name: document.getElementById('figure2Custom').value.trim(), prompt: `You are ${document.getElementById('figure2Custom').value.trim()}. Embody their personality and knowledge.` };
+    
+    discussionState.participants = [figure1, figure2];
+    await runTwoPersonDiscussion();
+} else {
+    // Handle multi-person discussion
+    await runMultiPersonDiscussion();
+}
+}
+async function runTwoPersonDiscussion() {
+    // Hide setup sections
+    document.querySelectorAll('.format-selection, .speaker-selection, .question-section').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show arena
+    document.getElementById('discussionArena').style.display = 'block';
+    
+    const arena = document.getElementById('discussionArena');
+    arena.innerHTML = '';
+    
+    // Create opening round
+    const openingRound = document.createElement('div');
+    openingRound.className = 'discussion-round';
+    openingRound.innerHTML = `<div class="round-header">💭 "${discussionState.topic}"</div>`;
+    arena.appendChild(openingRound);
+    
+    // Get responses from both participants
+    const [figure1, figure2] = discussionState.participants;
+    
+    await getParticipantResponse(openingRound, figure1, discussionState.topic, 'opening');
+    await getParticipantResponse(openingRound, figure2, discussionState.topic, 'response');
+    await getParticipantResponse(openingRound, figure1, discussionState.topic, 'follow-up');
+    
+    // Add moderator summary
+    await getModeratorSummary(arena);
+    
+    // Show discussion controls
+    showDiscussionControls();
+}
+
+async function runMultiPersonDiscussion() {
+    // Initialize responses array
+    discussionState.responses = [];
+    
+    // Hide setup sections
+    document.querySelectorAll('.format-selection, .speaker-selection, .question-section').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show arena
+    document.getElementById('discussionArena').style.display = 'block';
+    
+    const arena = document.getElementById('discussionArena');
+    arena.innerHTML = '';
+    
+    const format = discussionFormats[discussionState.format];
+    
+    // Create opening round with format-specific structure
+    const openingRound = document.createElement('div');
+    openingRound.className = 'discussion-round';
+    openingRound.innerHTML = `
+        <div class="phase-indicator">Phase 1: Opening Statements</div>
+        <div class="round-header">${format.name}: "${discussionState.topic}"</div>
+    `;
+    arena.appendChild(openingRound);
+    
+    // Get opening statements from each participant
+    const validParticipants = discussionState.participants.filter(p => p);
+    for (let i = 0; i < validParticipants.length; i++) {
+        await getMultiPersonResponse(openingRound, validParticipants[i], 'opening', i);
+    }
+    
+    // Create response round
+    const responseRound = document.createElement('div');
+    responseRound.className = 'discussion-round';
+    
+    // Format-specific phase 2 descriptions
+    let phase2Title = 'Cross-Discussion';
+    let phase2Description = 'Participants respond to each other\'s perspectives';
+    
+    if (discussionState.format === 'debate') {
+        phase2Title = 'Rebuttals';
+        phase2Description = 'Each side responds to the opposing arguments';
+    } else if (discussionState.format === 'symposium') {
+        phase2Title = 'Peer Review';
+        phase2Description = 'Scholarly critique and discussion of presented research';
+    }
+    
+    responseRound.innerHTML = `
+        <div class="phase-indicator">Phase 2: ${phase2Title}</div>
+        <div class="round-header">${phase2Description}</div>
+    `;
+    arena.appendChild(responseRound);
+    
+    // Get responses from ALL participants
+    for (let i = 0; i < validParticipants.length; i++) {
+        await getMultiPersonResponse(responseRound, validParticipants[i], 'response', i);
+    }
+    
+    // For debate format, add a third phase for closing arguments
+    if (discussionState.format === 'debate') {
+        const closingRound = document.createElement('div');
+        closingRound.className = 'discussion-round';
+        closingRound.innerHTML = `
+            <div class="phase-indicator">Phase 3: Closing Arguments</div>
+            <div class="round-header">Final statements from each side</div>
+        `;
+        arena.appendChild(closingRound);
+        
+        // Get closing arguments from all participants
+        for (let i = 0; i < validParticipants.length; i++) {
+            await getMultiPersonResponse(closingRound, validParticipants[i], 'closing', i);
+        }
+    }
+    
+    // Add moderator summary
+    await getModeratorSummary(arena);
+    
+    // Show discussion controls
+    showDiscussionControls();
+}
+
+async function runPersonalChat() {
+    // Reset continuation tracking for new discussions
+    discussionState.continuationRound = 0;
+    discussionState.totalExchanges = 0;
+    
+    // Hide setup sections
+    document.querySelectorAll('.format-selection, .speaker-selection, .question-section').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show arena
+    document.getElementById('discussionArena').style.display = 'block';
+    
+    const arena = document.getElementById('discussionArena');
+    arena.innerHTML = '';
+    
+    // Create opening round
+    const openingRound = document.createElement('div');
+    openingRound.className = 'discussion-round';
+    openingRound.innerHTML = `<div class="round-header">🗣️ Personal Chat: "${discussionState.topic}"</div>`;
+    arena.appendChild(openingRound);
+    
+    // Start the conversation
+    const chatFigure = discussionState.participants[0];
+    await getChatResponse(openingRound, chatFigure, discussionState.topic);
+    
+    // Show discussion controls
+    showDiscussionControls();
+}
+
+async function getChatResponse(container, participant, topic) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Thinking...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        const prompt = `${participant.prompt}
+
+You are having a personal conversation with someone who asked: "${topic}"
+
+Respond naturally and engagingly, as if you're having a genuine one-on-one conversation. Be personable, insightful, and authentic to your character. Ask a follow-up question to keep the conversation flowing.
+
+Respond in 120-150 words.`;
+        
+        const response = await callClaude(prompt);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Error: ${error.message}</div>
+        `;
+    }
+}
+
+async function getParticipantResponse(container, participant, topic, stage) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Thinking...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        let prompt;
+        if (stage === 'opening') {
+            prompt = `${participant.prompt}
+
+You are starting a thoughtful discussion. The question is: "${topic}"
+
+Give your perspective on this question in a CONCISE way (2-3 key points maximum). Be thoughtful and authentic to your historical viewpoint, but focus on your most important insights. Keep it under 150 words.`;
+        } else if (stage === 'response') {
+            prompt = `${participant.prompt}
+
+You are in a discussion about: "${topic}"
+
+The previous speaker just shared their perspective. Now respond with your own thoughts. In 150 words or less, either:
+- Build on their point
+- Offer a different perspective  
+- Challenge an assumption
+
+Be engaging and thoughtful.`;
+        } else {
+            prompt = `${participant.prompt}
+
+You are continuing a discussion about: "${topic}"
+
+Reflect on what has been discussed so far and provide a thoughtful follow-up response in 150 words or less.`;
+        }
+        
+        const response = await callClaude(prompt);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Error: ${error.message}</div>
+        `;
+    }
+}
+
+async function getMultiPersonResponse(container, participant, stage, index) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Preparing contribution...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        let prompt;
+        const formatName = discussionFormats[discussionState.format].name;
+        
+        if (stage === 'opening') {
+            if (discussionState.format === 'debate') {
+                const side = index < 2 ? 'FOR' : 'AGAINST';
+                const teamMate = index % 2 === 0 ? 'first speaker' : 'second speaker';
+                prompt = `${participant.prompt}
+
+You are the ${teamMate} arguing ${side} this position: "${discussionState.topic}"
+
+Your goal is to build the strongest possible case ${side === 'FOR' ? 'supporting' : 'opposing'} this position. Present compelling evidence, logical reasoning, and persuasive arguments that will be difficult for the opposing side to refute.
+
+Set up arguments that your opponents will struggle to counter. Be confident and substantive while remaining intellectually honest.
+
+Present your opening argument in 120-150 words.`;
+            } else if (discussionState.format === 'symposium') {
+                prompt = `${participant.prompt}
+
+You are presenting at an ACADEMIC SYMPOSIUM on: "${discussionState.topic}"
+
+Present your scholarly research and findings on this topic. Be rigorous, cite evidence, and present original insights. Use academic language appropriate for peer review.
+
+Present your research in 150-180 words.`;
+            } else {
+                // Panel or Roundtable
+                const context = discussionState.format === 'panel' ? 'as an expert sharing knowledge' : 'collaboratively exploring ideas';
+                prompt = `${participant.prompt}
+
+You are participating in a ${formatName} ${context} about: "${discussionState.topic}"
+
+${discussionState.format === 'panel' ? 'As a recognized authority, share your professional perspective and expertise.' : 'Share your perspective while being open to building on others\' ideas.'}
+
+Contribute in 120-150 words.`;
+            }
+        } else if (stage === 'response') {
+            if (discussionState.format === 'debate') {
+                const side = index < 2 ? 'FOR' : 'AGAINST';
+                const opponentSide = side === 'FOR' ? 'AGAINST' : 'FOR';
+                prompt = `${participant.prompt}
+
+You are continuing the FORMAL DEBATE arguing ${side} this position: "${discussionState.topic}"
+
+The ${opponentSide} side has just presented their arguments. You must now deliver a strong rebuttal that:
+
+1. DIRECTLY addresses their strongest points (don't just ignore them)
+2. Points out flaws, contradictions, or gaps in their reasoning
+3. Presents counter-evidence that undermines their position
+4. Reinforces why your ${side} position is superior
+
+Be intellectually aggressive but civil. This is your chance to score points by dismantling their arguments while strengthening your own case. Show why their reasoning fails and yours succeeds.
+
+Present your rebuttal in 120-150 words.`;
+            } else if (discussionState.format === 'symposium') {
+                prompt = `${participant.prompt}
+
+You are providing PEER REVIEW at an academic symposium on: "${discussionState.topic}"
+
+Critique the presentations you've heard with scholarly rigor. Comment on methodology, evidence, logical consistency, and theoretical implications. Be constructive but thorough in your academic assessment.
+
+Provide your peer review in 120-150 words.`;
+            } else {
+                // Panel or Roundtable response
+                prompt = `${participant.prompt}
+
+You are continuing a ${formatName} about: "${discussionState.topic}"
+
+Others have shared valuable insights. Respond thoughtfully by either building on their points, offering different perspectives, or challenging assumptions respectfully.
+
+Respond in 120-150 words.`;
+            }
+        } else if (stage === 'closing') {
+            // Only for debate format
+            const side = index < 2 ? 'FOR' : 'AGAINST';
+            const opponentSide = side === 'FOR' ? 'AGAINST' : 'FOR';
+            prompt = `${participant.prompt}
+
+You are delivering your CLOSING ARGUMENT in this formal debate ${side} the position: "${discussionState.topic}"
+
+This is your final opportunity to win the debate. You must:
+
+1. Summarize why your ${side} position has prevailed in this exchange
+2. Highlight where you successfully refuted the ${opponentSide} side's arguments
+3. Point out any concessions or weak points they revealed
+4. Make a final compelling case that drives home your victory
+5. End with confidence that you've proven your position superior
+
+This is about winning the intellectual battle while maintaining dignity. Show why your side's arguments were stronger, more logical, and more convincing throughout this debate.
+
+Deliver your victory closing in 120-150 words.`;
+        }
+        
+        const response = await callClaude(prompt);
+        
+        // Store the response for later use in the summary
+        if (!discussionState.responses) {
+            discussionState.responses = [];
+        }
+        discussionState.responses.push({
+            participant: participant.name,
+            stage: stage,
+            content: response
+        });
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Error: ${error.message}</div>
+        `;
+    }
+}
+
+async function getModeratorSummary(arena) {
+    const summaryRound = document.createElement('div');
+    summaryRound.className = 'discussion-round';
+    summaryRound.innerHTML = `<div class="round-header">🎯 Discussion Summary</div>`;
+    arena.appendChild(summaryRound);
+    
+    const moderatorDiv = document.createElement('div');
+    moderatorDiv.className = 'speaker moderator-speaker';
+    moderatorDiv.innerHTML = `
+        <div class="speaker-name">🤖 AI Moderator</div>
+        <div><span class="loading"></span>Analyzing the discussion...</div>
+    `;
+    summaryRound.appendChild(moderatorDiv);
+    
+    try {
+        const validParticipants = discussionState.participants.filter(p => p);
+        const participantNames = validParticipants.map(p => p.name).join(' and ');
+        const formatName = discussionFormats[discussionState.format].name;
+        
+        let prompt;
+        
+        if (discussionState.format === 'debate') {
+            const proSide = validParticipants.slice(0, 2).map(p => p.name).join(' and ');
+            const conSide = validParticipants.slice(2, 4).map(p => p.name).join(' and ');
+            
+            prompt = `You just moderated a formal debate about "${discussionState.topic}".
+
+The debate structure was:
+- PRO side (arguing FOR): ${proSide}
+- CON side (arguing AGAINST): ${conSide}
+
+The debate included opening statements, rebuttals, and closing arguments from all participants.
+
+Provide a balanced summary that includes:
+- The main arguments from each side
+- Strongest points made by each side
+- Areas where the debate was most intense
+- Key questions that emerged
+- Overall assessment of the debate quality
+
+Keep it insightful but concise (150-200 words).`;
+        } else if (discussionState.format === 'symposium') {
+            prompt = `You just moderated an academic symposium about "${discussionState.topic}" featuring ${participantNames}.
+
+The symposium included scholarly presentations and peer review discussions.
+
+Provide an academic summary that includes:
+- Key research findings presented
+- Most rigorous methodological approaches
+- Areas of scholarly consensus and disagreement
+- Theoretical implications discussed
+- Future research directions suggested
+
+Keep it scholarly but accessible (150-200 words).`;
+        } else {
+            // Panel or Roundtable
+            prompt = `You just moderated a ${formatName} about "${discussionState.topic}" featuring ${participantNames}.
+
+Provide a thoughtful summary that highlights:
+- Key insights that emerged
+- Different perspectives shared
+- Areas of agreement and disagreement
+- Most thought-provoking points raised
+- Questions worth exploring further
+
+Keep it concise but insightful (150-200 words).`;
+        }
+        
+        const response = await callClaude(prompt);
+        
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 AI Moderator</div>
+            <div class="speaker-content">${formatModeratorResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        console.error('Moderator summary error:', error);
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 AI Moderator</div>
+            <div class="speaker-content">
+                <p><strong>Discussion Summary</strong></p>
+                <p>This ${discussionFormats[discussionState.format].name.toLowerCase()} explored "${discussionState.topic}" through multiple perspectives. Each participant brought their unique viewpoint to create a rich intellectual exchange.</p>
+                <p>The discussion highlighted the complexity of the topic and demonstrated how different approaches can lead to valuable insights.</p>
+            </div>
+        `;
+    }
+}
+
+// ============================================================================
+// 8. DISCUSSION CONTROL FUNCTIONS
+// ============================================================================
+
+function showDiscussionControls() {
+    const controls = document.getElementById('discussionControls');
+    controls.classList.add('active');
+    
+    // Update continue button text based on progression
+    const continueBtn = controls.querySelector('.continue-button');
+    if (continueBtn && discussionState.continuationRound > 0) {
+        const buttonTexts = [
+            "🔄 Continue Discussion",
+            "🔍 Go Deeper", 
+            "🌊 Explore the Depths",
+            "✨ Transcend Further",
+            "🚀 Beyond Boundaries"
+        ];
+        const textIndex = Math.min(discussionState.continuationRound, buttonTexts.length - 1);
+        continueBtn.innerHTML = buttonTexts[textIndex];
+    }
+    
+    controls.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+    });
+}
+
+async function continueDiscussion() {
+    const arena = document.getElementById('discussionArena');
+    discussionState.continuationRound++;
+    
+    // Determine depth level and progression
+    const depthLevel = getDepthLevel(discussionState.continuationRound);
+    const roundTitle = getRoundTitle(discussionState.continuationRound, depthLevel);
+    
+    // Add continuation header with progression indicators
+    const continuationRound = document.createElement('div');
+    continuationRound.className = 'discussion-round';
+    continuationRound.innerHTML = `
+        <div class="phase-indicator">🔄 Round ${discussionState.continuationRound} - ${depthLevel}</div>
+        <div class="round-header">${roundTitle}</div>
+    `;
+    arena.appendChild(continuationRound);
+    
+    // Hide controls while continuing
+    document.getElementById('discussionControls').classList.remove('active');
+    
+    if (discussionState.format === 'arena') {
+        await continueArenaDiscussion(arena, discussionState.continuationRound);
+    } else {
+        await continueMultiPersonDiscussion(arena, discussionState.continuationRound);
+    }
+    
+    // Show moderator analysis every 2 rounds
+    if (discussionState.continuationRound % 2 === 0) {
+        await getProgressiveModeratorAnalysis(arena, discussionState.continuationRound);
+    }
+    
+    // Show helpful hint after round 3
+    if (discussionState.continuationRound === 3) {
+        showProgressionHint(arena);
+    }
+    
+    // Show controls again with updated text
+    showDiscussionControls();
+}
+
+function getDepthLevel(round) {
+    if (round <= 2) return "Building Insights";
+    if (round <= 4) return "Questioning Assumptions"; 
+    return "Transcendent Synthesis";
+}
+
+function getRoundTitle(round, depthLevel) {
+    const titles = {
+        1: "Expanding on core insights and exploring new angles...",
+        2: "Challenging initial assumptions and seeking deeper understanding...",
+        3: "Entering philosophical territory and questioning fundamentals...", 
+        4: "Pursuing transcendent insights beyond conventional thinking...",
+        5: "Achieving visionary synthesis of ideas..."
+    };
+    return titles[round] || "Reaching unprecedented depths of understanding...";
+}
+
+function showProgressionHint(arena) {
+    const hintDiv = document.createElement('div');
+    hintDiv.className = 'discussion-round';
+    hintDiv.style.background = 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)';
+    hintDiv.style.border = '2px solid #4caf50';
+    hintDiv.innerHTML = `
+        <div class="round-header" style="color: #2e7d32;">💡 Deep Exploration Unlocked</div>
+        <div style="padding: 20px; text-align: center; color: #2e7d32;">
+            <p><strong>You've reached the philosophical depths!</strong></p>
+            <p>Consider exploring a new question or angle to unlock fresh perspectives.</p>
+        </div>
+    `;
+    arena.appendChild(hintDiv);
+}
+
+async function continueArenaDiscussion(arena, round) {
+    const continuationRound = arena.lastElementChild;
+    const [figure1, figure2] = discussionState.participants;
+    
+    // Collect recent context for smart prompting
+    const recentContext = collectRecentContext(arena, 4); // Last 4 exchanges
+    
+    // Alternate leadership - let different speakers lead different rounds
+    const leader = round % 2 === 1 ? figure1 : figure2;
+    const responder = round % 2 === 1 ? figure2 : figure1;
+    
+    // Get progressive responses based on depth level
+    await getProgressiveContinuationResponse(continuationRound, leader, 'leader', round, recentContext);
+    await getProgressiveContinuationResponse(continuationRound, responder, 'responder', round, recentContext);
+    
+    // Possible third exchange for deeper rounds
+    if (round >= 3) {
+        await getProgressiveContinuationResponse(continuationRound, leader, 'synthesis', round, recentContext);
+    }
+    
+    discussionState.totalExchanges += round >= 3 ? 3 : 2;
+}
+
+async function continueMultiPersonDiscussion(arena, round) {
+    const continuationRound = arena.lastElementChild;
+    const validParticipants = discussionState.participants.filter(p => p);
+    const recentContext = collectRecentContext(arena, 6); // More context for multi-person
+    
+    // Each participant builds on the previous discussion with progressive depth
+    for (let i = 0; i < validParticipants.length; i++) {
+        await getProgressiveContinuationResponse(continuationRound, validParticipants[i], 'participant', round, recentContext);
+    }
+    
+    discussionState.totalExchanges += validParticipants.length;
+}
+
+function collectRecentContext(arena, exchangeLimit) {
+    const allSpeakers = arena.querySelectorAll('.speaker:not(.moderator-speaker)');
+    const recentSpeakers = Array.from(allSpeakers).slice(-exchangeLimit);
+    
+    return recentSpeakers.map(speaker => {
+        const name = speaker.querySelector('.speaker-name')?.textContent || 'Speaker';
+        const content = speaker.querySelector('.speaker-content')?.textContent || '';
+        return `${name}: ${content.substring(0, 300)}...`;
+    }).join('\n\n');
+}
+
+async function getProgressiveContinuationResponse(container, participant, role, round, recentContext) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Exploring deeper insights...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        const formatName = discussionFormats[discussionState.format].name;
+        const depthLevel = getDepthLevel(round);
+        
+        // Progressive prompt complexity based on round and role
+        let prompt = `${participant.prompt}
+
+You are continuing a ${formatName} about: "${discussionState.topic}"
+
+This is Round ${round} - ${depthLevel}. The discussion has evolved significantly.
+
+Recent conversation context:
+${recentContext}
+
+${getProgressiveInstructions(round, role)}
+
+Provide a ${getResponseLength(round)} response that demonstrates intellectual growth and deeper understanding.`;
+        
+        const response = await callClaude(prompt);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Error: ${error.message}</div>
+        `;
+    }
+}
+
+function getProgressiveInstructions(round, role) {
+    const instructions = {
+        1: {
+            leader: "Take the lead in this round. Build meaningfully on the insights shared, introducing fresh angles and deeper considerations.",
+            responder: "Respond thoughtfully to the new angles introduced. Add your own insights while weaving together the developing themes.",
+            participant: "Build on the established foundation with new insights and perspectives."
+        },
+        2: {
+            leader: "Challenge some of the assumptions that have emerged. Push the discussion toward more fundamental questions.",
+            responder: "Engage with the challenges raised. Either defend positions with deeper reasoning or acknowledge valid critiques.",
+            participant: "Question assumptions and push toward deeper understanding."
+        },
+        3: {
+            leader: "Enter philosophical territory. Question the very foundations of what we've been discussing.",
+            responder: "Meet the philosophical challenge. Explore the deepest implications and fundamental principles.",
+            synthesis: "Synthesize the philosophical insights that have emerged. Find the deeper unity or irreconcilable tensions.",
+            participant: "Engage philosophically with the fundamental questions raised."
+        },
+        4: {
+            leader: "Seek transcendent insights that go beyond conventional thinking. What wisdom emerges from this deep exploration?",
+            responder: "Respond to the transcendent vision. What ultimate insights can you contribute?",
+            synthesis: "Achieve a transcendent synthesis. What profound understanding emerges from this entire journey?",
+            participant: "Contribute transcendent insights that synthesize our exploration."
+        }
+    };
+    
+    // Special debate instructions for continued engagement
+    if (discussionState.format === 'debate') {
+        const debateInstructions = {
+            1: {
+                leader: "Press your advantage from the initial debate. Identify where your opponents showed weakness and exploit those gaps with new evidence and reasoning.",
+                responder: "Counter-attack strategically. Address their new points while launching fresh offensive arguments that put pressure on their position.",
+                participant: "Continue the intellectual battle. Either press your advantage or fight back against opponent pressure."
+            },
+            2: {
+                leader: "Go deeper into the fundamental weaknesses of the opposing position. Challenge their core assumptions and underlying logic.",
+                responder: "Defend your foundational principles while exposing deeper flaws in their reasoning. Show why their entire approach is misguided.",
+                participant: "Engage in deeper philosophical combat. Attack or defend the fundamental premises of each position."
+            },
+            3: {
+                leader: "Achieve intellectual superiority by demonstrating the philosophical bankruptcy of their position. Show why your worldview is more coherent.",
+                responder: "Mount a final philosophical defense while demonstrating the ultimate contradictions in their thinking.",
+                synthesis: "Declare intellectual victory by showing how this entire exchange has proven your position's superiority.",
+                participant: "Engage in the highest level of intellectual warfare while maintaining philosophical rigor."
+            },
+            4: {
+                leader: "Demonstrate the transcendent truth of your position. Show how this debate has revealed the deeper wisdom of your stance.",
+                responder: "Make a final stand for truth. Show how your position represents higher understanding despite their attacks.",
+                synthesis: "Achieve final victory by synthesizing why your position has proven intellectually and philosophically superior throughout this extended engagement.",
+                participant: "Fight for the ultimate truth of your position with transcendent reasoning."
+            }
+        };
+        return debateInstructions[Math.min(round, 4)][role] || debateInstructions[Math.min(round, 4)].participant;
+    }
+    
+    const roundInstructions = instructions[Math.min(round, 4)];
+    return roundInstructions[role] || roundInstructions.participant || "Continue the deep exploration with fresh insights.";
+}
+
+function getResponseLength(round) {
+    const lengths = {
+        1: "120-150 word",
+        2: "130-160 word", 
+        3: "140-170 word",
+        4: "150-180 word"
+    };
+    return lengths[Math.min(round, 4)] || "150-180 word";
+}
+
+async function getProgressiveModeratorAnalysis(arena, round) {
+    const analysisRound = document.createElement('div');
+    analysisRound.className = 'discussion-round';
+    analysisRound.style.background = 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)';
+    analysisRound.style.border = '2px solid #ff9800';
+    analysisRound.innerHTML = `
+        <div class="round-header" style="color: #e65100;">📊 Moderator Analysis - Round ${round}</div>
+    `;
+    arena.appendChild(analysisRound);
+    
+    const moderatorDiv = document.createElement('div');
+    moderatorDiv.className = 'speaker moderator-speaker';
+    moderatorDiv.innerHTML = `
+        <div class="speaker-name">🤖 Deep Analysis</div>
+        <div><span class="loading"></span>Analyzing the progression...</div>
+    `;
+    analysisRound.appendChild(moderatorDiv);
+    
+    try {
+        const validParticipants = discussionState.participants.filter(p => p);
+        const participantNames = validParticipants.map(p => p.name).join(' and ');
+        const recentContext = collectRecentContext(arena, 8);
+        
+        const prompt = `You are providing deep analysis of an ongoing discussion about "${discussionState.topic}" between ${participantNames}.
+
+This is Round ${round} analysis. The discussion has progressed through ${round} continuation rounds with ${discussionState.totalExchanges} total exchanges.
+
+Recent progression:
+${recentContext}
+
+Provide insightful analysis (150-200 words) that:
+- Identifies how the thinking has evolved and deepened
+- Highlights breakthrough insights or turning points
+- Notes the intellectual trajectory and emerging patterns
+- Suggests what profound directions might emerge next
+- Celebrates the depth achieved so far
+
+Be philosophical and inspiring while maintaining analytical rigor.`;
+        
+        const response = await callClaude(prompt);
+        
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 Deep Analysis</div>
+            <div class="speaker-content">${formatModeratorResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 Deep Analysis</div>
+            <div>📈 The discussion continues to evolve with remarkable depth and insight. Each round reveals new layers of understanding.</div>
+        `;
+    }
+}
+
+async function getBriefModeratorUpdate(container) {
+    const moderatorDiv = document.createElement('div');
+    moderatorDiv.className = 'speaker moderator-speaker';
+    moderatorDiv.innerHTML = `
+        <div class="speaker-name">🤖 Moderator Update</div>
+        <div><span class="loading"></span>Noting new insights...</div>
+    `;
+    container.appendChild(moderatorDiv);
+    
+    try {
+        const validParticipants = discussionState.participants.filter(p => p);
+        const participantNames = validParticipants.map(p => p.name).join(' and ');
+        
+        const prompt = `You are moderating an ongoing discussion about "${discussionState.topic}" with ${participantNames}.
+
+They just provided follow-up thoughts that built on their previous conversation. Provide a brief update (50-80 words) that:
+- Acknowledges the new insights shared
+- Notes how the discussion has evolved
+- Highlights any emerging themes
+
+Keep it concise and forward-looking.`;
+        
+        const response = await callClaude(prompt);
+        
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 Moderator Update</div>
+            <div class="speaker-content">${formatModeratorResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 Moderator Update</div>
+            <div>📝 The discussion continues to evolve with new insights and perspectives.</div>
+        `;
+    }
+}
+
+function startNewDiscussion() {
+    if (confirm('Start a new discussion? This will reset the current conversation.')) {
+        // Reset everything and go back to format selection
+        location.reload();
+    }
+}
+
+function saveDiscussion() {
+    try {
+        const discussionData = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            format: discussionState.format,
+            participants: discussionState.participants.filter(p => p).map(p => ({ name: p.name })),
+            topic: discussionState.topic,
+            content: document.getElementById('discussionArena').innerHTML,
+            analytics: {
+                format: discussionFormats[discussionState.format].name,
+                participantCount: discussionState.participants.filter(p => p).length,
+                duration: 'Recent',
+                messageCount: document.querySelectorAll('.speaker').length,
+                engagementLevel: 'High'
+            }
+        };
+        
+        // Save to localStorage
+        const savedDiscussions = JSON.parse(localStorage.getItem('savedDiscussions') || '[]');
+        savedDiscussions.unshift(discussionData); // Add to beginning
+        
+        // Keep only the most recent 50 discussions
+        if (savedDiscussions.length > 50) {
+            savedDiscussions.splice(50);
+        }
+        
+        localStorage.setItem('savedDiscussions', JSON.stringify(savedDiscussions));
+        
+        showNotification('💾 Discussion saved to your library!', 'success');
+        
+    } catch (error) {
+        showNotification('❌ Failed to save discussion', 'error');
+        console.error('Save error:', error);
+    }
+}
+
+function shareDiscussion() {
+    try {
+        const participants = discussionState.participants.filter(p => p).map(p => p.name).join(' & ');
+        const formatName = discussionFormats[discussionState.format].name;
+        
+        // Extract key discussion points
+        const speakers = document.querySelectorAll('.speaker:not(.moderator-speaker)');
+        let discussionSummary = `${formatName}: "${discussionState.topic}"\nParticipants: ${participants}\n\n`;
+        
+        // Add key excerpts (first 100 chars from each speaker)
+        speakers.forEach((speaker, index) => {
+            if (index < 6) { // Limit to first 6 responses
+                const name = speaker.querySelector('.speaker-name')?.textContent || 'Speaker';
+                const content = speaker.querySelector('.speaker-content')?.textContent || '';
+                const excerpt = content.substring(0, 120).trim();
+                if (excerpt) {
+                    discussionSummary += `${name}: ${excerpt}${content.length > 120 ? '...' : ''}\n\n`;
+                }
+            }
+        });
+        
+        discussionSummary += `\nGenerated by Brilliant Minds Discussion Arena`;
+        
+        navigator.clipboard.writeText(discussionSummary).then(() => {
+            showNotification('🔗 Discussion copied to clipboard!', 'success');
+        }).catch(() => {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = discussionSummary;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showNotification('🔗 Discussion copied to clipboard!', 'success');
+        });
+        
+    } catch (error) {
+        showNotification('❌ Failed to copy discussion', 'error');
+        console.error('Share error:', error);
+    }
+}
+
+// ============================================================================
+// 9. API FUNCTIONS
+// ============================================================================
+
+async function callClaude(prompt) {
+    const response = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            message: prompt,
+            figure: 'discussion'
+        })
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+    }
+    
+    const data = await response.json();
+    return data.content[0].text;
+}
+
+// ============================================================================
+// 10. EVENT LISTENERS AND INITIALIZATION
+// ============================================================================
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    const figure1Select = document.getElementById('figure1');
+    const figure2Select = document.getElementById('figure2');
+    const figure1Custom = document.getElementById('figure1Custom');
+    const figure2Custom = document.getElementById('figure2Custom');
+    
+    // Add event listeners for chat mode
+const chatSelect = document.getElementById('chatFigure');
+const chatCustom = document.getElementById('chatFigureCustom');
+
+if (chatSelect) chatSelect.addEventListener('change', checkReadiness);
+if (chatCustom) chatCustom.addEventListener('input', checkReadiness);
+    
+    // Add event listeners for arena mode
+    if (figure1Select) figure1Select.addEventListener('change', checkReadiness);
+    if (figure2Select) figure2Select.addEventListener('change', checkReadiness);
+    if (figure1Custom) figure1Custom.addEventListener('input', checkReadiness);
+    if (figure2Custom) figure2Custom.addEventListener('input', checkReadiness);
+    
+    // Add event listener for question input
+    const questionInput = document.getElementById('questionInput');
+    if (questionInput) {
+        questionInput.addEventListener('input', checkReadiness);
+    }
+    
+    // Initialize with Discussion Arena properly selected
+    discussionState.format = 'arena';
+    discussionState.participantCount = 2;
+    discussionState.figure1Mode = 'preset';
+    discussionState.figure2Mode = 'preset';
+    
+    // Manually trigger the selection to show all sections
+    showSpeakerSelection('arena');
+    document.getElementById('questionSection').classList.add('active');
+    
+     // Initialize usage tracking
+    initializeUsageTracking();
+
+    // Add a small delay to ensure elements are ready, then check readiness
+    setTimeout(() => {
+        console.log('Initial setup check...');
+        checkReadiness();
+    }, 100);
+    
+    // Also check readiness immediately
+    checkReadiness();
+});
+</script>
 </body>
 </html>

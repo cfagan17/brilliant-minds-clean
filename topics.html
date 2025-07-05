@@ -1,0 +1,404 @@
+cat > topics.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Topics - Brilliant Minds</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c3e50;
+        }
+        
+        .container {
+            background: white;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-radius: 24px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 48px 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .nav-back {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+        }
+        
+        .nav-back a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 48px;
+        }
+        
+        .template-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .template-category {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        
+        .template-category:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .category-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+        }
+        
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .category-description {
+            color: #6c757d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .template-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .template-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .template-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .template-question {
+            color: #495057;
+            font-style: italic;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .suggested-figures {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .figure-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-back">
+                <a href="index.html">🧠 ← Back to Discussion Arena</a>
+            </div>
+            <h1>🎯 Discussion Templates</h1>
+            <p class="subtitle">Explore curated discussion formats and fascinating scenarios</p>
+        </div>
+        
+        <div class="content">
+            <div class="template-categories">
+                <!-- Ethical Dilemmas -->
+                <div class="template-category">
+                    <div class="category-header">
+                        <div class="category-icon">⚖️</div>
+                        <div class="category-title">Ethical Dilemmas</div>
+                    </div>
+                    <div class="category-description">
+                        Complex moral scenarios that challenge different ethical frameworks and perspectives.
+                    </div>
+                    <div class="template-list">
+                        <div class="template-item" onclick="useTemplate('ethical', 'trolley')">
+                            <div class="template-title">The Trolley Problem</div>
+                            <div class="template-question">"Is it morally acceptable to sacrifice one life to save five? How do we weigh individual rights against collective good?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Kant</span>
+                                <span class="figure-tag">Gandhi</span>
+                                <span class="figure-tag">Nietzsche</span>
+                            </div>
+                        </div>
+                        
+                        <div class="template-item" onclick="useTemplate('ethical', 'ai-consciousness')">
+                            <div class="template-title">AI Rights & Consciousness</div>
+                            <div class="template-question">"At what point should artificial intelligence be granted rights? How do we determine consciousness in non-biological entities?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Turing</span>
+                                <span class="figure-tag">Hawking</span>
+                                <span class="figure-tag">Musk</span>
+                            </div>
+                        </div>
+                        
+                        <div class="template-item" onclick="useTemplate('ethical', 'genetic-engineering')">
+                            <div class="template-title">Genetic Enhancement</div>
+                            <div class="template-question">"Should we use genetic engineering to enhance human capabilities? Where do we draw the line between therapy and enhancement?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Darwin</span>
+                                <span class="figure-tag">Venter</span>
+                                <span class="figure-tag">Curie</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Historical What-If -->
+                <div class="template-category">
+                    <div class="category-header">
+                        <div class="category-icon">🔄</div>
+                        <div class="category-title">Historical "What If"</div>
+                    </div>
+                    <div class="category-description">
+                        Explore alternate history scenarios with figures who shaped our world.
+                    </div>
+                    <div class="template-list">
+                        <div class="template-item" onclick="useTemplate('historical', 'internet-earlier')">
+                            <div class="template-title">What if the Internet Existed in 1900?</div>
+                            <div class="template-question">"How would global communication have changed the course of the 20th century? What would Einstein and Tesla have accomplished with instant collaboration?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Einstein</span>
+                                <span class="figure-tag">Tesla</span>
+                                <span class="figure-tag">Edison</span>
+                            </div>
+                        </div>
+                        
+                        <div class="template-item" onclick="useTemplate('historical', 'no-ww2')">
+                            <div class="template-title">What if World War II Never Happened?</div>
+                            <div class="template-question">"How would technology, society, and international relations have developed differently? What scientific breakthroughs might have emerged from peaceful collaboration?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Churchill</span>
+                                <span class="figure-tag">Einstein</span>
+                                <span class="figure-tag">Gandhi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modern Problem Solving -->
+                <div class="template-category">
+                    <div class="category-header">
+                        <div class="category-icon">🚀</div>
+                        <div class="category-title">Modern Problem Solving</div>
+                    </div>
+                    <div class="category-description">
+                        Apply historical wisdom to contemporary challenges and future scenarios.
+                    </div>
+                    <div class="template-list">
+                        <div class="template-item" onclick="useTemplate('modern', 'climate-solutions')">
+                            <div class="template-title">Climate Change Solutions</div>
+                            <div class="template-question">"How can we balance economic growth with environmental sustainability? What would past innovators do with today's climate technology?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Tesla</span>
+                                <span class="figure-tag">Jobs</span>
+                                <span class="figure-tag">Musk</span>
+                            </div>
+                        </div>
+                        
+                        <div class="template-item" onclick="useTemplate('modern', 'social-media-impact')">
+                            <div class="template-title">Social Media & Democracy</div>
+                            <div class="template-question">"How is social media changing democratic discourse? What would the founders of democratic thought say about information echo chambers?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Jefferson</span>
+                                <span class="figure-tag">Chomsky</span>
+                                <span class="figure-tag">Lincoln</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cross-Era Collaborations -->
+                <div class="template-category">
+                    <div class="category-header">
+                        <div class="category-icon">🌉</div>
+                        <div class="category-title">Cross-Era Collaborations</div>
+                    </div>
+                    <div class="category-description">
+                        Bridge ancient wisdom with modern innovation across different time periods.
+                    </div>
+                    <div class="template-list">
+                        <div class="template-item" onclick="useTemplate('cross-era', 'ancient-tech')">
+                            <div class="template-title">Ancient Philosophy Meets AI</div>
+                            <div class="template-question">"How would ancient philosophical principles guide the development of artificial intelligence? Can Socratic questioning improve machine learning?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Socrates</span>
+                                <span class="figure-tag">Turing</span>
+                                <span class="figure-tag">Tegmark</span>
+                            </div>
+                        </div>
+                        
+                        <div class="template-item" onclick="useTemplate('cross-era', 'art-science')">
+                            <div class="template-title">Renaissance Art Meets Modern Science</div>
+                            <div class="template-question">"How can artistic creativity enhance scientific discovery? What would da Vinci accomplish with modern tools and knowledge?"</div>
+                            <div class="suggested-figures">
+                                <span class="figure-tag">Leonardo</span>
+                                <span class="figure-tag">Feynman</span>
+                                <span class="figure-tag">Jobs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Template data structure
+        const templates = {
+            ethical: {
+                'trolley': {
+                    title: 'The Trolley Problem',
+                    question: 'Is it morally acceptable to sacrifice one life to save five? How do we weigh individual rights against collective good?',
+                    figures: ['kant', 'gandhi', 'nietzsche'],
+                    context: 'This classic ethical dilemma explores the tension between utilitarian and deontological moral frameworks.'
+                },
+                'ai-consciousness': {
+                    title: 'AI Rights & Consciousness',
+                    question: 'At what point should artificial intelligence be granted rights? How do we determine consciousness in non-biological entities?',
+                    figures: ['turing', 'hawking', 'musk'],
+                    context: 'As AI becomes more sophisticated, we must grapple with questions of consciousness, rights, and moral status.'
+                },
+                'genetic-engineering': {
+                    title: 'Genetic Enhancement',
+                    question: 'Should we use genetic engineering to enhance human capabilities? Where do we draw the line between therapy and enhancement?',
+                    figures: ['darwin', 'venter', 'curie'],
+                    context: 'CRISPR and other technologies make genetic modification of humans increasingly possible and precise.'
+                }
+            },
+            historical: {
+                'internet-earlier': {
+                    title: 'What if the Internet Existed in 1900?',
+                    question: 'How would global communication have changed the course of the 20th century? What would Einstein and Tesla have accomplished with instant collaboration?',
+                    figures: ['einstein', 'tesla', 'edison'],
+                    context: 'Imagine the accelerated pace of scientific discovery if brilliant minds could collaborate instantly across continents.'
+                },
+                'no-ww2': {
+                    title: 'What if World War II Never Happened?',
+                    question: 'How would technology, society, and international relations have developed differently? What scientific breakthroughs might have emerged from peaceful collaboration?',
+                    figures: ['churchill', 'einstein', 'gandhi'],
+                    context: 'Consider how resources devoted to warfare might have advanced human knowledge and cooperation instead.'
+                }
+            },
+            modern: {
+                'climate-solutions': {
+                    title: 'Climate Change Solutions',
+                    question: 'How can we balance economic growth with environmental sustainability? What would past innovators do with today\'s climate technology?',
+                    figures: ['tesla', 'jobs', 'musk'],
+                    context: 'Modern technology offers solutions to climate change, but implementation requires overcoming economic and political barriers.'
+                },
+                'social-media-impact': {
+                    title: 'Social Media & Democracy',
+                    question: 'How is social media changing democratic discourse? What would the founders of democratic thought say about information echo chambers?',
+                    figures: ['jefferson', 'chomsky', 'lincoln'],
+                    context: 'Social media has transformed how we communicate and form political opinions, with both positive and negative consequences.'
+                }
+            },
+            'cross-era': {
+                'ancient-tech': {
+                    title: 'Ancient Philosophy Meets AI',
+                    question: 'How would ancient philosophical principles guide the development of artificial intelligence? Can Socratic questioning improve machine learning?',
+                    figures: ['socrates', 'turing', 'tegmark'],
+                    context: 'Ancient wisdom about knowledge, consciousness, and ethics may provide crucial insights for AI development.'
+                },
+                'art-science': {
+                    title: 'Renaissance Art Meets Modern Science',
+                    question: 'How can artistic creativity enhance scientific discovery? What would da Vinci accomplish with modern tools and knowledge?',
+                    figures: ['leonardo', 'feynman', 'jobs'],
+                    context: 'The Renaissance showed how art and science can enhance each other. How might this apply to modern innovation?'
+                }
+            }
+        };
+
+        function useTemplate(category, templateId) {
+            const template = templates[category][templateId];
+            if (!template) return;
+
+            // Store template data for the discussion page
+            localStorage.setItem('selectedTemplate', JSON.stringify({
+                title: template.title,
+                question: template.question,
+                suggestedFigures: template.figures,
+                context: template.context,
+                category: category
+            }));
+
+            // Redirect to discussion arena
+            window.location.href = 'index.html?template=true';
+        }
+    </script>
+</body>
+</html>
+EOF

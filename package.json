@@ -1,17 +1,27 @@
 {
   "name": "historical-figures-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "Chat and discuss with brilliant historical figures using AI",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node -r dotenv/config server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "ai",
+    "chat",
+    "historical",
+    "figures",
+    "claude",
+    "discussion"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0",
+    "stripe": "^18.3.0"
   }
 }
