@@ -711,7 +711,6 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
     </style>
-     <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <div class="container">
@@ -1118,7 +1117,7 @@
 // Stripe configuration
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhLmZCDMgddFpkCd8CBKwCBzTOsx2Aoj2a86E9cGH8HdZLymEMbZBhthz4SpbMjc386psUahOO6Omy7FJclINca00QrgoPJE0'; 
 const STRIPE_PRICE_ID = 'price_1RhLvvCDMgddFpkCyUvK9e9q'; 
-const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+let stripe = null; // ✅ Initialize as null, will be set when Stripe loads
 
 
 // Enhanced discussion state to store responses
@@ -1141,6 +1140,24 @@ let usageState = {
     lastResetDate: new Date().toDateString(),
     totalDiscussions: 0,
     isProUser: false
+};
+
+// ADD THIS NEW ANALYTICS STATE
+let analyticsState = {
+    userId: null,
+    sessionId: null,
+    totalSessions: 0,
+    formatUsage: {
+        arena: 0,
+        chat: 0,
+        panel: 0,
+        symposium: 0,
+        debate: 0,
+        roundtable: 0
+    },
+    dailyStats: {},
+    firstVisit: null,
+    lastVisit: null
 };
 
 // Question mode management
@@ -1426,7 +1443,12 @@ function checkPaymentSuccess() {
         usageState.isProUser = true;
         saveUsageState();
         updateUsageDisplay();
-        
+        trackUpgradeFlow('payment_completed', {
+            conversionComplete: true,
+            finalDiscussionsUsed: usageState.dailyDiscussions
+        });
+        trackUpgrade('stripe');
+
         // Clean up the URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
@@ -1437,11 +1459,29 @@ function checkPaymentSuccess() {
     }
     
     if (urlParams.get('canceled') === 'true') {
+        trackUpgradeFlow('payment_canceled', {
+            reason: 'user_canceled'
+        });
         // Payment was canceled
         showNotification('Payment canceled. You can upgrade anytime!', 'info');
         
         // Clean up the URL
         window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+// Initialize Stripe when it's ready
+async function initializeStripe() {
+    try {
+        console.log('🔄 Loading Stripe library...');
+        const StripeLib = await loadStripe();
+        
+        stripe = StripeLib(STRIPE_PUBLISHABLE_KEY);
+        console.log('✅ Stripe initialized successfully');
+        return true;
+    } catch (error) {
+        console.error('❌ Failed to initialize Stripe:', error);
+        return false;
     }
 }
 
@@ -1464,6 +1504,9 @@ function updateUsageDisplay() {
 }
 
 function showUpgradeModal() {
+    trackUpgradeFlow('modal_shown', {
+        trigger: 'usage_limit_reached'
+    });
     // Remove any existing modal first
     const existingModal = document.querySelector('.upgrade-modal');
     if (existingModal) {
@@ -1505,8 +1548,22 @@ function closeUpgradeModal() {
 }
 
 async function upgradeToProDemo() {
+    trackUpgradeFlow('payment_started', {
+        paymentMethod: 'stripe'
+    });
     try {
         // Create checkout session
+        if (!stripe) {
+            console.log('Stripe not initialized, initializing now...');
+            await initializeStripe();
+        }
+        
+        // Double-check that Stripe is now available
+        if (!stripe) {
+            throw new Error('Stripe failed to initialize');
+        }
+        
+        console.log('Creating checkout session...');
         const response = await fetch('/api/create-checkout-session', {
             method: 'POST',
             headers: {
@@ -1534,6 +1591,10 @@ async function upgradeToProDemo() {
         }
         
     } catch (error) {
+        trackUpgradeFlow('payment_error', {
+            error: error.message
+        });
+
         console.error('Upgrade error:', error);
         alert('Something went wrong. Please try again.');
     }
@@ -1548,7 +1609,187 @@ function initializeUsageTracking() {
     loadUsageState();
     updateUsageDisplay();
 }
+// Analytics tracking functions
+function initializeAnalytics() {
+    // Generate or load user ID
+    let stored = localStorage.getItem('brilliantMindsAnalytics');
+    if (stored) {
+        analyticsState = { ...analyticsState, ...JSON.parse(stored) };
+    } else {
+        analyticsState.userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        analyticsState.firstVisit = new Date().toISOString();
+    }
+    
+    // Generate session ID
+    analyticsState.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    analyticsState.totalSessions++;
+    analyticsState.lastVisit = new Date().toISOString();
+    analyticsState.sessionStartTime = Date.now();
+    
+    // Initialize today's stats
+    const today = new Date().toDateString();
+    if (!analyticsState.dailyStats[today]) {
+        analyticsState.dailyStats[today] = {
+            discussions: 0,
+            formats: {},
+            upgraded: false
+        };
+    }
+    
+    saveAnalytics();
+    
+    // Track session start
+    trackEvent('session_start');
+}
 
+function trackEvent(eventType, data = {}) {
+    const event = {
+        eventType,
+        userId: analyticsState.userId,
+        sessionId: analyticsState.sessionId,
+        timestamp: new Date().toISOString(),
+        data
+    };
+    
+    console.log('📊 Analytics Event:', event);
+    
+    // Send to backend (we'll implement this)
+    sendAnalyticsEvent(event);
+}
+
+function trackDiscussionStart(format, participants, topic) {
+    // Update format usage
+    analyticsState.formatUsage[format]++;
+    
+    // Update daily stats
+    const today = new Date().toDateString();
+    if (!analyticsState.dailyStats[today]) {
+        analyticsState.dailyStats[today] = { discussions: 0, formats: {}, upgraded: false };
+    }
+    
+    analyticsState.dailyStats[today].discussions++;
+    analyticsState.dailyStats[today].formats[format] = 
+        (analyticsState.dailyStats[today].formats[format] || 0) + 1;
+    
+    saveAnalytics();
+    
+    // Track the event
+    trackEvent('discussion_start', {
+        format,
+        participantCount: participants?.length || 0,
+        participantNames: participants?.map(p => p?.name).filter(Boolean) || [],
+        topicLength: topic?.length || 0,
+        isProUser: usageState.isProUser,
+        dailyDiscussionNumber: usageState.dailyDiscussions
+    });
+}
+
+function trackUpgrade(method = 'stripe') {
+    const today = new Date().toDateString();
+    if (analyticsState.dailyStats[today]) {
+        analyticsState.dailyStats[today].upgraded = true;
+    }
+    
+    saveAnalytics();
+    
+    trackEvent('user_upgraded', {
+        method,
+        discussionsBeforeUpgrade: usageState.dailyDiscussions,
+        totalDiscussions: usageState.totalDiscussions,
+        daysAsUser: calculateDaysAsUser()
+    });
+}
+
+function trackFormatSelection(format) {
+    trackEvent('format_selected', { format });
+}
+
+function saveAnalytics() {
+    localStorage.setItem('brilliantMindsAnalytics', JSON.stringify(analyticsState));
+}
+
+function calculateDaysAsUser() {
+    if (!analyticsState.firstVisit) return 0;
+    const first = new Date(analyticsState.firstVisit);
+    const now = new Date();
+    return Math.floor((now - first) / (1000 * 60 * 60 * 24));
+}
+
+async function sendAnalyticsEvent(event) {
+    try {
+        // Use the current origin (works in Codespaces and locally)
+        const apiUrl = `${window.location.origin}/api/analytics`;
+        
+        await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+        });
+    } catch (error) {
+        // Fail silently - don't break the app if analytics fails
+        console.log('Analytics send failed (non-critical):', error.message);
+    }
+}
+// Advanced conversion funnel tracking
+function trackUpgradeFlow(step, data = {}) {
+    const conversionData = {
+        step: step,
+        discussionsUsed: usageState.dailyDiscussions,
+        totalDiscussions: usageState.totalDiscussions,
+        timeAsUser: calculateDaysAsUser(),
+        currentFormat: discussionState.format,
+        sessionTime: Date.now() - analyticsState.sessionStartTime,
+        ...data
+    };
+    
+    console.log(`🔥 Conversion Step: ${step}`, conversionData);
+    
+    trackEvent('upgrade_flow', conversionData);
+}
+
+// Track user engagement levels
+function trackEngagement(action, details = {}) {
+    trackEvent('user_engagement', {
+        action: action,
+        sessionLength: Date.now() - (analyticsState.sessionStartTime || Date.now()),
+        discussionsInSession: usageState.dailyDiscussions,
+        currentFormat: discussionState.format,
+        ...details
+    });
+}
+// Dynamically load Stripe library
+function loadStripe() {
+    return new Promise((resolve, reject) => {
+        // Check if Stripe is already loaded
+        if (window.Stripe) {
+            resolve(window.Stripe);
+            return;
+        }
+        
+        // Create script element
+        const script = document.createElement('script');
+        script.src = 'https://js.stripe.com/v3/';
+        script.async = true;
+        
+        script.onload = () => {
+            if (window.Stripe) {
+                console.log('✅ Stripe library loaded successfully');
+                resolve(window.Stripe);
+            } else {
+                console.error('❌ Stripe library failed to load');
+                reject(new Error('Stripe library failed to load'));
+            }
+        };
+        
+        script.onerror = () => {
+            console.error('❌ Failed to load Stripe script');
+            reject(new Error('Failed to load Stripe script'));
+        };
+        
+        // Add to head
+        document.head.appendChild(script);
+    });
+}
 // ============================================================================
 // 3. FORMAT SELECTION FUNCTIONS
 // ============================================================================
@@ -1569,7 +1810,7 @@ function selectFormat(format, count) {
     
     // Show question section
     document.getElementById('questionSection').classList.add('active');
-    
+    trackFormatSelection(format);
     checkReadiness();
 }
 
@@ -1592,6 +1833,26 @@ function showSpeakerSelection(format) {
         // Show two-person layout
         document.getElementById('arena-selection').classList.add('active');
     }
+}
+
+function setupMultiPersonLayout(format) {
+    const formatConfig = discussionFormats[format];
+    
+    // Update header
+    document.getElementById('multiTitle').textContent = `${getFormatIcon(format)} Select Your ${getParticipantLabel(format)}`;
+    document.getElementById('multiDescription').textContent = formatConfig.description;
+    
+    // Show role assignment if needed
+    if (formatConfig.roleDescription) {
+        document.getElementById('roleAssignment').style.display = 'block';
+        document.getElementById('roleTitle').textContent = `${getFormatIcon(format)} ${formatConfig.name} Structure`;
+        document.getElementById('roleDescription').textContent = formatConfig.roleDescription;
+    } else {
+        document.getElementById('roleAssignment').style.display = 'none';
+    }
+    
+    // Generate participant slots
+    generateParticipantSlots(formatConfig.participants, format);
 }
 
 // ============================================================================
@@ -2101,6 +2362,10 @@ async function startDiscussion() {
     console.log('Start discussion called, daily discussions:', usageState.dailyDiscussions);
     // Check usage limits for free users
     if (!usageState.isProUser && usageState.dailyDiscussions >= 5) {
+        trackUpgradeFlow('limit_reached', {
+            attemptedFormat: discussionState.format,
+            lastDiscussionTopic: discussionState.topic
+        });
         showUpgradeModal();
         return;
     }
@@ -2110,6 +2375,13 @@ async function startDiscussion() {
     usageState.totalDiscussions++;
     saveUsageState();
     updateUsageDisplay();
+
+    // ADD THIS - Track the discussion start
+    trackDiscussionStart(
+        discussionState.format, 
+        discussionState.participants.filter(p => p), 
+        discussionState.topic
+    );
 
     let question;
     
@@ -3098,6 +3370,7 @@ if (chatCustom) chatCustom.addEventListener('input', checkReadiness);
     
      // Initialize usage tracking
     initializeUsageTracking();
+    initializeAnalytics();
     checkPaymentSuccess();
 
     // Add a small delay to ensure elements are ready, then check readiness
