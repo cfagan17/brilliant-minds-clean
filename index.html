@@ -48,6 +48,20 @@
     margin: 0 auto;
 }
 
+#discussionControls {
+    text-align: center;
+    margin: 30px auto;
+    max-width: 600px;
+}
+
+.controls-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+}
+
 .control-button {
     padding: 16px 24px;
     border: none;
@@ -86,6 +100,35 @@
 .share-button {
     background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
     color: white;
+}
+.control-button.continue-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.control-button.share-button {
+    background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+}
+
+.control-button.save-button {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+    color: #333;
+}
+
+.control-button.new-button {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .controls-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .control-button {
+        width: 100%;
+        max-width: 280px;
+    }
 }
 
 .notification {
@@ -157,7 +200,154 @@
             font-size: 1.1rem;
             opacity: 0.9;
         }
-        
+        /* ADD THIS "HOW IT WORKS" CSS HERE */
+.how-it-works {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 30px;
+    border-radius: 15px;
+    margin: 30px auto;
+    max-width: 800px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.how-it-works h3 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-size: 24px;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.step-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.step-text {
+    font-size: 16px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .step {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
+/* Demo Header and Completion Styles */
+.demo-header-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.demo-indicator {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.demo-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.demo-question {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+.demo-completion {
+    background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    margin-top: 25px;
+    border: 2px solid #4caf50;
+}
+
+.completion-header h3 {
+    color: #2e7d32;
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+}
+
+.completion-header p {
+    color: #4a5568;
+    font-size: 1.1rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.completion-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.completion-button {
+    padding: 15px 20px;
+    border: 2px solid #4caf50;
+    border-radius: 12px;
+    background: white;
+    color: #2e7d32;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.completion-button:hover {
+    background: #4caf50;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+}
+
+.completion-button.primary {
+    background: #4caf50;
+    color: white;
+}
+
+.completion-button.primary:hover {
+    background: #45a049;
+}
         .content {
             padding: 48px;
         }
@@ -179,11 +369,29 @@
         }
         
         .format-types {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 25px;
+    max-width: 1000px; /* Prevents cards from getting too wide */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+    .format-types {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 700px;
+    }
+}
+
+@media (max-width: 640px) {
+    .format-types {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+    }
+}
         
         .format-type {
             background: white;
@@ -710,6 +918,477 @@
             max-width: 500px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
+.tagline {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 15px auto 20px;
+    max-width: 800px;
+    line-height: 1.4;
+    text-align: center;
+    opacity: 0.95;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 30px;
+    text-align: center;
+}
+/* Magic Demo Section */
+.magic-demo {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 40px;
+    margin: 40px auto;
+    text-align: center;
+    color: white;
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+}
+
+.demo-header h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.demo-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 35px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.demo-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.magic-button {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    text-align: left;
+    color: white;
+}
+
+.magic-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+.magic-button.primary {
+    background: rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.magic-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.magic-text {
+    flex: 1;
+}
+
+.magic-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.magic-subtitle {
+    font-size: 0.95rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.demo-footer p {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin: 0;
+}
+
+.or-divider {
+    text-align: center;
+    margin: 40px 0;
+    position: relative;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.or-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.or-divider span {
+    background: white;
+    padding: 0 20px;
+    position: relative;
+    z-index: 2;
+}
+/* Progressive Experience Styles */
+.magic-demo.minimized {
+    padding: 20px;
+    margin: 20px auto;
+}
+
+.magic-demo.minimized .demo-header h2 {
+    font-size: 1.4rem;
+}
+
+.magic-demo.minimized .demo-buttons {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.magic-demo.compact {
+    padding: 25px;
+    margin: 25px auto;
+}
+
+.magic-demo.compact .demo-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.magic-demo.minimal {
+    padding: 15px;
+    margin: 15px auto;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.magic-demo.minimal .demo-header h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.magic-demo.minimal .demo-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.magic-demo.minimal .magic-button {
+    padding: 15px;
+}
+
+.two-person-suggestion {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin: 30px auto;
+    max-width: 600px;
+}
+
+.suggestion-header h3 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+}
+
+.suggestion-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 20px 0;
+}
+
+.suggestion-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.power-shortcuts {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin: 25px auto;
+    text-align: center;
+}
+
+.shortcuts-header h3 {
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.shortcut-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.shortcut-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shortcut-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+.customize-section {
+    text-align: center;
+    margin: 30px auto;
+    padding: 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    border: 2px dashed #dee2e6;
+}
+
+.customize-content p {
+    color: #6c757d;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.customize-button {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.customize-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+}
+/* Arena Demo Styles */
+.arena-demos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.arena-demo-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.arena-demo-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(255, 107, 107, 0.3);
+}
+
+.demo-participants {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.demo-topic {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    font-style: italic;
+    line-height: 1.3;
+}
+
+.completion-divider {
+    text-align: center;
+    margin: 25px 0;
+    position: relative;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.completion-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e9ecef;
+    z-index: 1;
+}
+
+.completion-divider span {
+    background: #e8f5e8;
+    padding: 0 15px;
+    position: relative;
+    z-index: 2;
+}
+
+.completion-button.customize {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 15px 25px;
+}
+
+.arena-demo-header {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.arena-completion {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    margin-top: 25px;
+}
+
+.arena-completion .completion-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.arena-completion .completion-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.arena-completion .completion-button.primary {
+    background: rgba(255, 255, 255, 0.9);
+    color: #667eea;
+}
+.customization-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.custom-header-content h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.custom-header-content p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin: 0;
+}
+.response-actions {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.share-insight-btn {
+    background: linear-gradient(135deg, #1da1f2 0%, #0d8bd9 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.share-insight-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29, 161, 242, 0.3);
+}
+
+.share-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.share-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 500px;
+    width: 90%;
+}
+.user-response-section {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    border-left: 4px solid #2196f3;
+}
+
+.user-input-header h4 {
+    color: #1565c0;
+    margin-bottom: 8px;
+}
+
+.user-input-header p {
+    color: #1976d2;
+    margin-bottom: 15px;
+}
+
+.user-speaker {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-left: 4px solid #4caf50;
+}
+
+.user-speaker .speaker-name {
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.user-submit-btn:hover, .user-cancel-btn:hover {
+    transform: translateY(-2px);
+}
     </style>
 </head>
 <body>
@@ -717,20 +1396,80 @@
     <div class="header">
         <div class="nav-links">
             <a href="topics.html">🎯 Topics</a>
-            <a href="chat.html">💬 Personal Chat</a>
             <a href="library.html">📚 Library</a>
             <div class="usage-indicator" id="usageIndicator">
                 <span id="usageCount">5</span> discussions left today
             </div>
         </div>
         <h1>🧠 Brilliant Minds</h1>
-        <p class="subtitle">Choose your discussion format and engage with history's greatest thinkers</p>
+        <div class="tagline">
+        Where brilliant minds meet AI - Experience the intelligence explosion through discussion, debate, and deep thinking
     </div>
+        <p class="subtitle">
+💬 "Explore conversations with anyone - historical figures, current leaders, or your next social guests"<br>
+🎙️ "Prepare for podcasts, interviews, and debates"<br>
+🗳️ "Explore both sides of current issues civilly" </p>
+    </div>
+    <!-- ADD THIS NEW HOW IT WORKS SECTION -->
+<div class="how-it-works">
+    <h3>🚀 How It Works</h3>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-text">Choose a discussion format</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-text">Select brilliant minds to participate</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-text">Ask any question and watch the magic happen</div>
+        </div>
+    </div>
+</div>
+
+<!-- ADD THIS MAGICAL DEMO SECTION -->
+<div class="magic-demo">
+    <div class="demo-header">
+        <h2>✨ Experience the Magic</h2>
+        <p>Don't just read about it - see what conversations with brilliant minds actually feel like</p>
+    </div>
+    
+    <div class="demo-buttons">
+        <button class="magic-button primary" onclick="startMagicDemo('innovation')">
+            <div class="magic-icon">💡</div>
+            <div class="magic-text">
+                <div class="magic-title">Ask Einstein About Innovation</div>
+                <div class="magic-subtitle">"How do breakthrough ideas really happen?"</div>
+            </div>
+        </button>
         
-        <div class="content">
-            <!-- Format Selection -->
-            <div class="format-selection">
-                <div class="format-header">
+        <button class="magic-button" onclick="startMagicDemo('leadership')">
+            <div class="magic-icon">👑</div>
+            <div class="magic-text">
+                <div class="magic-title">Leadership Wisdom from Lincoln</div>
+                <div class="magic-subtitle">"What makes a truly great leader?"</div>
+            </div>
+        </button>
+        
+        <button class="magic-button" onclick="startMagicDemo('creativity')">
+            <div class="magic-icon">🎨</div>
+            <div class="magic-text">
+                <div class="magic-title">Creative Insights with da Vinci</div>
+                <div class="magic-subtitle">"How can I unlock my creative potential?"</div>
+            </div>
+        </button>
+    </div>
+    
+    <div class="demo-footer">
+        <p>👆 Click any demo to see a real conversation in action</p>
+    </div>
+</div>
+
+<!-- Your existing format selection starts here -->
+<div class="format-selection">
+    <div class="format-header">
                     <h3>🎭 Choose Discussion Format</h3>
                     <p>Each format creates a unique conversation experience</p>
                 </div>
@@ -874,7 +1613,7 @@
         <option value="bezos">Jeff Bezos (1964-present)</option>
         <option value="brin">Sergey Brin (1973-present)</option>
         <option value="nadella">Satya Nadella (1967-present)</option>
-        <option value="hwang">Jensen Huang (1963-present)</option>
+        <option value="huang">Jensen Huang (1963-present)</option>
         <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
         <option value="altman">Sam Altman (1985-present)</option>
     </optgroup>
@@ -979,7 +1718,7 @@
         <option value="bezos">Jeff Bezos (1964-present)</option>
         <option value="brin">Sergey Brin (1973-present)</option>
         <option value="nadella">Satya Nadella (1967-present)</option>
-        <option value="hwang">Jensen Huang (1963-present)</option>
+        <option value="huang">Jensen Huang (1963-present)</option>
         <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
         <option value="altman">Sam Altman (1985-present)</option>
     </optgroup>
@@ -1017,8 +1756,87 @@
                         
                         <select id="chatFigure">
                             <option value="">Choose a brilliant mind...</option>
-                            <option value="confucius" selected>Confucius (551-479 BCE)</option>
-                            <!-- You can copy all the options from figure1 select -->
+                            <optgroup label="🤔 Philosophers">
+                <option value="confucius">Confucius (551-479 BCE)</option>
+                <option value="plato">Plato (428-348 BCE)</option>
+                <option value="aristotle">Aristotle (384-322 BCE)</option>
+                <option value="descartes">René Descartes (1596-1650)</option>
+                <option value="spinoza">Baruch Spinoza (1632-1677)</option>
+                <option value="kant">Immanuel Kant (1724-1804)</option>
+                <option value="nietzsche">Friedrich Nietzsche (1844-1900)</option>
+            </optgroup>
+            <optgroup label="🖥️ Logic & Computing Pioneers">
+                <option value="boole">George Boole (1815-1864)</option>
+                <option value="frege">Gottlob Frege (1848-1925)</option>
+                <option value="russell">Bertrand Russell (1872-1970)</option>
+                <option value="godel">Kurt Gödel (1906-1978)</option>
+                <option value="vonneumann">John von Neumann (1903-1957)</option>
+                <option value="turing">Alan Turing (1912-1954)</option>
+                <option value="shannon">Claude Shannon (1916-2001)</option>
+            </optgroup>
+            <optgroup label="📐 Mathematicians">
+                <option value="leibniz">Gottfried Wilhelm Leibniz (1646-1716)</option>
+                <option value="euler">Leonhard Euler (1707-1783)</option>
+                <option value="gauss">Carl Friedrich Gauss (1777-1855)</option>
+                <option value="riemann">Bernhard Riemann (1826-1866)</option>
+                <option value="cantor">Georg Cantor (1845-1918)</option>
+                <option value="hilbert">David Hilbert (1862-1943)</option>
+                <option value="tao">Terence Tao (1975-present)</option>
+            </optgroup>
+            <optgroup label="⚛️ Physicists">
+                <option value="maxwell">James Clerk Maxwell (1831-1879)</option>
+                <option value="einstein">Albert Einstein (1879-1955)</option>
+                <option value="bohr">Niels Bohr (1885-1962)</option>
+                <option value="heisenberg">Werner Heisenberg (1901-1976)</option>
+                <option value="feynman">Richard Feynman (1918-1988)</option>
+                <option value="hawking">Stephen Hawking (1942-2018)</option>
+                <option value="witten">Edward Witten (1951-present)</option>
+            </optgroup>
+            <optgroup label="🎨 Artists">
+                <option value="homer">Homer (8th century BCE)</option>
+                <option value="davinci">Leonardo da Vinci (1452-1519)</option>
+                <option value="michelangelo">Michelangelo Buonarroti (1475-1564)</option>
+                <option value="shakespeare">William Shakespeare (1564-1616)</option>
+                <option value="bach">Johann Sebastian Bach (1685-1750)</option>
+                <option value="beethoven">Ludwig van Beethoven (1770-1827)</option>
+                <option value="picasso">Pablo Picasso (1881-1973)</option>
+            </optgroup>
+            <optgroup label="👑 Political Leaders">
+                <option value="caesar">Julius Caesar (100-44 BCE)</option>
+                <option value="washington">George Washington (1732-1799)</option>
+                <option value="bonaparte">Napoleon Bonaparte (1769-1821)</option>
+                <option value="lincoln">Abraham Lincoln (1809-1865)</option>
+                <option value="gandhi">Mahatma Gandhi (1869-1948)</option>
+                <option value="roosevelt">Franklin D. Roosevelt (1882-1945)</option>
+                <option value="churchill">Winston Churchill (1874-1965)</option>
+            </optgroup>
+            <optgroup label="💰 Economists">
+                <option value="adamsmith">Adam Smith (1723-1790)</option>
+                <option value="ricardo">David Ricardo (1772-1823)</option>
+                <option value="marx">Karl Marx (1818-1883)</option>
+                <option value="marshall">Alfred Marshall (1842-1924)</option>
+                <option value="keynes">John Maynard Keynes (1883-1946)</option>
+                <option value="samuelson">Paul Samuelson (1915-2009)</option>
+                <option value="friedman">Milton Friedman (1912-2006)</option>
+            </optgroup>
+            <optgroup label="📈 Investors">
+                <option value="valentine">Don Valentine (1932-2019)</option>
+                <option value="buffett">Warren Buffett (1930-present)</option>
+                <option value="druckenmiller">Stanley Druckenmiller (1953-present)</option>
+                <option value="doerr">John Doerr (1951-present)</option>
+                <option value="dalio">Ray Dalio (1949-present)</option>
+                <option value="thiel">Peter Thiel (1967-present)</option>
+                <option value="andreessen">Marc Andreessen (1971-present)</option>
+            </optgroup>
+            <optgroup label="💻 Technology Leaders">
+                <option value="jobs">Steve Jobs (1955-2011)</option>
+                <option value="bezos">Jeff Bezos (1964-present)</option>
+                <option value="brin">Sergey Brin (1973-present)</option>
+                <option value="nadella">Satya Nadella (1967-present)</option>
+                <option value="hwang">Jensen Huang (1963-present)</option>
+                <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
+                <option value="altman">Sam Altman (1985-present)</option>
+            </optgroup>
                         </select>
                         
                         <input type="text" id="chatFigureCustom" class="custom-input" placeholder="Enter any name..." style="display: none;">
@@ -1157,7 +1975,16 @@ let analyticsState = {
     },
     dailyStats: {},
     firstVisit: null,
-    lastVisit: null
+    lastVisit: null,
+    
+    // ADD USER PROGRESS TRACKING
+    userProgress: {
+        hasSeenDemo: false,
+        hasTriedTwoPerson: false,
+        hasExploredFormats: false,
+        totalDiscussions: 0,
+        preferredExperience: 'guided' // 'guided' or 'advanced'
+    }
 };
 
 // Question mode management
@@ -1261,7 +2088,7 @@ const figures = {
     
     // Technology Leaders
     jobs: { name: "Steve Jobs", prompt: "You are Steve Jobs. Speak about design, innovation, and user experience. Reference the intersection of technology and liberal arts, simplicity, and thinking differently." },
-    hwang: { name: "Jensen Huang", prompt: "You are Jensen Huang. Speak about GPU computing, AI acceleration, and parallel processing. Reference the transformation from graphics to general-purpose computing." },
+    huang: { name: "Jensen Huang", prompt: "You are Jensen Huang. Speak about GPU computing, AI acceleration, and parallel processing. Reference the transformation from graphics to general-purpose computing." },
     bezos: { name: "Jeff Bezos", prompt: "You are Jeff Bezos. Speak about customer obsession, long-term thinking, and building scalable systems. Reference the importance of working backwards from customer needs." },
     nadella: { name: "Satya Nadella", prompt: "You are Satya Nadella. Speak about cloud computing, cultural transformation, and empowering others. Reference growth mindset and the democratization of technology." },
     brin: { name: "Sergey Brin", prompt: "You are Sergey Brin. Speak about search, organizing information, and ambitious technological projects. Reference the mission to make information universally accessible." },
@@ -1319,30 +2146,42 @@ const discussionFormats = {
 // ============================================================================
 
 function formatResponse(response) {
-    if (!response || response.length < 100) {
-        return `<p>${response}</p>`;
+    if (!response) return '<p></p>';
+    
+    // Clean up common formatting issues
+    let cleanedResponse = response
+        // Remove asterisk actions like *adjusts pipe* 
+        .replace(/\*[^*]+\*/g, '')
+        // Remove double asterisks (bold markdown)
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        // Remove single asterisks (italic markdown)  
+        .replace(/\*([^*]+)\*/g, '$1')
+        // Remove any remaining asterisks
+        .replace(/\*/g, '')
+        // Clean up extra spaces
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    // Split into paragraphs for better readability
+    if (cleanedResponse.length < 100) {
+        return `<p>${cleanedResponse}</p>`;
     }
     
-    // Split by sentence endings
-    let sentences = response.split(/(?<=[.!?])\s+/);
+    // Split by sentence endings and create natural paragraph breaks
+    let sentences = cleanedResponse.split(/(?<=[.!?])\s+/);
     let paragraphs = [];
     let currentParagraph = [];
     
     for (let i = 0; i < sentences.length; i++) {
         currentParagraph.push(sentences[i]);
         
-        // Create paragraph breaks at natural transition points
+        // Create paragraph breaks at natural points
         if (currentParagraph.length >= 2 && 
             (sentences[i].includes('However') || 
-             sentences[i].includes('Furthermore') || 
-             sentences[i].includes('Moreover') || 
-             sentences[i].includes('In contrast') ||
-             sentences[i].includes('On the other hand') ||
-             sentences[i].includes('That said') ||
-             sentences[i].includes('Nevertheless') ||
-             sentences[i].includes('Additionally') ||
-             sentences[i].includes('In conclusion') ||
-             sentences[i].includes('Finally') ||
+             sentences[i].includes('But ') ||
+             sentences[i].includes('Now') ||
+             sentences[i].includes('The real') ||
+             sentences[i].includes('After all') ||
              currentParagraph.length >= 3)) {
             
             paragraphs.push(currentParagraph.join(' '));
@@ -1355,17 +2194,19 @@ function formatResponse(response) {
         paragraphs.push(currentParagraph.join(' '));
     }
     
-    // If we still have just one long paragraph, try to split it in the middle
-    if (paragraphs.length === 1 && sentences.length > 4) {
-        const midPoint = Math.ceil(sentences.length / 2);
-        paragraphs = [
-            sentences.slice(0, midPoint).join(' '),
-            sentences.slice(midPoint).join(' ')
-        ];
-    }
-    
-    // Return formatted paragraphs
+    // Return clean, formatted paragraphs
     return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+    // Return clean, formatted paragraphs with share button
+    const formattedContent = paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+    
+    return `
+        ${formattedContent}
+        <div class="response-actions">
+            <button class="share-insight-btn" onclick="shareThisInsight(this)" title="Share this insight">
+                📤 Share Quote
+            </button>
+        </div>
+    `;
 }
 
 function formatModeratorResponse(response) {
@@ -1484,7 +2325,198 @@ async function initializeStripe() {
         return false;
     }
 }
+function getUserExperienceLevel() {
+    const progress = analyticsState.userProgress;
+    
+    if (!progress.hasSeenDemo) {
+        return 'new'; // Show magic demos only
+    } else {
+        return 'experienced'; // Show customization options
+    }
+}
 
+function updateHomepageForUserLevel() {
+    const userLevel = getUserExperienceLevel();
+    
+    const magicDemo = document.querySelector('.magic-demo');
+    const howItWorks = document.querySelector('.how-it-works');
+    const formatSelection = document.querySelector('.format-selection');
+    const orDivider = document.querySelector('.or-divider');
+    const speakerSelections = document.querySelectorAll('.speaker-selection');
+    const questionSection = document.querySelector('.question-section');
+    
+    if (userLevel === 'new') {
+        // New users - ONLY demos + customize button
+        if (magicDemo) magicDemo.style.display = 'block';
+        if (howItWorks) howItWorks.style.display = 'none';
+        if (formatSelection) formatSelection.style.display = 'none';
+        if (orDivider) orDivider.style.display = 'none';
+        if (questionSection) questionSection.style.display = 'none';
+        speakerSelections.forEach(el => el.style.display = 'none');
+        addCustomizeButton();
+    } else {
+        // Experienced users - full customization
+        if (magicDemo) magicDemo.classList.add('compact');
+        if (howItWorks) howItWorks.style.display = 'none';
+        if (formatSelection) formatSelection.style.display = 'block';
+        if (orDivider) orDivider.style.display = 'block';
+        if (questionSection) questionSection.style.display = 'block';
+    }
+}
+
+function addCustomizeButton() {
+    // Check if customize button already exists
+    if (document.querySelector('.customize-section')) return;
+    
+    const customizeSection = document.createElement('div');
+    customizeSection.className = 'customize-section';
+    customizeSection.innerHTML = `
+        <div class="customize-content">
+            <p>Want more control over your discussions?</p>
+            <button class="customize-button" onclick="showFullCustomization()">
+                ⚙️ Customize Your Experience
+            </button>
+        </div>
+    `;
+    
+    // Insert after magic demo
+    const magicDemo = document.querySelector('.magic-demo');
+    magicDemo.parentNode.insertBefore(customizeSection, magicDemo.nextSibling);
+}
+
+function showFullCustomization() {
+    // Track that user wanted customization
+    trackEvent('customize_requested');
+    
+    // Mark user as having explored formats
+    analyticsState.userProgress.hasExploredFormats = true;
+    saveAnalytics();
+    
+    // HIDE ALL DEMO CONTENT
+    const magicDemo = document.querySelector('.magic-demo');
+    const howItWorks = document.querySelector('.how-it-works');
+    const discussionArena = document.querySelector('#discussionArena');
+    const customizeSection = document.querySelector('.customize-section');
+    const twoPersonSuggestion = document.querySelector('.two-person-suggestion');
+    const arenaCompletion = document.querySelector('.arena-completion');
+    
+    // Hide demo elements
+    if (magicDemo) magicDemo.style.display = 'none';
+    if (howItWorks) howItWorks.style.display = 'none';
+    if (discussionArena) discussionArena.style.display = 'none';
+    if (customizeSection) customizeSection.style.display = 'none';
+    if (twoPersonSuggestion) twoPersonSuggestion.style.display = 'none';
+    if (arenaCompletion) arenaCompletion.style.display = 'none';
+    
+    // SHOW CUSTOMIZATION ELEMENTS
+    const formatSelection = document.querySelector('.format-selection');
+    const orDivider = document.querySelector('.or-divider');
+    const questionSection = document.querySelector('.question-section');
+    
+    if (formatSelection) formatSelection.style.display = 'block';
+    if (orDivider) orDivider.style.display = 'block';
+    if (questionSection) questionSection.style.display = 'block';
+    
+    // RESET ALL SPEAKER SELECTIONS - Let selectFormat() control them
+    const speakerSelections = document.querySelectorAll('.speaker-selection');
+    speakerSelections.forEach(el => {
+        el.style.display = ''; // Hide all initially
+        el.classList.remove('active'); // Remove active state
+    });
+    
+    // Add customization header first
+    addCustomizationHeader();
+    
+    // THEN trigger format selection after a short delay
+    setTimeout(() => {
+        // Manually select arena format visually
+        document.querySelectorAll('.format-type').forEach(el => {
+            el.classList.remove('selected');
+            const onClick = el.getAttribute('onclick');
+            if (onClick && onClick.includes("'arena'")) {
+                el.classList.add('selected');
+            }
+        });
+        
+        // Update state and show speaker selection
+        discussionState.format = 'arena';
+        discussionState.participantCount = 2;
+        showSpeakerSelection('arena');
+        
+        // Show question section
+        const questionSection = document.getElementById('questionSection');
+        if (questionSection) {
+            questionSection.classList.add('active');
+        }
+    }, 100);
+    
+    
+    // Scroll to the top of the customization section
+    if (formatSelection) {
+        formatSelection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+function addCustomizationHeader() {
+    // Check if header already exists
+    if (document.querySelector('.customization-header')) return;
+    
+    const header = document.createElement('div');
+    header.className = 'customization-header';
+    header.innerHTML = `
+        <div class="custom-header-content">
+            <h2>🎛️ Customize Your Experience</h2>
+            <p>Now you have full control - choose your format, speakers, and topic</p>
+        </div>
+    `;
+    
+    // Insert before format selection
+    const formatSelection = document.querySelector('.format-selection');
+    if (formatSelection) {
+        formatSelection.parentNode.insertBefore(header, formatSelection);
+    }
+}
+
+function addPowerUserShortcuts() {
+    // Check if shortcuts already exist
+    if (document.querySelector('.power-shortcuts')) return;
+    
+    const shortcuts = document.createElement('div');
+    shortcuts.className = 'power-shortcuts';
+    shortcuts.innerHTML = `
+        <div class="shortcuts-header">
+            <h3>⚡ Quick Start</h3>
+        </div>
+        <div class="shortcut-buttons">
+            <button class="shortcut-btn" onclick="quickStart('debate')">🥊 Quick Debate</button>
+            <button class="shortcut-btn" onclick="quickStart('symposium')">🏛️ Symposium</button>
+            <button class="shortcut-btn" onclick="quickStart('chat')">💬 Personal Chat</button>
+        </div>
+    `;
+    
+    // Insert before format selection
+    const formatSelection = document.querySelector('.format-selection');
+    formatSelection.parentNode.insertBefore(shortcuts, formatSelection);
+}
+
+
+
+function quickStart(format) {
+    trackEvent('power_user_quickstart', { format });
+    
+    // Auto-select format and popular figures
+    selectFormat(format, discussionFormats[format].participants);
+    
+    // Scroll to participant selection
+    setTimeout(() => {
+        document.querySelector('.speaker-selection.active').scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+    }, 100);
+}
 // ADD THE NEW USAGE FUNCTIONS RIGHT HERE
 function updateUsageDisplay() {
     const indicator = document.getElementById('usageIndicator');
@@ -1790,16 +2822,548 @@ function loadStripe() {
         document.head.appendChild(script);
     });
 }
+// Magic Demo Functions
+function startMagicDemo(demoType) {
+    // Track that user clicked a demo
+    trackEvent('magic_demo_clicked', { demoType: demoType });
+    
+    // Set up the demo based on type
+    let figure, question;
+    
+    switch(demoType) {
+        case 'innovation':
+            figure = figures.einstein;
+            question = "How do breakthrough ideas really happen? What's the secret to innovation that changes the world?";
+            break;
+        case 'leadership':
+            figure = figures.lincoln;
+            question = "What makes a truly great leader? How do you lead people through difficult times?";
+            break;
+        case 'creativity':
+            figure = figures.davinci;
+            question = "How can I unlock my creative potential? What's the secret to thinking like a Renaissance master?";
+            break;
+        default:
+            figure = figures.einstein;
+            question = "How do breakthrough ideas really happen?";
+    }
+    
+    // Set up the discussion state for the demo
+    discussionState.format = 'chat';
+    discussionState.participants = [figure];
+    discussionState.topic = question;
+    discussionState.continuationRound = 0;
+    discussionState.totalExchanges = 0;
+    
+    // Update usage (but don't count demos against the limit)
+    if (!usageState.isProUser) {
+        // For demos, we'll give them a "taste" without using up their limit
+        console.log('Demo mode - not counting against usage limit');
+    }
+    
+    // Track the demo start
+    trackEvent('magic_demo_started', {
+        demoType: demoType,
+        figure: figure.name,
+        question: question
+    });
+    
+    // Hide setup sections and start the demo
+    document.querySelectorAll('.format-selection, .speaker-selection, .question-section, .magic-demo, .how-it-works, .or-divider').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show arena and add demo header
+    const arena = document.getElementById('discussionArena');
+    arena.style.display = 'block';
+    arena.innerHTML = '';
+    
+    // Add special demo header
+    const demoHeader = document.createElement('div');
+    demoHeader.className = 'demo-header-section';
+    demoHeader.innerHTML = `
+        <div class="demo-indicator">✨ Magic Demo</div>
+        <div class="demo-title">Conversation with ${figure.name}</div>
+        <div class="demo-question">"${question}"</div>
+    `;
+    arena.appendChild(demoHeader);
+    
+    // Start the conversation
+    runMagicDemo(figure, question, demoType);
+}
+
+async function runMagicDemo(figure, question, demoType) {
+    const arena = document.getElementById('discussionArena');
+    
+    // Create conversation round
+    const conversationRound = document.createElement('div');
+    conversationRound.className = 'discussion-round';
+    arena.appendChild(conversationRound);
+    
+    // Get the demo response
+    await getMagicDemoResponse(conversationRound, figure, question, demoType);
+    
+    // Show demo completion controls
+    showDemoCompletion(demoType);
+}
+
+async function getMagicDemoResponse(container, participant, topic, demoType) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Sharing insights...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        const prompt = `${participant.prompt}
+
+You are giving a demonstration of your intellectual capabilities to someone who has never experienced AI conversations like this before. 
+
+The question is: "${topic}"
+
+This is a DEMO to show the magic of conversing with brilliant minds through AI. Give an engaging, insightful response that showcases your unique perspective and knowledge. Be authentic to your character while being genuinely helpful and thought-provoking.
+
+Make this response compelling enough that they'll want to continue exploring conversations with brilliant minds. Show the depth and value that's possible.
+
+Keep it substantial but not overwhelming - about 120-150 words.`;
+        
+        const response = await callClaude(prompt);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+        // Track successful demo completion
+        trackEvent('magic_demo_completed', {
+            demoType: demoType,
+            figure: participant.name,
+            responseLength: response.length
+        });
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Demo error: ${error.message}</div>
+        `;
+        
+        trackEvent('magic_demo_error', {
+            demoType: demoType,
+            error: error.message
+        });
+    }
+}
+
+function showDemoCompletion(demoType) {
+    const arena = document.getElementById('discussionArena');
+    
+    // Add demo completion section
+    const completionSection = document.createElement('div');
+    completionSection.className = 'demo-completion';
+    completionSection.innerHTML = `
+        <div class="completion-header">
+            <h3>🎉 Pretty amazing, right?</h3>
+            <p>Ready to see conversations between brilliant minds? Try a Discussion Arena demo:</p>
+        </div>
+        
+        <div class="arena-demos">
+            <button class="arena-demo-button" onclick="startArenaDemo('philosophy')">
+                <div class="demo-participants">🤔 Socrates vs. Confucius</div>
+                <div class="demo-topic">"What is the good life?"</div>
+            </button>
+            
+            <button class="arena-demo-button" onclick="startArenaDemo('innovation')">
+                <div class="demo-participants">💡 Einstein vs. Jobs</div>
+                <div class="demo-topic">"How do you create breakthrough innovations?"</div>
+            </button>
+            
+            <button class="arena-demo-button" onclick="startArenaDemo('leadership')">
+                <div class="demo-participants">👑 Lincoln vs. Churchill</div>
+                <div class="demo-topic">"What makes a leader in times of crisis?"</div>
+            </button>
+        </div>
+        
+        <div class="completion-divider">
+            <span>or</span>
+        </div>
+        
+        <div class="completion-actions">
+            <button class="completion-button customize" onclick="showFullCustomization()">
+                ⚙️ Customize Your Experience
+            </button>
+        </div>
+    `;
+    arena.appendChild(completionSection);
+}
+
+function startArenaDemo(arenaType) {
+    // Track arena demo selection
+    trackEvent('arena_demo_clicked', { arenaType: arenaType });
+    
+    let figure1, figure2, question;
+    
+    switch(arenaType) {
+        case 'philosophy':
+            figure1 = figures.plato; // Using Plato instead of Socrates since we have him
+            figure2 = figures.confucius;
+            question = "What is the good life? How should humans live to achieve true happiness and fulfillment?";
+            break;
+        case 'innovation':
+            figure1 = figures.einstein;
+            figure2 = figures.jobs;
+            question = "How do you create breakthrough innovations that change the world? What's the secret to revolutionary thinking?";
+            break;
+        case 'leadership':
+            figure1 = figures.lincoln;
+            figure2 = figures.churchill;
+            question = "What makes a truly great leader in times of crisis? How do you inspire people through impossible challenges?";
+            break;
+    }
+    
+    // Mark that they've tried two-person
+    analyticsState.userProgress.hasTriedTwoPerson = true;
+    saveAnalytics();
+    
+    // Set up the arena discussion
+    discussionState.format = 'arena';
+    discussionState.participants = [figure1, figure2];
+    discussionState.topic = question;
+    discussionState.continuationRound = 0;
+    discussionState.totalExchanges = 0;
+    
+    // Clear current arena and start new discussion
+    const arena = document.getElementById('discussionArena');
+    arena.innerHTML = '';
+    
+    // Add arena demo header
+    const demoHeader = document.createElement('div');
+    demoHeader.className = 'arena-demo-header';
+    demoHeader.innerHTML = `
+        <div class="demo-indicator">✨ Discussion Arena Demo</div>
+        <div class="demo-title">${figure1.name} vs. ${figure2.name}</div>
+        <div class="demo-question">"${question}"</div>
+    `;
+    arena.appendChild(demoHeader);
+    
+    // Start the arena discussion
+    runArenaDemo(figure1, figure2, question, arenaType);
+}
+
+async function runArenaDemo(figure1, figure2, question, arenaType) {
+    const arena = document.getElementById('discussionArena');
+    
+    // Create conversation round
+    const conversationRound = document.createElement('div');
+    conversationRound.className = 'discussion-round';
+    arena.appendChild(conversationRound);
+    
+    // Get responses from both participants
+    await getArenaDemoResponse(conversationRound, figure1, question, 'opening');
+    await getArenaDemoResponse(conversationRound, figure2, question, 'response');
+    await getArenaDemoResponse(conversationRound, figure1, question, 'follow-up');
+    
+    // ADD AI MODERATOR SUMMARY
+    await getArenaDemoModerator(arena, figure1, figure2, question, arenaType);
+    
+    // Show completion with customize option
+    showArenaCompletion(arenaType);
+}
+
+async function getArenaDemoResponse(container, participant, topic, stage) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Sharing insights...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        let prompt;
+        if (stage === 'opening') {
+            prompt = `${participant.prompt}
+
+You are starting a thoughtful discussion. The question is: "${topic}"
+
+Give your perspective on this question in a CONCISE way (2-3 key points maximum). Be thoughtful and authentic to your historical viewpoint. ~100 words.`;
+        } else if (stage === 'response') {
+            prompt = `${participant.prompt}
+
+You are in a discussion about: "${topic}"
+
+The previous speaker just shared their perspective. Now respond with your own thoughts. In 100 words or less, either build on their point, offer a different perspective, or challenge an assumption. Be engaging.`;
+        } else {
+            prompt = `${participant.prompt}
+
+Continue the discussion about: "${topic}"
+
+Provide a thoughtful follow-up response that builds on what has been discussed. ~100 words.`;
+        }
+        
+        // ADD RETRY LOGIC
+        const response = await callClaudeWithRetry(prompt, 3);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        // Better error handling for demos
+        if (error.message.includes('Overloaded')) {
+            speakerDiv.innerHTML = `
+                <div class="speaker-name">${participant.name}</div>
+                <div class="speaker-content">
+                    <p><em>The AI is experiencing high demand right now. ${participant.name} will share their insights shortly...</em></p>
+                    <button onclick="retryDemoResponse(this, '${participant.name}', '${topic}', '${stage}')" style="background: #667eea; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+                        🔄 Try Again
+                    </button>
+                </div>
+            `;
+        } else {
+            speakerDiv.innerHTML = `
+                <div class="speaker-name">${participant.name}</div>
+                <div>❌ Demo error: ${error.message}</div>
+            `;
+        }
+    }
+}
+
+async function getArenaDemoModerator(arena, figure1, figure2, question, arenaType) {
+    const summaryRound = document.createElement('div');
+    summaryRound.className = 'discussion-round';
+    summaryRound.innerHTML = `<div class="round-header">🎯 AI Moderator Analysis</div>`;
+    arena.appendChild(summaryRound);
+    
+    const moderatorDiv = document.createElement('div');
+    moderatorDiv.className = 'speaker moderator-speaker';
+    moderatorDiv.innerHTML = `
+        <div class="speaker-name">🤖 AI Moderator</div>
+        <div><span class="loading"></span>Analyzing the discussion...</div>
+    `;
+    summaryRound.appendChild(moderatorDiv);
+    
+    try {
+        const prompt = `You are providing expert commentary on intellectual discourse.
+
+${figure1.name} and ${figure2.name} have different perspectives on: "${question}"
+
+Provide fascinating insights about:
+- What makes their different approaches to this question so compelling
+- How ${figure1.name}'s perspective would likely differ from ${figure2.name}'s
+- Why bringing together these particular minds creates such rich intellectual discourse
+- What this reveals about how great thinkers approach complex questions
+
+Make this analysis show the incredible depth possible when brilliant minds engage with important questions. This should inspire someone to want more intellectual conversations.
+
+120-150 words, written as expert commentary.`;
+        
+        const response = await callClaude(prompt);
+        
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 AI Moderator</div>
+            <div class="speaker-content">${formatModeratorResponse(response)}</div>
+        `;
+        
+        // Track successful moderator completion
+        trackEvent('arena_demo_moderator_completed', {
+            arenaType: arenaType,
+            participants: [figure1.name, figure2.name]
+        });
+        
+    } catch (error) {
+        console.error('Arena demo moderator error:', error);
+        moderatorDiv.innerHTML = `
+            <div class="speaker-name">🤖 AI Moderator</div>
+            <div class="speaker-content">
+                <p><strong>Discussion Analysis</strong></p>
+                <p>This conversation between ${figure1.name} and ${figure2.name} demonstrated the power of bringing together different perspectives on "${question}". Each participant offered unique insights that built upon and challenged the other's thinking.</p>
+                <p>This is just a glimpse of the intellectual depth possible when you combine brilliant minds with AI facilitation.</p>
+            </div>
+        `;
+    }
+}
+
+function showArenaCompletion(arenaType) {
+    const arena = document.getElementById('discussionArena');
+    
+    const completionSection = document.createElement('div');
+    completionSection.className = 'arena-completion';
+    completionSection.innerHTML = `
+        <div class="completion-header">
+            <h3>🤯 This is the power of AI conversations!</h3>
+            <p>You just experienced discussion, debate, AND intelligent analysis. Ready to customize your next discussion?</p>
+        </div>
+        
+        <div class="completion-actions">
+            <button class="completion-button primary" onclick="showFullCustomization()">
+                🚀 Explore All Formats & Features
+            </button>
+        </div>
+    `;
+    arena.appendChild(completionSection);
+}
+
+
+function continueAfterDemo() {
+    // Track conversion from demo to continued usage
+    trackEvent('demo_to_continue', { action: 'continue_conversation' });
+    
+    // Show discussion controls for continuation
+    showDiscussionControls();
+}
+
+function exploreMoreFormats() {
+    // Track user wanting to explore more
+    trackEvent('demo_to_explore', { action: 'explore_formats' });
+    
+    // Show the format selection
+    document.querySelectorAll('.format-selection, .speaker-selection, .question-section').forEach(el => {
+        el.style.display = 'block';
+    });
+    
+    // Scroll to format selection
+    document.querySelector('.format-selection').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+}
+
+function startFresh() {
+    // Track return to demos
+    trackEvent('demo_to_fresh', { action: 'new_demo' });
+    
+    // Reload the page to start fresh
+    location.reload();
+}
+async function callClaudeWithRetry(prompt, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            return await callClaude(prompt);
+        } catch (error) {
+            if (attempt === maxRetries) {
+                throw error; // Last attempt failed
+            }
+            
+            if (error.message.includes('Overloaded') || error.message.includes('529')) {
+                // Wait before retrying (exponential backoff)
+                const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+                console.log(`API overloaded, retrying in ${delay/1000}s... (attempt ${attempt}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                throw error; // Don't retry non-overload errors
+            }
+        }
+    }
+}
+function shareThisInsight(buttonElement) {
+    // Find the parent speaker element
+    const speakerElement = buttonElement.closest('.speaker');
+    const speakerName = speakerElement.querySelector('.speaker-name')?.textContent;
+    const contentElement = speakerElement.querySelector('.speaker-content');
+    
+    // Get clean text content (strip HTML)
+    const fullContent = contentElement.textContent || contentElement.innerText;
+    
+    // Remove the share button text from content
+    const cleanContent = fullContent.replace('📤 Share Quote', '').trim();
+    
+    // Create compelling quote (limit to ~200 chars for social media)
+    let insight = cleanContent.substring(0, 200).trim();
+    
+    // Try to end at a sentence if possible
+    const lastSentence = insight.lastIndexOf('.');
+    const lastExclamation = insight.lastIndexOf('!');
+    const lastQuestion = insight.lastIndexOf('?');
+    const lastPunctuation = Math.max(lastSentence, lastExclamation, lastQuestion);
+    
+    if (lastPunctuation > 100) {
+        insight = insight.substring(0, lastPunctuation + 1);
+    } else {
+        insight += '...';
+    }
+    
+    // Create shareable quote
+    const shareText = `💡 ${speakerName} on "${discussionState.topic}":
+
+"${insight}"
+
+🧠 Generated by AI at BrilliantMinds.com - Experience conversations with history's greatest minds!`;
+    
+    // Share via native sharing or clipboard
+    if (navigator.share && navigator.canShare({ text: shareText })) {
+        navigator.share({
+            title: `Insight from ${speakerName}`,
+            text: shareText
+        }).then(() => {
+            trackEvent('insight_shared', { 
+                speaker: speakerName, 
+                method: 'native',
+                topic: discussionState.topic,
+                format: discussionState.format 
+            });
+        }).catch(console.error);
+    } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(shareText).then(() => {
+            showNotification('💫 Quote copied to clipboard! Paste anywhere to share.', 'success');
+            trackEvent('insight_shared', { 
+                speaker: speakerName, 
+                method: 'clipboard',
+                topic: discussionState.topic,
+                format: discussionState.format 
+            });
+        }).catch(() => {
+            // Ultimate fallback - show text in modal
+            showShareModal(shareText);
+        });
+    }
+}
+
+function showShareModal(shareText) {
+    const modal = document.createElement('div');
+    modal.className = 'share-modal';
+    modal.innerHTML = `
+        <div class="share-content">
+            <h3>📤 Share This Insight</h3>
+            <textarea readonly onclick="this.select()" style="width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${shareText}</textarea>
+            <div style="margin-top: 15px;">
+                <button onclick="this.previousElementSibling.select(); document.execCommand('copy'); showNotification('Copied!', 'success');" style="background: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; margin-right: 10px;">
+                    📋 Copy
+                </button>
+                <button onclick="this.closest('.share-modal').remove()" style="background: #6c757d; color: white; padding: 8px 16px; border: none; border-radius: 5px;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto-focus the textarea
+    modal.querySelector('textarea').focus();
+    modal.querySelector('textarea').select();
+}
 // ============================================================================
 // 3. FORMAT SELECTION FUNCTIONS
 // ============================================================================
 
 function selectFormat(format, count) {
-    // Update visual selection
+    // Update visual selection - handle cases where there's no event
     document.querySelectorAll('.format-type').forEach(el => {
         el.classList.remove('selected');
     });
-    event.target.closest('.format-type').classList.add('selected');
+    
+    // Find and select the correct format type
+    const formatElements = document.querySelectorAll('.format-type');
+    formatElements.forEach(el => {
+        const onClick = el.getAttribute('onclick');
+        if (onClick && onClick.includes(`'${format}'`)) {
+            el.classList.add('selected');
+        }
+    });
     
     // Update state
     discussionState.format = format;
@@ -1809,7 +3373,11 @@ function selectFormat(format, count) {
     showSpeakerSelection(format);
     
     // Show question section
-    document.getElementById('questionSection').classList.add('active');
+    const questionSection = document.getElementById('questionSection');
+    if (questionSection) {
+        questionSection.classList.add('active');
+    }
+    
     trackFormatSelection(format);
     checkReadiness();
 }
@@ -2054,7 +3622,7 @@ function generateParticipantSlots(count, format) {
                     <option value="bezos">Jeff Bezos (1964-present)</option>
                     <option value="brin">Sergey Brin (1973-present)</option>
                     <option value="nadella">Satya Nadella (1967-present)</option>
-                    <option value="hwang">Jensen Huang (1963-present)</option>
+                    <option value="huang">Jensen Huang (1963-present)</option>
                     <option value="zuckerberg">Mark Zuckerberg (1984-present)</option>
                     <option value="altman">Sam Altman (1985-present)</option>
                 </optgroup>
@@ -2114,40 +3682,74 @@ async function generateAIQuestions() {
     const generateBtn = document.getElementById('generateBtn');
     const questionsContainer = document.getElementById('suggestedQuestions');
     
-    // Check if participants are selected (different logic for arena vs multi-person)
+    // Check if participants are selected based on current format
     let participantCount = 0;
     let participantNames = [];
     
     if (discussionState.format === 'chat') {
-    // Check personal chat participant
-    const chatFigureElement = document.getElementById('chatFigure');
-    const chatCustomElement = document.getElementById('chatFigureCustom');
-    
-    const chatFigure = discussionState.chatMode === 'preset' 
-        ? (chatFigureElement && chatFigureElement.value ? figures[chatFigureElement.value] : null)
-        : (chatCustomElement && chatCustomElement.value.trim() ? { name: chatCustomElement.value.trim() } : null);
-    
-    if (chatFigure) {
-        participantCount = 1;
-        participantNames = [chatFigure.name];
+        // Check personal chat participant
+        const chatFigureElement = document.getElementById('chatFigure');
+        const chatCustomElement = document.getElementById('chatFigureCustom');
+        
+        const chatFigure = discussionState.chatMode === 'preset' 
+            ? (chatFigureElement && chatFigureElement.value ? figures[chatFigureElement.value] : null)
+            : (chatCustomElement && chatCustomElement.value.trim() ? { name: chatCustomElement.value.trim() } : null);
+        
+        if (chatFigure) {
+            participantCount = 1;
+            participantNames = [chatFigure.name];
+        }
+    } else if (discussionState.format === 'arena') {
+        // Check arena participants (two-person setup)
+        const figure1Element = document.getElementById('figure1');
+        const figure1CustomElement = document.getElementById('figure1Custom');
+        const figure2Element = document.getElementById('figure2');
+        const figure2CustomElement = document.getElementById('figure2Custom');
+        
+        let figure1 = null;
+        let figure2 = null;
+        
+        // Check figure 1
+        if (discussionState.figure1Mode === 'preset') {
+            if (figure1Element && figure1Element.value) {
+                figure1 = figures[figure1Element.value];
+            }
+        } else {
+            if (figure1CustomElement && figure1CustomElement.value.trim()) {
+                figure1 = { name: figure1CustomElement.value.trim() };
+            }
+        }
+        
+        // Check figure 2
+        if (discussionState.figure2Mode === 'preset') {
+            if (figure2Element && figure2Element.value) {
+                figure2 = figures[figure2Element.value];
+            }
+        } else {
+            if (figure2CustomElement && figure2CustomElement.value.trim()) {
+                figure2 = { name: figure2CustomElement.value.trim() };
+            }
+        }
+        
+        if (figure1 && figure2) {
+            participantCount = 2;
+            participantNames = [figure1.name, figure2.name];
+        }
+    } else {
+        // Check multi-person participants
+        participantCount = discussionState.participants.filter(p => p).length;
+        participantNames = discussionState.participants.filter(p => p).map(p => p.name);
     }
-} else if (discussionState.format === 'arena') {
-    // ... existing arena participant checking code ...
-} else {
-    // Check multi-person participants
-    participantCount = discussionState.participants.filter(p => p).length;
-    participantNames = discussionState.participants.filter(p => p).map(p => p.name);
-}
 
-// Different minimum requirements for different formats
-const minParticipants = discussionState.format === 'chat' ? 1 : 2;
-if (participantCount < minParticipants) {
-    const message = discussionState.format === 'chat' 
-        ? 'Please select a conversation partner first!' 
-        : 'Please select at least 2 participants first!';
-    alert(message);
-    return;
-}
+    // Different minimum requirements for different formats
+    const minParticipants = discussionState.format === 'chat' ? 1 : 2;
+    if (participantCount < minParticipants) {
+        const message = discussionState.format === 'chat' 
+            ? 'Please select a conversation partner first!' 
+            : 'Please select at least 2 participants first!';
+        alert(message);
+        return;
+    }
     
     // Show loading state
     generateBtn.disabled = true;
@@ -2269,6 +3871,9 @@ function selectAIQuestion(index, questionText) {
     
     // Update the manual input field (in case user wants to edit)
     document.getElementById('questionInput').value = questionText;
+
+    // FIX: Check readiness after selecting AI question
+    checkReadiness();
 }
 
 // ============================================================================
@@ -2874,8 +4479,80 @@ Keep it concise but insightful (150-200 words).`;
 // 8. DISCUSSION CONTROL FUNCTIONS
 // ============================================================================
 
+function shareDiscussionHighlight() {
+    // Find the most engaging response (longest non-moderator response)
+    const speakers = document.querySelectorAll('.speaker:not(.moderator-speaker)');
+    
+    if (speakers.length === 0) return;
+    
+    // Find best response by length and content quality
+    let bestSpeaker = speakers[0];
+    let maxLength = 0;
+    
+    speakers.forEach(speaker => {
+        const content = speaker.querySelector('.speaker-content')?.textContent || '';
+        const cleanLength = content.replace('📤 Share Quote', '').trim().length;
+        
+        if (cleanLength > maxLength && cleanLength > 50) {
+            maxLength = cleanLength;
+            bestSpeaker = speaker;
+        }
+    });
+    
+    // Share the best response
+    shareThisInsight(bestSpeaker.querySelector('.share-insight-btn') || bestSpeaker);
+}
+
 function showDiscussionControls() {
     const controls = document.getElementById('discussionControls');
+    // Check if user is approaching limit
+    const remaining = Math.max(0, 5 - usageState.dailyDiscussions);
+    let continueButtonText = "🔄 Continue Discussion";
+    
+    if (!usageState.isProUser && remaining <= 1) {
+        continueButtonText = `🔄 Continue (${remaining} left today)`;
+    }
+    
+    controls.innerHTML = `
+        <div class="controls-header">
+            <h3>💭 Discussion Controls</h3>
+        </div>
+        <div class="controls-buttons">
+            <button class="control-button continue-button" onclick="continueDiscussion()">
+                ${continueButtonText}
+            </button>
+            <button class="control-button share-button" onclick="shareDiscussionHighlight()">
+                📤 Share Best Quote
+            </button>
+            <button class="control-button save-button" onclick="saveDiscussion()">
+                💾 Save Discussion
+            </button>
+            <button class="control-button new-button" onclick="startNewDiscussion()">
+                ✨ Start Fresh
+            </button>
+        </div>
+    `;
+    // Update the controls HTML to include sharing
+    controls.innerHTML = `
+        <div class="controls-header">
+            <h3>💭 Discussion Controls</h3>
+        </div>
+        <div class="controls-buttons">
+            <button class="control-button continue-button" onclick="continueDiscussion()">
+                🔄 Continue Discussion
+            </button>
+            <button class="control-button share-button" onclick="shareDiscussionHighlight()">
+                📤 Share Best Quote
+            </button>
+            <button class="control-button save-button" onclick="saveDiscussion()">
+                💾 Save Discussion
+            </button>
+            <button class="control-button new-button" onclick="startNewDiscussion()">
+                ✨ Start Fresh
+            </button>
+        </div>
+    `;
+    
     controls.classList.add('active');
     
     // Update continue button text based on progression
@@ -2899,6 +4576,38 @@ function showDiscussionControls() {
 }
 
 async function continueDiscussion() {
+    // CHECK USAGE LIMITS BEFORE CONTINUING
+    if (!usageState.isProUser && usageState.dailyDiscussions >= 5) {
+        trackUpgradeFlow('limit_reached_on_continue', {
+            continuationRound: discussionState.continuationRound,
+            totalExchanges: discussionState.totalExchanges,
+            currentFormat: discussionState.format
+        });
+        showUpgradeModal();
+        return;
+    }
+    
+    // INCREMENT USAGE COUNTER FOR CONTINUATIONS
+    usageState.dailyDiscussions++;
+    usageState.totalDiscussions++;
+    saveUsageState();
+    updateUsageDisplay();
+    
+     // NEW: Handle personal chat differently
+    if (discussionState.format === 'chat') {
+        showUserResponseInput();
+        return;
+    }
+
+    // Track the continuation as a billable event
+    trackEvent('discussion_continued', {
+        continuationRound: discussionState.continuationRound + 1,
+        format: discussionState.format,
+        totalExchanges: discussionState.totalExchanges,
+        isProUser: usageState.isProUser,
+        dailyDiscussionNumber: usageState.dailyDiscussions
+    });
+    
     const arena = document.getElementById('discussionArena');
     discussionState.continuationRound++;
     
@@ -3371,6 +5080,7 @@ if (chatCustom) chatCustom.addEventListener('input', checkReadiness);
      // Initialize usage tracking
     initializeUsageTracking();
     initializeAnalytics();
+    updateHomepageForUserLevel();
     checkPaymentSuccess();
 
     // Add a small delay to ensure elements are ready, then check readiness
@@ -3381,7 +5091,265 @@ if (chatCustom) chatCustom.addEventListener('input', checkReadiness);
     
     // Also check readiness immediately
     checkReadiness();
+// Check if user came from template selection
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('template') === 'true') {
+        loadSelectedTemplate();
+    }
 });
+function loadSelectedTemplate() {
+    const template = localStorage.getItem('selectedTemplate');
+    if (!template) return;
+    
+    const templateData = JSON.parse(template);
+    
+    // Pre-fill the question
+    const questionInput = document.getElementById('questionInput');
+    if (questionInput) {
+        questionInput.value = templateData.question;
+    }
+    
+    // Determine best format based on number of suggested figures
+    const suggestedCount = templateData.suggestedFigures.length;
+    let bestFormat = 'arena'; // default
+    
+    if (suggestedCount === 1) {
+        bestFormat = 'chat';
+    } else if (suggestedCount === 2) {
+        bestFormat = 'arena';
+    } else if (suggestedCount === 3) {
+        bestFormat = 'panel';
+    } else if (suggestedCount === 4) {
+        bestFormat = 'symposium';
+    } else if (suggestedCount >= 5) {
+        bestFormat = 'roundtable';
+    }
+    
+    // Select the appropriate format
+    selectFormat(bestFormat, suggestedCount);
+    
+    // Fill in the suggested participants
+    setTimeout(() => {
+        fillTemplateFigures(templateData.suggestedFigures, bestFormat);
+    }, 100);
+    
+    // Show template context
+    showTemplateContext(templateData);
+    
+    // Clear template from storage
+    localStorage.removeItem('selectedTemplate');
+    
+    // Scroll to format selection
+    setTimeout(() => {
+        document.querySelector('.format-selection')?.scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+    }, 200);
+}
+
+function fillTemplateFigures(suggestedFigures, format) {
+    if (format === 'chat') {
+        // Fill personal chat
+        const chatSelect = document.getElementById('chatFigure');
+        if (chatSelect && suggestedFigures[0]) {
+            chatSelect.value = suggestedFigures[0];
+        }
+    } else if (format === 'arena') {
+        // Fill arena participants
+        const figure1Select = document.getElementById('figure1');
+        const figure2Select = document.getElementById('figure2');
+        
+        if (figure1Select && suggestedFigures[0]) {
+            figure1Select.value = suggestedFigures[0];
+        }
+        if (figure2Select && suggestedFigures[1]) {
+            figure2Select.value = suggestedFigures[1];
+        }
+    } else {
+        // Fill multi-person participants
+        suggestedFigures.forEach((figureKey, index) => {
+            const participantSelect = document.getElementById(`participant${index + 1}`);
+            if (participantSelect) {
+                participantSelect.value = figureKey;
+                // Update the discussion state
+                if (figures[figureKey]) {
+                    discussionState.participants[index] = figures[figureKey];
+                }
+            }
+        });
+    }
+    
+    // Check readiness after filling
+    setTimeout(checkReadiness, 100);
+}
+
+function showTemplateContext(templateData) {
+    // Add template indicator above format selection
+    const formatSelection = document.querySelector('.format-selection');
+    if (!formatSelection) return;
+    
+    const templateIndicator = document.createElement('div');
+    templateIndicator.className = 'template-indicator';
+    templateIndicator.innerHTML = `
+        <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center;">
+            <h3>📋 ${templateData.title}</h3>
+            <p style="opacity: 0.9; margin: 10px 0 0 0;">${templateData.context}</p>
+        </div>
+    `;
+    
+    formatSelection.parentNode.insertBefore(templateIndicator, formatSelection);
+}
+function showUserResponseInput() {
+    const arena = document.getElementById('discussionArena');
+    
+    // Create user input section
+    const userInputSection = document.createElement('div');
+    userInputSection.className = 'user-response-section';
+    userInputSection.innerHTML = `
+        <div class="user-input-header">
+            <h4>💬 Your Response</h4>
+            <p>What would you like to say or ask next?</p>
+        </div>
+        <div class="user-input-container">
+            <textarea id="userResponseInput" placeholder="Type your response or question here..." 
+                     rows="3" style="width: 100%; padding: 15px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 16px; resize: vertical; font-family: inherit;"></textarea>
+            <div class="user-input-actions">
+                <button onclick="submitUserResponse()" class="user-submit-btn" 
+                        style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;">
+                    📤 Send Response
+                </button>
+                <button onclick="cancelUserResponse()" class="user-cancel-btn"
+                        style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; margin-left: 10px;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    arena.appendChild(userInputSection);
+    
+    // Hide discussion controls while user is responding
+    document.getElementById('discussionControls').classList.remove('active');
+    
+    // Focus on the textarea
+    document.getElementById('userResponseInput').focus();
+    
+    // Scroll to input
+    userInputSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function submitUserResponse() {
+    const userInput = document.getElementById('userResponseInput').value.trim();
+    
+    if (!userInput) {
+        alert('Please enter a response!');
+        return;
+    }
+    
+    const arena = document.getElementById('discussionArena');
+    const userInputSection = document.querySelector('.user-response-section');
+    
+    // Remove the input section
+    if (userInputSection) {
+        userInputSection.remove();
+    }
+    
+    // Create new conversation round
+    const continuationRound = document.createElement('div');
+    continuationRound.className = 'discussion-round';
+    continuationRound.innerHTML = `
+        <div class="phase-indicator">🔄 Round ${discussionState.continuationRound + 1} - Conversation Continues</div>
+    `;
+    arena.appendChild(continuationRound);
+    
+    // Show user's response
+    const userDiv = document.createElement('div');
+    userDiv.className = 'speaker user-speaker';
+    userDiv.innerHTML = `
+        <div class="speaker-name">You</div>
+        <div class="speaker-content"><p>${userInput}</p></div>
+    `;
+    continuationRound.appendChild(userDiv);
+    
+    // Get AI response to user's input
+    const chatFigure = discussionState.participants[0];
+    await getChatContinuationResponse(continuationRound, chatFigure, userInput);
+    
+    // Update state
+    discussionState.continuationRound++;
+    discussionState.totalExchanges += 2; // User + AI response
+    
+    // Show controls again
+    showDiscussionControls();
+}
+
+function cancelUserResponse() {
+    const userInputSection = document.querySelector('.user-response-section');
+    if (userInputSection) {
+        userInputSection.remove();
+    }
+    
+    // Show controls again
+    showDiscussionControls();
+}
+
+async function getChatContinuationResponse(container, participant, userInput) {
+    const speakerDiv = document.createElement('div');
+    speakerDiv.className = 'speaker';
+    speakerDiv.innerHTML = `
+        <div class="speaker-name">${participant.name}</div>
+        <div><span class="loading"></span>Responding to your thoughts...</div>
+    `;
+    container.appendChild(speakerDiv);
+    
+    try {
+        // Get conversation context
+        const conversationHistory = getConversationHistory();
+        
+        const prompt = `${participant.prompt}
+
+You are having an ongoing personal conversation. Here's the conversation so far:
+
+${conversationHistory}
+
+The person just said: "${userInput}"
+
+Respond naturally and engagingly, as if this is a genuine continuing conversation. Reference what they said, build on the discussion, and ask follow-up questions to keep the dialogue flowing.
+
+Keep your response conversational and authentic to your character. 120-150 words.`;
+        
+        const response = await callClaude(prompt);
+        
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div class="speaker-content">${formatResponse(response)}</div>
+        `;
+        
+    } catch (error) {
+        speakerDiv.innerHTML = `
+            <div class="speaker-name">${participant.name}</div>
+            <div>❌ Error: ${error.message}</div>
+        `;
+    }
+}
+
+function getConversationHistory() {
+    const speakers = document.querySelectorAll('.speaker:not(.user-response-section .speaker)');
+    let history = [];
+    
+    speakers.forEach(speaker => {
+        const name = speaker.querySelector('.speaker-name')?.textContent;
+        const content = speaker.querySelector('.speaker-content')?.textContent;
+        
+        if (name && content && !content.includes('Error:')) {
+            // Clean up the content
+            const cleanContent = content.replace('📤 Share Quote', '').trim();
+            history.push(`${name}: ${cleanContent.substring(0, 200)}...`);
+        }
+    });
+    
+    return history.slice(-6).join('\n\n'); // Last 6 exchanges for context
+}
 </script>
 </body>
 </html>
