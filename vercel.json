@@ -16,7 +16,8 @@
   ],
   "functions": {
     "server/server.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "node_modules/**"
     }
   },
   "routes": [
