@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group Discussion - Brilliant Minds</title>
+    <title>Group Discussion - Iconoclash</title>
     <style>
         * {
             box-sizing: border-box;
@@ -275,6 +275,85 @@
             transform: none;
             box-shadow: none;
         }
+
+        .generate-suggestions-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: block;
+            width: 100%;
+        }
+
+        .generate-suggestions-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-suggestions-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .suggested-topics {
+            margin-top: 20px;
+            display: grid;
+            gap: 15px;
+        }
+
+        .topic-suggestion {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .topic-suggestion:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .topic-suggestion.selected {
+            border-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .topic-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .topic-explanation {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         
         .discussion-arena {
             display: none;
@@ -451,6 +530,10 @@
                 <div class="topic-setup">
                     <div class="topic-title">💭 Discussion Topic</div>
                     <textarea id="topicInput" placeholder="What should they discuss? Be specific about the angle or question you want explored..."></textarea>
+                    <button class="generate-suggestions-btn" onclick="generateAITopics()" id="generateTopicsBtn" style="display: none;">
+                        ⭐ Generate Topic Suggestions
+                    </button>
+                    <div id="suggestedTopics" class="suggested-topics" style="display: none;"></div>
                 </div>
                 
                 <div class="controls">
@@ -677,6 +760,14 @@
             const button = document.getElementById('startButton');
             const topic = document.getElementById('topicInput').value.trim();
             const hasParticipants = discussionState.participants.filter(p => p).length >= 2;
+            const generateBtn = document.getElementById('generateTopicsBtn');
+            
+            // Show generate button if we have participants and a type selected
+            if (hasParticipants && discussionState.type && generateBtn) {
+                generateBtn.style.display = 'block';
+            } else if (generateBtn) {
+                generateBtn.style.display = 'none';
+            }
             
             if (hasParticipants && topic && discussionState.type) {
                 button.disabled = false;
@@ -684,6 +775,154 @@
             } else {
                 button.disabled = true;
             }
+        }
+
+        async function generateAITopics() {
+            const generateBtn = document.getElementById('generateTopicsBtn');
+            const topicsContainer = document.getElementById('suggestedTopics');
+            const participants = discussionState.participants.filter(p => p);
+            
+            if (participants.length < 2) {
+                alert('Please select at least 2 participants first!');
+                return;
+            }
+            
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⭐ Generating...';
+            topicsContainer.style.display = 'block';
+            topicsContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <div class="loading-spinner"></div>
+                    Generating personalized topics...
+                </div>
+            `;
+            
+            try {
+                const participantNames = participants.map(p => p.name).join(', ');
+                const formatType = discussionState.type;
+                
+                // Create different prompts based on format type
+                let prompt;
+                if (formatType === 'debate') {
+                    prompt = `You are an expert debate moderator. Generate 4 compelling debate propositions for a formal debate between ${participantNames}.
+
+Each proposition should:
+1. Be a clear statement that can be argued FOR or AGAINST
+2. Be relevant to the expertise and perspectives of these participants
+3. Create meaningful disagreement based on their different viewpoints
+4. Be intellectually stimulating and debate-worthy
+
+Format each as a formal debate resolution starting with "Resolved:"
+
+For each proposition, provide:
+- The proposition (starting with "Resolved:")
+- A brief explanation of why this would create interesting debate between these specific participants (1 sentence)
+
+Format your response as:
+PROPOSITION 1: [proposition text]
+EXPLANATION 1: [brief explanation]
+
+PROPOSITION 2: [proposition text]
+EXPLANATION 2: [brief explanation]
+
+etc.`;
+                } else {
+                    prompt = `You are an expert discussion moderator. Generate 4 fascinating discussion topics for a ${formatType} between ${participantNames}.
+
+Consider their different backgrounds, areas of expertise, and perspectives. The topics should:
+1. Highlight their different viewpoints
+2. Be intellectually stimulating
+3. Allow participants to showcase their unique knowledge
+4. Create opportunity for meaningful exchange
+
+For each topic, provide:
+- A clear, engaging topic or question (1-2 sentences)
+- A brief explanation of why this would be interesting for these participants (1 sentence)
+
+Format your response as:
+TOPIC 1: [topic text]
+EXPLANATION 1: [brief explanation]
+
+TOPIC 2: [topic text]
+EXPLANATION 2: [brief explanation]
+
+etc.`;
+                }
+                
+                const response = await callClaude(prompt);
+                displayAITopics(response, formatType === 'debate');
+                
+            } catch (error) {
+                topicsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #dc3545;">
+                        ❌ Error generating topics: ${error.message}
+                        <br><br>
+                        <button onclick="generateAITopics()" style="background: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer;">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '⭐ Generate New Topics';
+            }
+        }
+        
+        function displayAITopics(response, isDebate) {
+            const topicsContainer = document.getElementById('suggestedTopics');
+            const keyWord = isDebate ? 'PROPOSITION' : 'TOPIC';
+            
+            // Parse the response
+            const topics = [];
+            const lines = response.split('\n');
+            
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith(`${keyWord} `)) {
+                    const topicMatch = lines[i].match(new RegExp(`${keyWord} \\d+: (.+)`));
+                    const explainMatch = lines[i + 1] && lines[i + 1].match(/EXPLANATION \d+: (.+)/);
+                    
+                    if (topicMatch && explainMatch) {
+                        topics.push({
+                            topic: topicMatch[1].trim(),
+                            explanation: explainMatch[1].trim()
+                        });
+                    }
+                }
+            }
+            
+            if (topics.length === 0) {
+                topicsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #6c757d;">
+                        No topics could be generated. Please try again.
+                    </div>
+                `;
+                return;
+            }
+            
+            topicsContainer.innerHTML = topics.map((t, index) => `
+                <div class="topic-suggestion" onclick="selectAITopic('${t.topic.replace(/'/g, "\\'")}', ${index})">
+                    <div class="topic-text">${t.topic}</div>
+                    <div class="topic-explanation">${t.explanation}</div>
+                </div>
+            `).join('');
+        }
+        
+        function selectAITopic(topic, index) {
+            // Remove previous selections
+            document.querySelectorAll('.topic-suggestion').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Mark as selected
+            document.querySelectorAll('.topic-suggestion')[index].classList.add('selected');
+            
+            // Set the topic in the textarea
+            document.getElementById('topicInput').value = topic;
+            
+            // Update state and check readiness
+            discussionState.topic = topic;
+            checkReadiness();
         }
 
         async function startGroupDiscussion() {
