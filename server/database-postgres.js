@@ -7,24 +7,38 @@ if (!process.env.DATABASE_URL) {
 }
 
 console.log('📊 DATABASE_URL is set, length:', process.env.DATABASE_URL.length);
+console.log('📊 NODE_ENV:', process.env.NODE_ENV);
 
-// Parse the DATABASE_URL manually to avoid issues
+// Create pool with explicit error handling
 let pool;
 try {
-  // For Supabase and other providers, parse the connection string
-  const connectionString = process.env.DATABASE_URL;
+  // Try to parse the DATABASE_URL to ensure it's valid
+  const dbUrl = process.env.DATABASE_URL;
   
-  pool = new Pool({
-    connectionString: connectionString,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
-  });
-  
-  console.log('✅ PostgreSQL pool created successfully');
+  // Create pool without using connectionString to avoid parsing issues
+  if (dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://')) {
+    // Parse URL manually to avoid pg-connection-string issues
+    const url = new URL(dbUrl);
+    
+    pool = new Pool({
+      user: url.username,
+      password: decodeURIComponent(url.password),
+      host: url.hostname,
+      port: url.port || 5432,
+      database: url.pathname.slice(1),
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
+    
+    console.log('✅ PostgreSQL pool created with parsed connection');
+  } else {
+    throw new Error('DATABASE_URL must start with postgresql:// or postgres://');
+  }
 } catch (error) {
   console.error('❌ Error creating PostgreSQL pool:', error);
+  console.error('DATABASE_URL format issue - ensure it starts with postgresql:// or postgres://');
   throw error;
 }
 
