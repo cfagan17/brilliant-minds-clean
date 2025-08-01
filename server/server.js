@@ -41,6 +41,7 @@ try {
 
 // Claude API function
 async function makeClaudeRequest(message, userId = null) {
+    console.log('Claude API key present:', !!CLAUDE_API_KEY);
     if (!CLAUDE_API_KEY) {
         throw new Error('Claude API key not configured');
     }
@@ -483,7 +484,9 @@ app.post('/api/claude', optionalAuth, claudeRateLimiter, async (req, res) => {
         } else {
             // Guest user - limited to 10 per day (handled by rate limiting middleware)
             try {
+                console.log('Making Claude API request for guest user:', req.ip);
                 const claudeResponse = await makeClaudeRequest(message, `anon_${req.ip}`);
+                console.log('Claude API response received for guest');
                 
                 // Get current usage from rate limit headers
                 const remaining = res.getHeader('X-RateLimit-Remaining') || 0;
@@ -551,7 +554,9 @@ async function processAuthenticatedRequest(req, res, userId, message) {
         
         try {
             // Make Claude API call
+            console.log('Making Claude API request for user:', user.id);
             const claudeResponse = await makeClaudeRequest(message, user.id);
+            console.log('Claude API response received');
             
             // Increment usage counter
             db.run('UPDATE users SET discussions_used = discussions_used + 1 WHERE id = ?', 
@@ -575,6 +580,7 @@ async function processAuthenticatedRequest(req, res, userId, message) {
             });
         } catch (claudeError) {
             console.error('Claude API error:', claudeError);
+            console.error('Full error details:', claudeError.stack);
             res.status(500).json({ 
                 error: 'Failed to get AI response',
                 details: claudeError.message 
