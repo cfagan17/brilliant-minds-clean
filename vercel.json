@@ -14,11 +14,6 @@
       "use": "@vercel/static"
     }
   ],
-  "functions": {
-    "server/server.js": {
-      "includeFiles": "server/**"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
