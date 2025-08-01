@@ -1,4 +1,11 @@
-require('dotenv').config();
+// Only load dotenv in development
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        require('dotenv').config();
+    } catch (e) {
+        // dotenv not available, that's OK in production
+    }
+}
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -115,12 +122,19 @@ app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 
 // Initialize database
-initializeDatabase();
+try {
+    initializeDatabase();
+} catch (error) {
+    console.error('Database initialization error:', error);
+    // Continue running even if database init fails
+}
 
-// Create admin user on startup
-setTimeout(() => {
-    createAdminUser().catch(err => console.error('Admin setup error:', err));
-}, 1000);
+// Create admin user on startup (only if database is available)
+if (typeof createAdminUser === 'function') {
+    setTimeout(() => {
+        createAdminUser().catch(err => console.error('Admin setup error:', err));
+    }, 1000);
+}
 
 // Enable CORS and JSON parsing
 app.use(cors());
