@@ -260,6 +260,17 @@ app.post('/api/stripe/webhook', (req, res) => {
 // AUTH ROUTES
 // ============================================================================
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok',
+        environment: process.env.NODE_ENV || 'development',
+        hasClaudeKey: !!process.env.CLAUDE_API_KEY,
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        hasStripeKey: !!process.env.STRIPE_SECRET_KEY
+    });
+});
+
 // Register new user
 // Register new user (UPDATED - 10 total discussions)
 app.post('/api/auth/register', authRateLimiter, async (req, res) => {
@@ -1024,31 +1035,31 @@ function truncateTitle(topic, maxLength = 50) {
 // ============================================================================
 
 app.get('/', (req, res) => {
-    const filePath = '/workspaces/brilliant-minds-clean/index.html';
+    const filePath = path.join(__dirname, '..', 'index.html');
     console.log('🔍 Serving index.html from:', filePath);
     res.sendFile(filePath);
 });
 
 app.get('/chat.html', (req, res) => {
-    const filePath = '/workspaces/brilliant-minds-clean/chat.html';
+    const filePath = path.join(__dirname, '..', 'chat.html');
     console.log('🔍 Serving chat.html from:', filePath);
     res.sendFile(filePath);
 });
 
 app.get('/conversations.html', (req, res) => {
-    const filePath = '/workspaces/brilliant-minds-clean/conversations.html';
+    const filePath = path.join(__dirname, '..', 'conversations.html');
     console.log('🔍 Serving conversations.html from:', filePath);
     res.sendFile(filePath);
 });
 
 app.get('/conversation.html', (req, res) => {
-    const filePath = '/workspaces/brilliant-minds-clean/conversation.html';
+    const filePath = path.join(__dirname, '..', 'conversation.html');
     console.log('🔍 Serving conversation.html from:', filePath);
     res.sendFile(filePath);
 });
 
 app.get('/test-auth.html', (req, res) => {
-    const filePath = '/workspaces/brilliant-minds-clean/test-auth.html';
+    const filePath = path.join(__dirname, '..', 'test-auth.html');
     console.log('🔍 Serving test-auth.html from:', filePath);
     res.sendFile(filePath);
 });
