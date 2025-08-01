@@ -20,6 +20,10 @@
       "dest": "/server/server.js"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "/server/server.js"
+    },
+    {
       "src": "/",
       "dest": "/index.html"
     },

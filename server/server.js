@@ -716,6 +716,20 @@ app.post('/api/analytics', async (req, res) => {
             timestamp: event.timestamp
         });
         
+        // Ensure analytics data is initialized
+        if (!global.analyticsData) {
+            global.analyticsData = {
+                totalEvents: 0,
+                dailyStats: {},
+                formatPopularity: {},
+                userSessions: {},
+                conversions: {
+                    totalUpgrades: 0,
+                    upgradesByDay: {}
+                }
+            };
+        }
+        
         // Update in-memory analytics
         const analytics = global.analyticsData;
         const today = new Date().toISOString().split('T')[0];
