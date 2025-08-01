@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Conversations - Iconoclash</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e9ecef;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .conversations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .conversation-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .conversation-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .conversation-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .conversation-meta {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .conversation-participants {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .participant-tag {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .format-badge {
+            display: inline-block;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state h2 {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .conversation-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .delete-button {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+
+        .delete-button:hover {
+            background: rgba(244, 67, 54, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>My Saved Conversations</h1>
+            <a href="/" class="back-button">
+                ← Back to Discussions
+            </a>
+        </div>
+
+        <div id="conversationsList" class="conversations-list">
+            <div class="loading">Loading your conversations...</div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let conversations = [];
+
+        async function loadConversations() {
+            if (!authToken) {
+                showEmptyState('Please log in to view your saved conversations');
+                return;
+            }
+
+            try {
+                console.log('Loading conversations with token:', authToken);
+                const response = await fetch('/api/conversations', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error('Error response:', errorData);
+                    throw new Error(`Failed to load conversations: ${response.status}`);
+                }
+
+                conversations = await response.json();
+                console.log('Loaded conversations:', conversations);
+                displayConversations();
+
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                showEmptyState('Failed to load conversations. Please try again.');
+            }
+        }
+
+        function displayConversations() {
+            const container = document.getElementById('conversationsList');
+
+            if (conversations.length === 0) {
+                showEmptyState('No saved conversations yet. Start a discussion and save it to see it here!');
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="conversations-grid">
+                    ${conversations.map(conv => createConversationCard(conv)).join('')}
+                </div>
+            `;
+        }
+
+        function createConversationCard(conversation) {
+            const date = new Date(conversation.created_at);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const participants = Array.isArray(conversation.participants) 
+                ? conversation.participants 
+                : JSON.parse(conversation.participants || '[]');
+            
+            // The metadata is stored inside conversation_data in the database
+            // We don't have it in the list view, so we'll use default values
+            const metadata = {
+                totalExchanges: 'N/A'
+            };
+
+            return `
+                <div class="conversation-card" onclick="viewConversation('${conversation.id}')">
+                    <h3 class="conversation-title">${conversation.title || 'Untitled Discussion'}</h3>
+                    <div class="conversation-meta">
+                        📅 ${formattedDate}
+                    </div>
+                    <div class="conversation-meta">
+                        💬 ${metadata.totalExchanges || 0} exchanges
+                    </div>
+                    <span class="format-badge">${conversation.format || 'Discussion'}</span>
+                    <div class="conversation-participants">
+                        ${participants.map(p => `<span class="participant-tag">${p}</span>`).join('')}
+                    </div>
+                    <div class="conversation-actions">
+                        <button class="action-button" onclick="event.stopPropagation(); shareConversation('${conversation.id}')">
+                            📤 Share
+                        </button>
+                        <button class="action-button delete-button" onclick="event.stopPropagation(); deleteConversation('${conversation.id}')">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showEmptyState(message) {
+            const container = document.getElementById('conversationsList');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h2>📚 ${message}</h2>
+                    <a href="/" class="back-button">Start a New Discussion</a>
+                </div>
+            `;
+        }
+
+        function viewConversation(conversationId) {
+            // Open in a new tab with the conversation ID
+            window.open(`/conversation.html?id=${conversationId}`, '_blank');
+        }
+
+        function shareConversation(conversationId) {
+            // Create shareable link
+            const shareUrl = `${window.location.origin}/conversation.html?id=${conversationId}`;
+            const shareMessage = `Check out this fascinating discussion on Iconoclash!\n\n${shareUrl}\n\nEngage with history's greatest thinkers at iconoclash.ai`;
+            
+            // Find the share button that was clicked
+            const shareButton = event.target.closest('.action-button');
+            const originalText = shareButton ? shareButton.textContent : '';
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareMessage).then(() => {
+                // Update button text
+                if (shareButton) {
+                    shareButton.textContent = '✅ Link Saved to Clipboard';
+                    shareButton.style.background = '#4caf50';
+                    shareButton.style.color = 'white';
+                    
+                    // Reset after 3 seconds
+                    setTimeout(() => {
+                        shareButton.textContent = originalText;
+                        shareButton.style.background = '';
+                        shareButton.style.color = '';
+                    }, 3000);
+                }
+                
+                // Show notification if function exists
+                if (typeof showNotification === 'function') {
+                    showNotification('📋 Share link copied to clipboard!', 'success');
+                }
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareMessage;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // Update button text
+                if (shareButton) {
+                    shareButton.textContent = '✅ Link Saved to Clipboard';
+                    shareButton.style.background = '#4caf50';
+                    shareButton.style.color = 'white';
+                    
+                    setTimeout(() => {
+                        shareButton.textContent = originalText;
+                        shareButton.style.background = '';
+                        shareButton.style.color = '';
+                    }, 3000);
+                }
+            });
+        }
+
+        async function deleteConversation(conversationId) {
+            if (!confirm('Are you sure you want to delete this conversation?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/conversations/${conversationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    // Reload conversations
+                    loadConversations();
+                } else {
+                    alert('Failed to delete conversation');
+                }
+            } catch (error) {
+                console.error('Error deleting conversation:', error);
+                alert('Failed to delete conversation');
+            }
+        }
+
+        // Load conversations on page load
+        document.addEventListener('DOMContentLoaded', loadConversations);
+    </script>
+</body>
+</html>

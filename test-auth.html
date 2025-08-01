@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <button onclick="testAuth()">Test Auth Token</button>
+    <pre id="output"></pre>
+    
+    <script>
+        async function testAuth() {
+            const token = localStorage.getItem('authToken');
+            const output = document.getElementById('output');
+            
+            output.textContent = `Token: ${token}\n\n`;
+            
+            if (!token) {
+                output.textContent += 'No auth token found!';
+                return;
+            }
+            
+            try {
+                // Test /api/auth/me
+                const meResponse = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                output.textContent += `/api/auth/me status: ${meResponse.status}\n`;
+                if (meResponse.ok) {
+                    const userData = await meResponse.json();
+                    output.textContent += `User data: ${JSON.stringify(userData, null, 2)}\n\n`;
+                } else {
+                    output.textContent += `Error: ${await meResponse.text()}\n\n`;
+                }
+                
+                // Test /api/conversations
+                const convResponse = await fetch('/api/conversations', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                output.textContent += `/api/conversations status: ${convResponse.status}\n`;
+                if (convResponse.ok) {
+                    const conversations = await convResponse.json();
+                    output.textContent += `Conversations: ${JSON.stringify(conversations, null, 2)}\n`;
+                } else {
+                    output.textContent += `Error: ${await convResponse.text()}\n`;
+                }
+                
+            } catch (error) {
+                output.textContent += `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
