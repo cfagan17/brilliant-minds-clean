@@ -53,7 +53,19 @@ try {
 // Initialize database schema
 async function initializeDatabase() {
   try {
-    // Test the connection first
+    // First test DNS resolution
+    console.log('🔄 Testing DNS resolution...');
+    const dns = require('dns').promises;
+    try {
+      const addresses = await dns.resolve4('db.uzjqstwlvbjalrrydlzf.supabase.co');
+      console.log('✅ DNS resolved to:', addresses);
+    } catch (dnsError) {
+      console.error('❌ DNS resolution failed:', dnsError);
+      // Try alternative connection method
+      console.log('🔄 Trying alternative connection...');
+    }
+    
+    // Test the connection
     console.log('🔄 Testing PostgreSQL connection...');
     await pool.query('SELECT NOW()');
     console.log('✅ PostgreSQL connection successful');
@@ -85,14 +97,15 @@ async function initializeDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS anonymous_users (
         id SERIAL PRIMARY KEY,
-        user_id VARCHAR(255) UNIQUE NOT NULL,
+        session_id VARCHAR(255) UNIQUE NOT NULL,
         discussions_used INTEGER DEFAULT 0,
-        last_discussion_date DATE DEFAULT CURRENT_DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        total_messages INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_anon_users_id ON anonymous_users(user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_anon_users_session ON anonymous_users(session_id)`);
 
     // Create analytics_events table
     await pool.query(`
