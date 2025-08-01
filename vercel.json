@@ -1,4 +1,6 @@
 {
+  "buildCommand": "echo 'No build required'",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
     { "source": "/favicon.ico", "destination": "/api" }
