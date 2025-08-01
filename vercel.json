@@ -20,6 +20,10 @@
       "dest": "/server/server.js"
     },
     {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
       "src": "/(.*\\.js)$",
       "dest": "/$1",
       "headers": { "content-type": "application/javascript" }
@@ -31,7 +35,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/server/server.js"
+      "dest": "/$1"
     }
   ]
 }

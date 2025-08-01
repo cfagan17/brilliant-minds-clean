@@ -127,6 +127,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..'))); // Serve static files from current directory
 
+// Favicon route
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end();
+});
+
 // Auth middleware
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -771,6 +776,10 @@ app.post('/api/analytics', async (req, res) => {
         }
         
         // Store in database
+        // For PostgreSQL, pass the object directly (it handles JSONB conversion)
+        // For SQLite, stringify the object
+        const eventData = USE_POSTGRES ? (event.data || {}) : JSON.stringify(event.data || {});
+        
         db.run(`
             INSERT INTO analytics_events (user_id, session_id, event_type, event_data)
             VALUES (?, ?, ?, ?)
@@ -778,7 +787,7 @@ app.post('/api/analytics', async (req, res) => {
             event.userId,
             event.sessionId,
             event.eventType,
-            JSON.stringify(event.data || {})
+            eventData
         ], function(err) {
             if (err) {
                 console.error('Analytics storage error:', err);
