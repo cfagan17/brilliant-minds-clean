@@ -1,14 +1,9 @@
 {
   "version": 2,
-  "functions": {
-    "server/server.js": {
-      "includeFiles": "**"
-    }
-  },
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/server/server.js"
+      "src": "package.json",
+      "use": "@vercel/node"
     }
   ]
 }
