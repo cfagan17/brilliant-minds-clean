@@ -35,9 +35,12 @@ try {
       port: url.port || 5432,
       database: url.pathname.slice(1),
       ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      max: 1, // Serverless should use minimal connections
+      idleTimeoutMillis: 0, // Close connections immediately after use
+      connectionTimeoutMillis: 10000, // Give more time to connect in serverless
+      allowExitOnIdle: true, // Allow process to exit when idle
+      keepAlive: false, // Disable keep-alive for serverless
+      keepAliveInitialDelayMillis: 0 // No keep-alive delay
     });
     
     console.log('✅ PostgreSQL pool created with parsed connection');
@@ -65,9 +68,9 @@ async function initializeDatabase() {
       console.log('🔄 Trying alternative connection...');
     }
     
-    // Test the connection
+    // Test the connection with retry
     console.log('🔄 Testing PostgreSQL connection...');
-    await pool.query('SELECT NOW()');
+    await executeWithRetry(() => pool.query('SELECT NOW()'));
     console.log('✅ PostgreSQL connection successful');
     
     // Create users table
@@ -145,6 +148,28 @@ async function initializeDatabase() {
   }
 }
 
+// Retry logic for serverless connections
+async function executeWithRetry(queryFn, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await queryFn();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      
+      // Retry on connection errors
+      if (error.code === 'ECONNRESET' || 
+          error.code === 'ETIMEDOUT' || 
+          error.message.includes('connection timeout') ||
+          error.message.includes('Connection terminated')) {
+        console.log(`Retrying database query (attempt ${i + 2}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, 100 * (i + 1))); // Exponential backoff
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
 // Helper functions to match SQLite interface
 const db = {
   get: (query, params, callback) => {
@@ -156,7 +181,7 @@ const db = {
       paramIndex++;
     }
     
-    pool.query(pgQuery, params)
+    executeWithRetry(() => pool.query(pgQuery, params))
       .then(result => callback(null, result.rows[0]))
       .catch(err => callback(err));
   },
@@ -170,7 +195,7 @@ const db = {
       paramIndex++;
     }
     
-    pool.query(pgQuery, params)
+    executeWithRetry(() => pool.query(pgQuery, params))
       .then(result => callback(null, result.rows))
       .catch(err => callback(err));
   },
@@ -192,7 +217,7 @@ const db = {
       }
     }
     
-    pool.query(pgQuery, params)
+    executeWithRetry(() => pool.query(pgQuery, params))
       .then(result => {
         if (callback) {
           const lastID = result.rows[0]?.id || result.lastInsertRowid;
@@ -205,4 +230,22 @@ const db = {
   }
 };
 
-module.exports = { db, initializeDatabase, pool };
+// Cleanup function for serverless environments
+async function cleanup() {
+  if (pool) {
+    try {
+      await pool.end();
+      console.log('✅ PostgreSQL pool closed');
+    } catch (error) {
+      console.error('Error closing pool:', error);
+    }
+  }
+}
+
+// Handle process termination in serverless
+if (process.env.NODE_ENV === 'production') {
+  process.on('SIGTERM', cleanup);
+  process.on('SIGINT', cleanup);
+}
+
+module.exports = { db, initializeDatabase, pool, cleanup };

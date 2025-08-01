@@ -20,6 +20,9 @@ const { createAdminUser, requireAdmin, isTestAccount } = require('./admin');
 
 const app = express();
 
+// Trust proxy for Vercel deployment
+app.set('trust proxy', true);
+
 // Initialize Sentry error monitoring
 initializeSentry(app);
 
@@ -122,13 +125,35 @@ app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 // IMPORTANT: Add webhook before express.json() middleware
 app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 
-// Initialize database
-try {
-    initializeDatabase();
-} catch (error) {
-    console.error('Database initialization error:', error);
-    // Continue running even if database init fails
+// Initialize database with proper async handling
+let dbInitialized = false;
+let dbInitPromise = null;
+
+async function ensureDbInitialized() {
+    if (dbInitialized) return;
+    
+    if (!dbInitPromise) {
+        dbInitPromise = initializeDatabase()
+            .then(() => {
+                dbInitialized = true;
+                console.log('✅ Database initialized successfully');
+            })
+            .catch(error => {
+                console.error('❌ Database initialization error:', error);
+                // In serverless, we might need to retry on next request
+                dbInitPromise = null;
+                throw error;
+            });
+    }
+    
+    return dbInitPromise;
 }
+
+// Initialize on startup (best effort)
+ensureDbInitialized().catch(err => {
+    console.error('Initial database setup failed:', err);
+    // Don't crash the server, will retry on first request
+});
 
 // Create admin user on startup (only if database is available)
 if (typeof createAdminUser === 'function') {
@@ -141,6 +166,20 @@ if (typeof createAdminUser === 'function') {
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..'))); // Serve static files from current directory
+
+// Database initialization middleware for API routes
+app.use('/api', async (req, res, next) => {
+    try {
+        await ensureDbInitialized();
+        next();
+    } catch (error) {
+        console.error('Database initialization failed:', error);
+        res.status(503).json({ 
+            error: 'Service temporarily unavailable. Please try again.',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
 
 // Favicon route
 app.get('/favicon.ico', (req, res) => {
