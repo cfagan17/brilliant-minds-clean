@@ -20,6 +20,14 @@ try {
     // Parse URL manually to avoid pg-connection-string issues
     const url = new URL(dbUrl);
     
+    // Log parsed components for debugging
+    console.log('📊 Parsed connection details:');
+    console.log('  - Host:', url.hostname);
+    console.log('  - Port:', url.port || 5432);
+    console.log('  - Database:', url.pathname.slice(1));
+    console.log('  - User:', url.username);
+    console.log('  - Password length:', url.password ? url.password.length : 0);
+    
     pool = new Pool({
       user: url.username,
       password: decodeURIComponent(url.password),

@@ -1,7 +1,9 @@
 const rateLimit = require('express-rate-limit');
-const { ipKeyGenerator } = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis').default;
 const { redis, redisAvailable } = require('./redis');
+
+// Default IP key generator function
+const getIp = (req) => req.ip || req.connection.remoteAddress || 'unknown';
 
 // Different rate limits for different endpoints
 const rateLimits = {
@@ -38,7 +40,7 @@ function createRateLimiter(config, keyGenerator) {
         message: config.message,
         standardHeaders: true,
         legacyHeaders: false,
-        keyGenerator: keyGenerator || ipKeyGenerator,
+        keyGenerator: keyGenerator || getIp,
         handler: (req, res) => {
             res.status(429).json({
                 error: config.message,
@@ -73,7 +75,7 @@ const claudeRateLimiter = (req, res, next) => {
     
     const limiter = createRateLimiter(
         { ...rateLimits.claude, max: limit },
-        (req) => `claude:${keyPrefix}:${req.user?.userId || ipKeyGenerator(req)}`
+        (req) => `claude:${keyPrefix}:${req.user?.userId || getIp(req)}`
     );
     
     return limiter(req, res, next);
@@ -82,13 +84,13 @@ const claudeRateLimiter = (req, res, next) => {
 // Auth rate limiter
 const authRateLimiter = createRateLimiter(
     rateLimits.auth,
-    (req) => `auth:${req.body?.email || ipKeyGenerator(req)}`
+    (req) => `auth:${req.body?.email || getIp(req)}`
 );
 
 // General API rate limiter
 const generalRateLimiter = createRateLimiter(
     rateLimits.general,
-    (req) => `api:${req.user?.userId || ipKeyGenerator(req)}`
+    (req) => `api:${req.user?.userId || getIp(req)}`
 );
 
 // Usage tracking with Redis (for analytics)

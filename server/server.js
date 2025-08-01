@@ -20,6 +20,9 @@ const { createAdminUser, requireAdmin, isTestAccount } = require('./admin');
 
 const app = express();
 
+// Trust proxy for Vercel deployment
+app.set('trust proxy', true);
+
 // Initialize Sentry error monitoring
 initializeSentry(app);
 
