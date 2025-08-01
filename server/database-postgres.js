@@ -1,17 +1,41 @@
 const { Pool } = require('pg');
 
-// PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// Check if DATABASE_URL is provided
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL is not set in environment variables');
+  throw new Error('DATABASE_URL is required for PostgreSQL connection');
+}
+
+console.log('📊 DATABASE_URL is set, length:', process.env.DATABASE_URL.length);
+
+// Parse the DATABASE_URL manually to avoid issues
+let pool;
+try {
+  // For Supabase and other providers, parse the connection string
+  const connectionString = process.env.DATABASE_URL;
+  
+  pool = new Pool({
+    connectionString: connectionString,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  });
+  
+  console.log('✅ PostgreSQL pool created successfully');
+} catch (error) {
+  console.error('❌ Error creating PostgreSQL pool:', error);
+  throw error;
+}
 
 // Initialize database schema
 async function initializeDatabase() {
   try {
+    // Test the connection first
+    console.log('🔄 Testing PostgreSQL connection...');
+    await pool.query('SELECT NOW()');
+    console.log('✅ PostgreSQL connection successful');
+    
     // Create users table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
