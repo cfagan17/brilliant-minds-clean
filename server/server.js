@@ -1272,13 +1272,13 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
             console.log('Found shared conversation:', shared);
             
             try {
-                // Parse JSON fields
+                // Parse JSON fields - PostgreSQL JSONB returns objects, SQLite returns strings
                 const conversation = {
                     topic: shared.topic,
                     format: shared.format,
-                    participants: JSON.parse(shared.participants),
+                    participants: typeof shared.participants === 'string' ? JSON.parse(shared.participants) : shared.participants,
                     conversationHtml: shared.conversation_html,
-                    metadata: JSON.parse(shared.metadata),
+                    metadata: typeof shared.metadata === 'string' ? JSON.parse(shared.metadata) : shared.metadata,
                     createdAt: shared.created_at,
                     expiresAt: shared.expires_at
                 };
@@ -1287,6 +1287,8 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
             } catch (parseError) {
                 console.error('Error parsing shared conversation data:', parseError);
                 console.error('Raw data:', shared);
+                console.error('Participants type:', typeof shared.participants);
+                console.error('Metadata type:', typeof shared.metadata);
                 res.status(500).json({ 
                     error: 'Failed to parse conversation data',
                     details: parseError.message 
