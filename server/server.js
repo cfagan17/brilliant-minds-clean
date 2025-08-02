@@ -46,7 +46,8 @@ try {
 async function makeClaudeRequest(message, userId = null) {
     console.log('Claude API key present:', !!CLAUDE_API_KEY);
     if (!CLAUDE_API_KEY) {
-        throw new Error('Claude API key not configured');
+        console.error('CLAUDE_API_KEY environment variable is not set');
+        throw new Error('Claude API key not configured - please set CLAUDE_API_KEY environment variable');
     }
 
     const startTime = Date.now();
@@ -497,9 +498,11 @@ app.post('/api/suggest-speakers', async (req, res) => {
         });
     } catch (error) {
         console.error('Speaker suggestion error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
             error: 'Failed to get speaker suggestions',
-            details: error.message 
+            details: error.message,
+            hint: error.message.includes('Claude API key') ? 'Please ensure CLAUDE_API_KEY is set in Vercel environment variables' : undefined
         });
     }
 });
