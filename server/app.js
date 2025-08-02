@@ -1246,9 +1246,8 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
         const { shareId } = req.params;
         
         // Get shared conversation from database
-        const query = USE_POSTGRES ? 
-            `SELECT * FROM shared_conversations WHERE share_id = $1 AND expires_at > NOW()` :
-            `SELECT * FROM shared_conversations WHERE share_id = ? AND expires_at > datetime('now')`;
+        // Use SQLite-style placeholders - they'll be converted for PostgreSQL
+        const query = `SELECT * FROM shared_conversations WHERE share_id = ? AND expires_at > ${USE_POSTGRES ? 'NOW()' : "datetime('now')"}`;
         
         db.get(query, [shareId], (err, shared) => {
             if (err) {
