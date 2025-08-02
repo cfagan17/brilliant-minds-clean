@@ -140,6 +140,22 @@ async function initializeDatabase() {
     `);
 
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_conversations_user ON saved_conversations(user_id)`);
+    
+    // Create shared_conversations table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shared_conversations (
+        id SERIAL PRIMARY KEY,
+        share_id VARCHAR(100) UNIQUE NOT NULL,
+        topic VARCHAR(255),
+        format VARCHAR(50),
+        participants JSONB,
+        conversation_html TEXT,
+        metadata JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP NOT NULL
+      )
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_shared_conversations_share_id ON shared_conversations(share_id)`);
 
     console.log('PostgreSQL database initialized successfully');
   } catch (error) {

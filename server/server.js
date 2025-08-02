@@ -14,7 +14,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { db, initializeDatabase, USE_POSTGRES } = require('./database');
 const { initializeSentry, errorHandler, logEvent, trackPerformance, trackClaudeUsage } = require('./monitoring');
-const { claudeRateLimiter, authRateLimiter, generalRateLimiter, trackUsage } = require('./rateLimiter');
+// Redis rate limiting removed - using database-based discussion tracking instead
 const { analytics, ANALYTICS_EVENTS } = require('./analytics');
 const { createAdminUser, requireAdmin, isTestAccount } = require('./admin');
 
@@ -96,7 +96,7 @@ async function makeClaudeRequest(message, userId = null) {
         
         if (userId) {
             trackClaudeUsage(userId, 'claude-sonnet-4', estimatedTokens, estimatedCost);
-            trackUsage(userId, 'claude'); // Track in Redis
+            // Usage tracking handled by database discussions_used counter
             
             // Track for analytics
             await analytics.trackEvent(ANALYTICS_EVENTS.CLAUDE_API_COST, userId, {
@@ -125,13 +125,35 @@ app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 // IMPORTANT: Add webhook before express.json() middleware
 app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
 
-// Initialize database
-try {
-    initializeDatabase();
-} catch (error) {
-    console.error('Database initialization error:', error);
-    // Continue running even if database init fails
+// Initialize database with proper async handling
+let dbInitialized = false;
+let dbInitPromise = null;
+
+async function ensureDbInitialized() {
+    if (dbInitialized) return;
+    
+    if (!dbInitPromise) {
+        dbInitPromise = initializeDatabase()
+            .then(() => {
+                dbInitialized = true;
+                console.log('✅ Database initialized successfully');
+            })
+            .catch(error => {
+                console.error('❌ Database initialization error:', error);
+                // In serverless, we might need to retry on next request
+                dbInitPromise = null;
+                throw error;
+            });
+    }
+    
+    return dbInitPromise;
 }
+
+// Initialize on startup (best effort)
+ensureDbInitialized().catch(err => {
+    console.error('Initial database setup failed:', err);
+    // Don't crash the server, will retry on first request
+});
 
 // Create admin user on startup (only if database is available)
 if (typeof createAdminUser === 'function') {
@@ -294,9 +316,8 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Register new user
-// Register new user (UPDATED - 10 total discussions)
-app.post('/api/auth/register', authRateLimiter, async (req, res) => {
+// Register new user (10 daily discussions for free tier)
+app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -339,8 +360,8 @@ app.post('/api/auth/register', authRateLimiter, async (req, res) => {
                     email,
                     isProUser: false,
                     discussionsUsed: 0,
-                    totalLimit: 10, // UPDATED: Total limit instead of daily
-                    remaining: 10   // UPDATED: 10 total discussions
+                    dailyLimit: 10,
+                    remaining: 10
                 }
             });
         });
@@ -351,7 +372,7 @@ app.post('/api/auth/register', authRateLimiter, async (req, res) => {
 });
 
 // Login user
-app.post('/api/auth/login', authRateLimiter, async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -386,7 +407,7 @@ app.post('/api/auth/login', authRateLimiter, async (req, res) => {
     }
 });
 
-// Get current user info (UPDATED - 10 total discussions)
+// Get current user info
 app.get('/api/auth/me', authenticateToken, (req, res) => {
     db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], (err, user) => {
         if (err || !user) {
@@ -410,14 +431,14 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
                 });
             });
         } else {
-            // Free user - return total usage
+            // Free user - return daily usage (resets each day)
             res.json({
                 id: user.id,
                 email: user.email,
                 isProUser: user.is_pro,
                 discussionsUsed: user.discussions_used,
-                totalLimit: 10, // UPDATED: Total limit instead of daily
-                remaining: Math.max(0, 10 - user.discussions_used) // UPDATED: Total remaining
+                dailyLimit: 10,
+                remaining: Math.max(0, 10 - user.discussions_used)
             });
         }
     });
@@ -443,15 +464,48 @@ const guestRateLimit = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // Use default key generator (handles IPv6 properly)
-// Remove the keyGenerator line entirely - let express-rate-limit handle it
+    // Trust proxy is already set, use a simple key generator
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+    }
 });
 
 // Apply rate limiting to Claude endpoint for guests only
 app.use('/api/claude', guestRateLimit);
 
+// Endpoint for speaker suggestions - doesn't count against usage
+app.post('/api/suggest-speakers', async (req, res) => {
+    try {
+        console.log('Speaker suggestion endpoint called - NO AUTH, NO LIMITS');
+        const { message } = req.body;
+        
+        if (!message || typeof message !== 'string') {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+        
+        // Make request without ANY tracking or limits
+        console.log('Making Claude request for speaker suggestions');
+        const claudeResponse = await makeClaudeRequest(message, null);
+        console.log('Speaker suggestion successful');
+        
+        res.json({
+            ...claudeResponse,
+            usage: {
+                isSuggestion: true,
+                counted: false
+            }
+        });
+    } catch (error) {
+        console.error('Speaker suggestion error:', error);
+        res.status(500).json({ 
+            error: 'Failed to get speaker suggestions',
+            details: error.message 
+        });
+    }
+});
+
 // API endpoint to proxy Claude requests (UPDATED MODEL)
-app.post('/api/claude', optionalAuth, claudeRateLimiter, async (req, res) => {
+app.post('/api/claude', optionalAuth, async (req, res) => {
     try {
         const { message, figure, format, sessionId } = req.body;
         
@@ -473,16 +527,10 @@ app.post('/api/claude', optionalAuth, claudeRateLimiter, async (req, res) => {
                     return res.status(404).json({ error: 'User not found' });
                 }
                 
-                // Only reset daily discussions for PRO users (they get unlimited daily)
-                // Free users have a total limit of 10, no daily reset
-                if (user.is_pro) {
-                    resetDailyDiscussions(user.id, async () => {
-                        await processAuthenticatedRequest(req, res, user.id, message);
-                    });
-                } else {
-                    // Free user - use total count, no reset
+                // Reset daily discussions for ALL users (free get 10/day, pro get unlimited)
+                resetDailyDiscussions(user.id, async () => {
                     await processAuthenticatedRequest(req, res, user.id, message);
-                }
+                });
             });
         } else {
             // Guest user - limited to 10 per day (handled by rate limiting middleware)
@@ -543,13 +591,13 @@ async function processAuthenticatedRequest(req, res, userId, message) {
             return res.status(500).json({ error: 'Database error' });
         }
         
-        // UPDATED: 10 discussions TOTAL for authenticated free users (no daily reset)
+        // Free registered users get 10 per day (same as anonymous)
         if (!user.is_pro && user.discussions_used >= 10) {
             return res.status(429).json({ 
-                error: 'You\'ve used all 10 of your free discussions. Upgrade to Pro for unlimited access!',
+                error: 'You\'ve used your 10 free discussions for today. Upgrade to Pro for unlimited access!',
                 limit: true,
                 remaining: 0,
-                totalLimit: 10,
+                dailyLimit: 10,
                 isProUser: false,
                 authLimitReached: true
             });
@@ -569,16 +617,16 @@ async function processAuthenticatedRequest(req, res, userId, message) {
                 }
             });
             
-            // Return response with usage info (NO DAILY RESET for free users)
+            // Return response with daily usage info
             res.json({
                 ...claudeResponse,
                 usage: {
                     used: user.discussions_used + 1,
                     limit: user.is_pro ? 'unlimited' : 10,
                     remaining: user.is_pro ? 'unlimited' : Math.max(0, 10 - (user.discussions_used + 1)),
-                    isProUser: false,
+                    isProUser: user.is_pro,
                     userType: 'authenticated',
-                    totalUsage: true // Flag to indicate this is total, not daily
+                    dailyUsage: true // Both free and pro reset daily
                 }
             });
         } catch (claudeError) {
@@ -1138,6 +1186,94 @@ app.get('/api/test-claude', async (req, res) => {
             error: error.message,
             message: 'Claude API test failed. Check server logs for details.'
         });
+    }
+});
+
+// ============================================================================
+// CONVERSATION SHARING ENDPOINTS
+// ============================================================================
+
+// Share conversation anonymously (temporary link)
+app.post('/api/conversations/share-anonymous', async (req, res) => {
+    try {
+        const { topic, format, participants, conversationHtml, metadata } = req.body;
+        
+        // Generate a unique share ID
+        const shareId = 'share_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Store in database with expiration
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
+        
+        // Store in database
+        db.run(`
+            INSERT INTO shared_conversations (
+                share_id, topic, format, participants, conversation_html, metadata, expires_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [
+            shareId,
+            topic,
+            format,
+            JSON.stringify(participants),
+            conversationHtml,
+            JSON.stringify(metadata || {}),
+            expiresAt.toISOString()
+        ], (err) => {
+            if (err) {
+                console.error('Database error storing shared conversation:', err);
+                return res.status(500).json({ error: 'Failed to create share link' });
+            }
+        
+            res.json({
+                shareId: shareId,
+                message: 'Share link created',
+                expiresAt: expiresAt.toISOString()
+            });
+        });
+        
+    } catch (error) {
+        console.error('Share anonymous error:', error);
+        res.status(500).json({ error: 'Failed to create share link' });
+    }
+});
+
+// Get shared conversation
+app.get('/api/conversations/shared/:shareId', async (req, res) => {
+    try {
+        const { shareId } = req.params;
+        
+        // Get shared conversation from database
+        const query = USE_POSTGRES ? 
+            `SELECT * FROM shared_conversations WHERE share_id = $1 AND expires_at > NOW()` :
+            `SELECT * FROM shared_conversations WHERE share_id = ? AND expires_at > datetime('now')`;
+        
+        db.get(query, [shareId], (err, shared) => {
+            if (err) {
+                console.error('Database error getting shared conversation:', err);
+                return res.status(500).json({ error: 'Failed to load shared conversation' });
+            }
+            
+            if (!shared) {
+                return res.status(404).json({ error: 'Share link not found or expired' });
+            }
+            
+            // Parse JSON fields
+            const conversation = {
+                topic: shared.topic,
+                format: shared.format,
+                participants: JSON.parse(shared.participants),
+                conversationHtml: shared.conversation_html,
+                metadata: JSON.parse(shared.metadata),
+                createdAt: shared.created_at,
+                expiresAt: shared.expires_at
+            };
+            
+            res.json(conversation);
+        });
+        
+    } catch (error) {
+        console.error('Get shared conversation error:', error);
+        res.status(500).json({ error: 'Failed to load shared conversation' });
     }
 });
 

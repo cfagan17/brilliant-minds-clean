@@ -3,531 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iconoclash Discussion - Engage with History's Greatest Thinkers</title>
-    <meta name="description" content="Join conversations with AI-powered historical figures. Experience intellectual discussions with Einstein, Darwin, Curie, and more.">
+    <title>Iconoclash - Shared Discussion</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
             color: #2c3e50;
         }
-
-        /* Hero Section for New Visitors */
-        .hero-section {
-            max-width: 1000px;
-            margin: 0 auto 30px;
-            text-align: center;
-            color: white;
-        }
-
-        .hero-section h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-section p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 30px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-        }
-
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
-        }
-
-        .shared-notice {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 16px 24px;
-            margin-bottom: 30px;
-            text-align: center;
-            color: white;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .shared-notice-icon {
-            font-size: 1.5rem;
-            margin-right: 10px;
-        }
-
+        
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
         }
-
+        
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
         }
-
+        
         .header h1 {
             font-size: 2rem;
-            font-weight: 800;
-        }
-
-        .header-meta {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 8px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .action-button {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .action-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .conversation-content {
-            padding: 40px;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 80px;
-            font-size: 1.2rem;
-            color: #666;
-        }
-
-        .error {
-            text-align: center;
-            padding: 80px;
-            color: #e74c3c;
-        }
-
-        .error h2 {
-            font-size: 1.8rem;
-            margin-bottom: 16px;
-        }
-
-        /* Preserve the original discussion styles */
-        .speaker {
-            margin-bottom: 30px;
-            padding: 20px;
-            border-radius: 12px;
-            background: #f8f9fa;
-            position: relative;
-            padding-left: 40px;
-        }
-
-        .speaker::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 4px;
-        }
-
-        .speaker-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: #2c3e50;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-
-        .speaker-content {
-            color: #495057;
-            line-height: 1.8;
-            font-size: 0.95rem;
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
         }
-
-        .speaker-content p {
-            margin-bottom: 1em;
+        
+        .conversation-meta {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 2px solid #e9ecef;
         }
-
-        .speaker-content p:last-child {
-            margin-bottom: 0;
+        
+        .meta-item {
+            display: inline-block;
+            margin-right: 20px;
+            color: #6c757d;
         }
-
-        .moderator-speaker {
+        
+        .conversation-content {
+            padding: 30px;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .message-speaker {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+        
+        .message-content {
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: #2c3e50;
+        }
+        
+        .message.ai {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .message.ai .message-speaker {
+            color: #1976d2;
+        }
+        
+        .message.user {
+            background: #f3e5f5;
+            border-left: 3px solid #9c27b0;
+        }
+        
+        .message.user .message-speaker {
+            color: #7b1fa2;
+        }
+        
+        .cta-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 40px;
             text-align: center;
-            padding: 30px;
-            margin-bottom: 40px;
-            border-radius: 12px;
         }
-
-        .moderator-speaker .speaker-name {
-            color: white;
-            font-size: 1.3rem;
+        
+        .cta-section h2 {
             margin-bottom: 15px;
         }
-
-        .moderator-speaker .speaker-content {
-            color: white;
-            font-size: 1.1rem;
-            font-style: italic;
+        
+        .cta-section p {
+            margin-bottom: 25px;
+            opacity: 0.9;
         }
-
-        .participant-info {
-            background: #f0f0f0;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
         }
-
-        .participant-info h3 {
-            font-size: 1.2rem;
-            margin-bottom: 12px;
-            color: #2c3e50;
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
         }
-
-        .participant-tags {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6c757d;
         }
-
-        .participant-tag {
-            background: #667eea;
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
+        
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #dc3545;
         }
-
-        /* Animation for notifications */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Mobile responsiveness */
+        
         @media (max-width: 768px) {
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-            
-            .hero-section p {
-                font-size: 1rem;
-            }
-            
-            .cta-button {
-                font-size: 1rem;
-                padding: 14px 28px;
-            }
-            
             .container {
-                margin: 0 10px;
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .conversation-content {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section for New Visitors -->
-    <div class="hero-section">
-        <h1>Iconoclash</h1>
-        <p>Experience intellectual discussions with history's greatest thinkers, powered by AI</p>
-        <a href="/" class="cta-button">Start Your Own Discussion</a>
-    </div>
-
-    <!-- Shared Notice -->
-    <div class="shared-notice">
-        <span class="shared-notice-icon">🔗</span>
-        Someone shared this fascinating conversation with you! Read below, then create your own discussions with historical figures.
-    </div>
-
     <div class="container">
-        <div id="conversationContainer">
-            <div class="loading">Loading conversation...</div>
+        <div class="header">
+            <h1>🧠 Iconoclash</h1>
+            <div class="subtitle">Shared Discussion</div>
+        </div>
+        
+        <div id="content">
+            <div class="loading">
+                <p>Loading conversation...</p>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h2>Want to create your own discussions?</h2>
+            <p>Engage with history's greatest minds on any topic</p>
+            <a href="/" class="cta-button">Start Your Discussion</a>
         </div>
     </div>
-
-    <!-- Bottom CTA Section -->
-    <div id="bottomCTA" style="text-align: center; margin-top: 40px; padding-bottom: 40px;">
-        <h2 style="color: white; font-size: 2rem; margin-bottom: 20px;">Ready for an intellectual clash?</h2>
-        <p style="color: rgba(255, 255, 255, 0.8); font-size: 1.1rem; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
-            Join thousands having thoughtful conversations with Einstein, Darwin, Curie, and 50+ other historical figures.
-        </p>
-        <a href="/" class="cta-button" style="font-size: 1.2rem; padding: 18px 40px;">
-            ✨ Start Your Free Discussion
-        </a>
-        <p style="color: rgba(255, 255, 255, 0.6); margin-top: 16px; font-size: 0.9rem;">
-            No signup required • 3 free discussions for guests
-        </p>
-    </div>
-
+    
     <script>
-        let conversationId = null;
-        let authToken = localStorage.getItem('authToken');
-        let isOwner = false;
-        let currentUserId = null;
-
+        // Get share ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('share');
+        const conversationId = urlParams.get('id');
+        
         async function loadConversation() {
-            // Get conversation ID from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            conversationId = urlParams.get('id');
-
-            if (!conversationId) {
-                showError('No conversation ID provided');
-                return;
-            }
-
-            // First, check if user is logged in and get their info
-            if (authToken) {
-                try {
-                    const meResponse = await fetch('/api/auth/me', {
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    });
-                    if (meResponse.ok) {
-                        const userData = await meResponse.json();
-                        currentUserId = userData.id;
-                    }
-                } catch (error) {
-                    console.log('Could not get user info');
-                }
-            }
-
+            const contentDiv = document.getElementById('content');
+            
             try {
-                const headers = {};
-                if (authToken) {
-                    headers['Authorization'] = `Bearer ${authToken}`;
+                let response;
+                
+                if (shareId) {
+                    // Load shared conversation
+                    response = await fetch(`/api/conversations/shared/${shareId}`);
+                } else if (conversationId) {
+                    // Load saved conversation
+                    response = await fetch(`/api/conversations/${conversationId}`);
+                } else {
+                    throw new Error('No conversation ID provided');
                 }
-
-                const response = await fetch(`/api/conversations/${conversationId}`, { headers });
-
+                
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Conversation not found');
-                    }
                     throw new Error('Failed to load conversation');
                 }
-
-                const conversation = await response.json();
                 
-                // Check if current user owns this conversation
-                isOwner = currentUserId && conversation.user_id === currentUserId;
+                const data = await response.json();
                 
-                // Hide hero and shared notice for owners
-                if (isOwner) {
-                    document.querySelector('.hero-section').style.display = 'none';
-                    document.querySelector('.shared-notice').style.display = 'none';
-                    document.querySelector('#bottomCTA').style.display = 'none';
-                }
+                // Display the conversation
+                contentDiv.innerHTML = `
+                    <div class="conversation-meta">
+                        <div class="meta-item">🎭 Topic: ${data.topic}</div>
+                        <div class="meta-item">💬 Format: ${data.format}</div>
+                        <div class="meta-item">📅 Shared: ${new Date(data.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div class="conversation-content">
+                        ${data.conversationHtml}
+                    </div>
+                `;
                 
-                displayConversation(conversation);
-
             } catch (error) {
-                console.error('Error loading conversation:', error);
-                showError(error.message);
+                contentDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Conversation</h3>
+                        <p>${error.message}</p>
+                        <p>This conversation may have expired or been removed.</p>
+                    </div>
+                `;
             }
         }
-
-        function displayConversation(conversation) {
-            const container = document.getElementById('conversationContainer');
-            const date = new Date(conversation.created_at);
-            const formattedDate = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const participants = Array.isArray(conversation.participants) 
-                ? conversation.participants 
-                : JSON.parse(conversation.participants || '[]');
-            const conversationData = typeof conversation.conversation_data === 'object' 
-                ? conversation.conversation_data 
-                : JSON.parse(conversation.conversation_data || '{}');
-
-            container.innerHTML = `
-                <div class="header">
-                    <div>
-                        <h1>${conversation.title || 'Iconoclash Discussion'}</h1>
-                        <div class="header-meta">
-                            ${conversation.format} • ${formattedDate}
-                        </div>
-                    </div>
-                    <div class="actions">
-                        ${isOwner ? `
-                            <button class="action-button" onclick="shareConversation()">
-                                📤 Share This
-                            </button>
-                            <a href="/conversations.html" class="action-button">
-                                ← Back to Conversations
-                            </a>
-                        ` : `
-                            <a href="/" class="action-button">
-                                ✨ Start Your Own Discussion
-                            </a>
-                        `}
-                    </div>
-                </div>
-                <div class="conversation-content">
-                    <div class="participant-info">
-                        <h3>Participants in this ${conversation.format}:</h3>
-                        <div class="participant-tags">
-                            ${participants.map(p => `<span class="participant-tag">${p}</span>`).join('')}
-                        </div>
-                    </div>
-                    <div id="discussionArena">
-                        ${conversationData.html || '<p>No conversation content available</p>'}
-                    </div>
-                </div>
-            `;
-        }
-
-        function showError(message) {
-            const container = document.getElementById('conversationContainer');
-            container.innerHTML = `
-                <div class="error">
-                    <h2>⚠️ ${message}</h2>
-                    <a href="/conversations.html" class="action-button" style="display: inline-flex; margin-top: 20px;">
-                        ← Back to Conversations
-                    </a>
-                </div>
-            `;
-        }
-
-        function shareConversation() {
-            const shareUrl = window.location.href;
-            const shareText = `Check out this fascinating discussion on Iconoclash!\n\n${shareUrl}\n\nEngage with history's greatest thinkers at iconoclash.ai`;
-            
-            // Find the share button
-            const shareButton = event.target.closest('.action-button');
-            const originalText = shareButton ? shareButton.textContent : '';
-            
-            // Always use clipboard (skip Web Share API for consistency)
-            copyToClipboard(shareText, shareButton, originalText);
-        }
-
-        function copyToClipboard(text, button, originalText) {
-            navigator.clipboard.writeText(text).then(() => {
-                // Update button if provided
-                if (button) {
-                    button.textContent = '✅ Link Saved to Clipboard';
-                    button.style.background = '#4caf50';
-                    button.style.borderColor = '#4caf50';
-                    
-                    // Reset after 3 seconds
-                    setTimeout(() => {
-                        button.textContent = originalText;
-                        button.style.background = '';
-                        button.style.borderColor = '';
-                    }, 3000);
-                }
-                
-                // Also show notification
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #4caf50;
-                    color: white;
-                    padding: 16px 24px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                    z-index: 10000;
-                    animation: slideIn 0.3s ease;
-                `;
-                notification.textContent = '✅ Link Saved to Clipboard';
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.remove();
-                }, 3000);
-            }).catch(() => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                textArea.style.position = 'fixed';
-                textArea.style.opacity = '0';
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                // Update button
-                if (button) {
-                    button.textContent = '✅ Link Saved to Clipboard';
-                    button.style.background = '#4caf50';
-                    button.style.borderColor = '#4caf50';
-                    
-                    setTimeout(() => {
-                        button.textContent = originalText;
-                        button.style.background = '';
-                        button.style.borderColor = '';
-                    }, 3000);
-                }
-            });
-        }
-
+        
         // Load conversation on page load
-        document.addEventListener('DOMContentLoaded', loadConversation);
+        loadConversation();
     </script>
 </body>
 </html>

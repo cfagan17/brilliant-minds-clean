@@ -835,6 +835,14 @@
     min-width: 200px; /* Minimum width to ensure it's wide enough */
     white-space: nowrap; /* Prevent text wrapping */
 }
+@media (max-width: 768px) {
+    .question-input-container .start-button {
+        white-space: normal;
+        padding: 12px 20px;
+        min-width: auto;
+        width: 100%;
+    }
+}
 
 .question-input-container .start-button:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -2233,6 +2241,11 @@
     transition: all 0.3s ease;
     white-space: nowrap;
 }
+@media (max-width: 768px) {
+    .auth-btn {
+        white-space: normal;
+    }
+}
 
 /* Fix header spacing */
 .header-right {
@@ -2949,6 +2962,90 @@
     }
 }
 
+/* Override all white-space: nowrap on mobile for buttons */
+@media (max-width: 768px) {
+    /* Override all button white-space settings */
+    button, .button, .btn,
+    .auth-btn, .upgrade-btn,
+    .start-button, .magic-demo-btn,
+    .control-button {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* Specific fixes for portrait mode on mobile */
+@media (max-width: 768px) and (orientation: portrait) {
+    /* Restructure header for portrait mode */
+    .header {
+        padding: 20px 15px !important;
+    }
+    
+    .header-row {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+    
+    .header-right {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        gap: 12px !important;
+    }
+    
+    .usage-indicator {
+        width: 100% !important;
+        text-align: center !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .auth-buttons {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+        gap: 10px !important;
+    }
+    
+    /* Make all buttons full width in portrait */
+    .auth-btn, .upgrade-btn, .magic-demo-btn {
+        width: 100% !important;
+        max-width: none !important;
+        padding: 14px 20px !important;
+        font-size: 15px !important;
+        white-space: normal !important;
+        text-align: center !important;
+        min-height: 50px !important;
+        display: block !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Alternative: Side-by-side buttons if text is short */
+    @media (min-width: 375px) {
+        .auth-buttons {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        
+        .auth-btn, .upgrade-btn {
+            font-size: 14px !important;
+            padding: 12px 10px !important;
+        }
+    }
+    
+    /* For very narrow portrait screens */
+    @media (max-width: 374px) {
+        .header h1 {
+            font-size: 1.6rem !important;
+        }
+        
+        .auth-btn, .upgrade-btn {
+            font-size: 14px !important;
+            padding: 12px 15px !important;
+        }
+    }
+}
+
 /* Mobile notification styles */
 @media (max-width: 768px) {
     .notification {
@@ -2960,6 +3057,58 @@
         padding: 12px 16px;
         text-align: center;
     }
+    
+    /* Fix button text overflow on mobile */
+    .auth-btn, .upgrade-btn {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.2 !important;
+        min-width: auto !important;
+        max-width: 140px !important;
+        padding: 10px 8px !important;
+        text-align: center !important;
+        display: inline-block !important;
+        height: auto !important;
+        min-height: 44px !important;
+    }
+    
+    /* Specific fix for My Conversations button */
+    .auth-btn[href*="conversations"] {
+        font-size: 13px !important;
+    }
+    
+    /* Specific fix for Upgrade button */
+    .upgrade-btn {
+        font-size: 13px !important;
+    }
+    
+    .start-button {
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.3 !important;
+        padding: 15px 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 50px !important;
+    }
+    
+    /* Ensure header buttons fit properly */
+    .header-right {
+        gap: 8px !important;
+        max-width: 100% !important;
+    }
+    
+    .auth-buttons {
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        max-width: 100% !important;
+    }
+    
+    /* Remove this rule as it conflicts with portrait mode fixes */
 }
 
 /* Smooth scrolling for mobile */
@@ -3533,7 +3682,7 @@ function selectTopic(topicKey) {
       // Show loading in AI area
       const aiGrid = document.getElementById('aiSpeakersGrid');
       if (aiGrid) {
-         aiGrid.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Getting speaker suggestions...</p></div>';
+         aiGrid.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Getting speaker suggestions... (takes a few seconds)</p></div>';
       }
 
       // Scroll to the AI suggestions area
@@ -3778,7 +3927,7 @@ function selectCustomTopic() {
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #667eea;">
                 <div class="loading-spinner" style="margin: 0 auto 15px auto;"></div>
                 <p style="font-size: 1.1rem; font-weight: 600;">Generating speaker recommendations for "${customTopicData.name}"...</p>
-                <p style="color: #6c757d; margin-top: 10px;">Finding the most relevant experts for this topic</p>
+                <p style="color: #6c757d; margin-top: 10px;">Finding the most relevant experts for this topic (takes a few seconds)</p>
             </div>
         `;
    }
@@ -3858,7 +4007,7 @@ async function refreshSpeakers() {
    if (!aiGrid) return;
 
    // Show loading state
-   aiGrid.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Getting new speaker suggestions...</p></div>';
+   aiGrid.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading-spinner"></div><p>Getting new speaker suggestions... (takes a few seconds)</p></div>';
 
    try {
       // Convert Set to Array for the excluded speakers
@@ -4014,8 +4163,27 @@ ADDITIONAL VOICES:
 Focus entirely on expertise and relevance to: "${fullTopic}"`;
       }
 
-      const response = await callClaude(prompt, true); // true = this is a suggestion, don't count against limit
-      return parseSpeakerSuggestions(response);
+      // Direct call to suggest-speakers endpoint to bypass any rate limiting
+      console.log('Calling /api/suggest-speakers endpoint directly');
+      const response = await fetch('/api/suggest-speakers', {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {})
+         },
+         body: JSON.stringify({ message: prompt })
+      });
+      
+      console.log('Speaker suggestion response status:', response.status);
+      
+      if (!response.ok) {
+         const errorText = await response.text();
+         console.error('Speaker suggestion failed:', response.status, errorText);
+         throw new Error(`Failed to get speaker suggestions: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return parseSpeakerSuggestions(data.content[0].text);
 
    } catch (error) {
       console.error('Error getting speaker suggestions:', error);
@@ -4117,7 +4285,7 @@ function getGenericBackupSpeakers() {
 
 function getBackupSpeakers(topic) {
    // Check if topicCategories exists and has the topic
-   if (!topicCategories || !topicCategories[topic]) {
+   if (!topic || !topicCategories || !topicCategories[topic]) {
       console.error('Topic not found:', topic);
       // Return generic speakers as fallback
       return getGenericBackupSpeakers();
@@ -4187,15 +4355,20 @@ function getBackupSpeakers(topic) {
          contemporary: ['Joe Biden', 'Donald Trump', 'Alexandria Ocasio-Cortez', 'Ron DeSantis', 'Kamala Harris', 'Tucker Carlson'],
          historical: ['Abraham Lincoln', 'Winston Churchill']
       },
-      // ... add your other backup speakers here
+      // Add a default fallback
+      default: {
+         contemporary: ['Elon Musk', 'Neil deGrasse Tyson', 'Brené Brown', 'Daniel Kahneman'],
+         historical: ['Albert Einstein', 'Socrates', 'Leonardo da Vinci', 'Marie Curie']
+      }
    };
 
    const topicData = topicCategories[topic];
    const category = topicData && topicData.category || 'academic';
 
-   const speakers = backupMap[topic] || backupMap.philosophy;
-   const contemporary = speakers.contemporary || ['Elon Musk', 'Neil deGrasse Tyson', 'Brené Brown', 'Daniel Kahneman'];
-   const historical = speakers.historical || ['Albert Einstein', 'Socrates', 'Leonardo da Vinci', 'Marie Curie'];
+   // Use topic-specific speakers or fall back to default
+   const speakers = backupMap[topic] || backupMap.default;
+   const contemporary = speakers.contemporary;
+   const historical = speakers.historical;
 
    // For current affairs, use more contemporary speakers
   const allSpeakers = category === 'current' 
@@ -6374,7 +6547,7 @@ Keep your response substantive but focused (120-150 words).`;
         <div class="speaker-selection active" id="ai-speaker-loading">
             <div class="speaker-header">
                 <h4>🤖 AI is finding the perfect speakers...</h4>
-                <p>Analyzing expertise and selecting the most knowledgeable minds for ${topicCategories[selectedTopic].name}</p>
+                <p>Analyzing expertise and selecting the most knowledgeable minds for ${topicCategories[selectedTopic].name} (takes a few seconds)</p>
             </div>
             <div style="text-align: center; padding: 40px;">
                 <div class="loading-spinner" style="display: inline-block; width: 40px; height: 40px;"></div>
@@ -8179,7 +8352,13 @@ Keep it concise and forward-looking.`;
    }
 
    function startNewDiscussion() {
-      // Reset discussion state
+      // Track the action
+      trackEvent('start_fresh', {
+         previousTopic: discussionState.topic,
+         previousFormat: discussionState.format
+      });
+      
+      // Comprehensive reset of ALL state
       discussionState = {
          format: 'arena',
          participantCount: 2,
@@ -8187,76 +8366,128 @@ Keep it concise and forward-looking.`;
          topic: '',
          responses: [],
          continuationRound: 0,
-         totalExchanges: 0
+         totalExchanges: 0,
+         discussionId: null,
+         figure1Mode: 'preset',
+         figure2Mode: 'preset',
+         chatMode: 'preset'
       };
-
-      // Hide discussion areas
-      document.getElementById('discussionArena').style.display = 'none';
-      document.getElementById('discussionControls').classList.remove('active');
-
-      // SHOW all the main sections that should be visible on homepage
-      document.querySelectorAll('.topics-container, .speaker-selection-main, .format-selection-main, .question-section-main').forEach(el => {
-         el.style.display = 'block';
+      
+      // Reset ALL global state
+      selectedAISpeakers = [];
+      window.selectedAISpeakers = [];
+      selectedAIQuestion = null;
+      selectedTopic = null;
+      currentQuestionMode = 'ai';
+      
+      // Clear the discussion arena completely
+      const arena = document.getElementById('discussionArena');
+      if (arena) {
+         arena.style.display = 'none';
+         arena.innerHTML = '';
+      }
+      
+      // Hide discussion controls
+      const controls = document.getElementById('discussionControls');
+      if (controls) {
+         controls.classList.remove('active');
+         controls.innerHTML = '';
+      }
+      
+      // Hide all sections first
+      document.querySelectorAll('.topics-container, .speaker-selection-main, .format-selection-main, .question-section-main, .start-discussion-section').forEach(el => {
+         el.style.display = 'none';
       });
-
-      // Reset forms and selections
-      document.querySelectorAll('.ai-speaker-card').forEach(card => card.classList.remove('selected'));
-      document.getElementById('userQuestionInput').value = '';
-
-      // Clear selected speakers display
-      const selectedSpeakers = document.getElementById('selectedSpeakers');
-      if (selectedSpeakers) {
-         const selectedList = document.getElementById('selectedList');
-         const selectedTitle = document.getElementById('selectedSpeakersTitle');
-
-         if (selectedList) {
-            selectedList.innerHTML = '<p style="color: #6c757d; font-style: italic;">No speakers selected yet</p>';
-         }
-
-         if (selectedTitle) {
-            selectedTitle.textContent = 'Selected Speakers (0/2):';
-         }
+      
+      // Reset topic selection
+      document.querySelectorAll('.topic-type-slim').forEach(topic => {
+         topic.classList.remove('selected');
+      });
+      
+      // Reset format selection
+      document.querySelectorAll('.format-type-small').forEach(format => {
+         format.classList.remove('selected');
+      });
+      
+      // Reset speaker cards
+      document.querySelectorAll('.ai-speaker-card').forEach(card => {
+         card.classList.remove('selected');
+      });
+      
+      // Clear AI speaker grid
+      const aiGrid = document.getElementById('aiSpeakersGrid');
+      if (aiGrid) {
+         aiGrid.innerHTML = '';
       }
-
-      // Reset selected speakers array
-      if (window.selectedAISpeakers) {
-         window.selectedAISpeakers = [];
+      
+      // Hide AI suggestions area
+      const aiSuggestionsArea = document.getElementById('aiSuggestionsArea');
+      if (aiSuggestionsArea) {
+         aiSuggestionsArea.style.display = 'none';
       }
-
+      
+      // Clear question input
+      const questionInput = document.getElementById('userQuestionInput');
+      if (questionInput) {
+         questionInput.value = '';
+         questionInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      
+      // Clear AI questions
+      const suggestedQuestions = document.getElementById('suggestedQuestions');
+      if (suggestedQuestions) {
+         suggestedQuestions.innerHTML = '';
+      }
+      
+      // Reset selected speakers display
+      const selectedList = document.getElementById('selectedList');
+      if (selectedList) {
+         selectedList.innerHTML = '<p style="color: #6c757d; font-style: italic;">No speakers selected yet</p>';
+      }
+      
+      const selectedTitle = document.getElementById('selectedSpeakersTitle');
+      if (selectedTitle) {
+         selectedTitle.textContent = 'Selected Speakers (0/2):';
+      }
+      
       // Hide AI suggestions section
       const aiSection = document.getElementById('aiSuggestionSection');
       if (aiSection) {
          aiSection.style.display = 'none';
       }
-
-      // Reset topic selections
-      document.querySelectorAll('.topic-type-slim').forEach(el => {
-         el.classList.remove('selected');
+      
+      // Reset custom speaker inputs
+      document.querySelectorAll('input[type="text"]').forEach(input => {
+         if (input.id.includes('Custom') || input.id.includes('custom')) {
+            input.value = '';
+         }
       });
-
-      // Reset format selections
-      document.querySelectorAll('.format-type-small').forEach(el => {
-         el.classList.remove('selected');
-      });
-      // Select default format (arena)
-      const arenaElement = document.querySelector('[data-format="arena"]');
-      arenaElement && arenaElement.classList.add('selected');
-
-      // Disable AI suggestions button
+      
+      // Disable buttons that require selections
+      const startBtn = document.getElementById('startDiscussionBtn');
+      if (startBtn) {
+         startBtn.disabled = true;
+      }
+      
       const aiButton = document.getElementById('aiSuggestionsBtn');
       if (aiButton) {
          aiButton.disabled = true;
          aiButton.style.opacity = '0.5';
       }
-
-      // Reset any demo or global state
-      selectedTopic = null;
-
-      // Scroll to top
-      window.scrollTo({
-         top: 0,
-         behavior: 'smooth'
-      });
+      
+      // Show ONLY the topics container to start fresh
+      const topicsContainer = document.querySelector('.topics-container');
+      if (topicsContainer) {
+         topicsContainer.style.display = 'block';
+         // Scroll to topics section instead of top
+         topicsContainer.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+         });
+      }
+      
+      // Update the start button state
+      updateStartButtonState();
    }
 
    // Function to clean HTML before saving (removes interactive elements)
@@ -8382,57 +8613,108 @@ Keep it concise and forward-looking.`;
    }
 
    function shareDiscussion() {
+      // For anonymous users, create a shareable link
       try {
-         const participants = discussionState.participants.filter(p => p).map(p => p.name).join(' & ');
-         const formatName = discussionFormats[discussionState.format].name;
-
-         // Extract key discussion points
-         const speakers = document.querySelectorAll('.speaker:not(.moderator-speaker)');
-         let discussionSummary = `${formatName}: "${discussionState.topic}"\nParticipants: ${participants}\n\n`;
-
-         // Add key excerpts (first 100 chars from each speaker)
-         speakers.forEach((speaker, index) => {
-            if (index < 6) { // Limit to first 6 responses
-               const name = (speaker.querySelector('.speaker-name') && speaker.querySelector('.speaker-name').textContent) || 'Speaker';
-               const content = (speaker.querySelector('.speaker-content') && speaker.querySelector('.speaker-content').textContent) || '';
-               const excerpt = content.substring(0, 120).trim();
-               if (excerpt) {
-                  discussionSummary += `${name}: ${excerpt}${content.length > 120 ? '...' : ''}\n\n`;
+         // Show loading state
+         const shareButton = document.querySelector('.share-button');
+         const originalText = shareButton ? shareButton.textContent : '';
+         if (shareButton) {
+            shareButton.textContent = '⏳ Creating share link...';
+            shareButton.disabled = true;
+         }
+         
+         // Collect conversation data
+         const conversationData = {
+            topic: discussionState.topic,
+            format: discussionState.format,
+            participants: discussionState.participants.filter(p => p).map(p => p.name),
+            conversationHtml: cleanConversationHTML(document.getElementById('discussionArena').innerHTML),
+            metadata: {
+               totalExchanges: discussionState.totalExchanges,
+               continuationRound: discussionState.continuationRound,
+               timestamp: new Date().toISOString()
+            }
+         };
+         
+         // Save temporarily for anonymous users
+         fetch('/api/conversations/share-anonymous', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(conversationData)
+         })
+         .then(response => response.json())
+         .then(result => {
+            if (result.shareId) {
+               // Create shareable link
+               const shareUrl = `${window.location.origin}/conversation.html?share=${result.shareId}`;
+               const shareTitle = `"${discussionState.topic}" - ${conversationData.participants.join(' & ')}`;
+               const shareMessage = `Check out this fascinating discussion on Iconoclash!\n\n${shareTitle}\n\n${shareUrl}\n\n💡 Have your own discussions with history's greatest minds at iconoclash.ai`;
+               
+               // Try native share first (mobile)
+               if (navigator.share && navigator.canShare && navigator.canShare({ text: shareMessage, url: shareUrl })) {
+                  navigator.share({
+                     title: `Iconoclash: ${discussionState.topic}`,
+                     text: `Check out this discussion: "${discussionState.topic}" with ${conversationData.participants.join(' & ')}`,
+                     url: shareUrl
+                  }).then(() => {
+                     showNotification('✅ Discussion shared!', 'success');
+                     trackEvent('share_discussion', {
+                        format: discussionState.format,
+                        topic: discussionState.topic,
+                        method: 'native_share',
+                        isAnonymous: true
+                     });
+                     if (shareButton) {
+                        shareButton.textContent = originalText;
+                        shareButton.disabled = false;
+                     }
+                  }).catch(() => {
+                     // User cancelled, fallback to clipboard
+                     copyShareLink(shareMessage, shareButton, originalText);
+                  });
+               } else {
+                  // Desktop - copy to clipboard
+                  copyShareLink(shareMessage, shareButton, originalText);
                }
+            } else {
+               throw new Error(result.error || 'Failed to create share link');
+            }
+         })
+         .catch(error => {
+            console.error('Share error:', error);
+            showNotification('❌ Failed to create share link', 'error');
+            if (shareButton) {
+               shareButton.textContent = originalText;
+               shareButton.disabled = false;
             }
          });
-
-         discussionSummary += `\nGenerated by Iconoclash Discussion Arena\niconoclash.ai`;
-
-         // Check if Web Share API is available (better for mobile)
-         if (navigator.share && navigator.canShare && navigator.canShare({ text: discussionSummary })) {
-            // Use native share on mobile devices
-            navigator.share({
-               title: 'Iconoclash Discussion',
-               text: discussionSummary
-            }).then(() => {
-               showNotification('✅ Discussion shared!', 'success');
-            }).catch((error) => {
-               // User cancelled share, no need to show error
-               if (error.name !== 'AbortError') {
-                  console.error('Share failed:', error);
-                  fallbackShare(discussionSummary);
-               }
-            });
-         } else {
-            // Fallback to clipboard copy
-            fallbackShare(discussionSummary);
-         }
-
+         
       } catch (error) {
-         showNotification('❌ Failed to share discussion', 'error');
          console.error('Share error:', error);
+         showNotification('❌ Error sharing discussion', 'error');
       }
    }
 
-   function fallbackShare(text) {
+   function copyShareLink(text, button, originalText) {
       navigator.clipboard.writeText(text).then(() => {
-         showNotification('🔗 Discussion copied to clipboard!', 'success');
+         showNotification('📋 Share link copied to clipboard!', 'success');
+         if (button) {
+            button.textContent = '✅ Link Copied!';
+            button.style.background = '#4caf50';
+            setTimeout(() => {
+               button.textContent = originalText;
+               button.style.background = '';
+               button.disabled = false;
+            }, 3000);
+         }
+         trackEvent('share_discussion', {
+            format: discussionState.format,
+            topic: discussionState.topic,
+            method: 'clipboard',
+            isAnonymous: true
+         });
       }).catch(() => {
          // Fallback for older browsers
          const textArea = document.createElement('textarea');
@@ -8441,9 +8723,21 @@ Keep it concise and forward-looking.`;
          textArea.style.opacity = '0';
          document.body.appendChild(textArea);
          textArea.select();
-         document.execCommand('copy');
+         try {
+            document.execCommand('copy');
+            showNotification('📋 Share link copied!', 'success');
+            if (button) {
+               button.textContent = '✅ Link Copied!';
+               setTimeout(() => {
+                  button.textContent = originalText;
+                  button.disabled = false;
+               }, 3000);
+            }
+         } catch (err) {
+            console.error('Fallback copy failed:', err);
+            showNotification('❌ Failed to copy link', 'error');
+         }
          document.body.removeChild(textArea);
-         showNotification('🔗 Discussion copied to clipboard!', 'success');
       });
    }
 
@@ -9215,7 +9509,12 @@ Keep it concise and forward-looking.`;
          headers['Authorization'] = `Bearer ${authToken}`;
       }
 
-      const response = await fetch('/api/claude', {
+      // Use different endpoint for suggestions to avoid rate limiting
+      const endpoint = isSuggestion ? '/api/suggest-speakers' : '/api/claude';
+      
+      console.log('Calling endpoint:', endpoint, 'isSuggestion:', isSuggestion);
+      
+      const response = await fetch(endpoint, {
          method: 'POST',
          headers: headers,
          body: JSON.stringify({

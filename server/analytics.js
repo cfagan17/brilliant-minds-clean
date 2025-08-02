@@ -1,5 +1,4 @@
 const { db } = require('./database');
-const { redisGet, redisSet, redisIncr } = require('./redis');
 
 // Core metrics to track for business intelligence
 const ANALYTICS_EVENTS = {
@@ -74,11 +73,7 @@ class Analytics {
         try {
             await this.storeEvent(event);
             
-            // Update Redis for real-time metrics
-            await this.updateRealtimeMetrics(event);
-            
-            // Update user journey
-            await this.updateUserJourney(userId, eventName);
+            // Real-time metrics disabled (Redis removed)
             
         } catch (error) {
             console.error('Analytics tracking error:', error);
@@ -106,40 +101,14 @@ class Analytics {
         });
     }
     
-    // Update real-time metrics in Redis
+    // Real-time metrics disabled (Redis removed)
     async updateRealtimeMetrics(event) {
-        const today = new Date().toISOString().split('T')[0];
-        const hour = new Date().toISOString().split(':')[0];
-        
-        // Increment counters
-        await redisIncr(`analytics:events:${today}:${event.event_type}`);
-        await redisIncr(`analytics:events:hourly:${hour}:${event.event_type}`);
-        await redisIncr(`analytics:users:${today}:${event.user_id}`);
-        
-        // Track unique users
-        await redisSet(`analytics:unique:${today}:${event.user_id}`, 1, 86400 * 7); // 7 days
-        
-        // Update conversion funnel
-        if (this.isFunnelEvent(event.event_type)) {
-            await this.updateFunnel(event.user_id, event.event_type);
-        }
+        // Disabled after Redis removal
     }
     
-    // Track user journey through the funnel
+    // User journey tracking disabled (Redis removed)
     async updateUserJourney(userId, eventName) {
-        const journey = await redisGet(`journey:${userId}`) || '[]';
-        const events = JSON.parse(journey);
-        events.push({
-            event: eventName,
-            timestamp: new Date().toISOString()
-        });
-        
-        // Keep last 100 events
-        if (events.length > 100) {
-            events.shift();
-        }
-        
-        await redisSet(`journey:${userId}`, JSON.stringify(events), 86400 * 30); // 30 days
+        // Disabled after Redis removal
     }
     
     // Check if event is part of conversion funnel
@@ -155,26 +124,9 @@ class Analytics {
     }
     
     // Update conversion funnel
+    // Funnel tracking disabled (Redis removed)
     async updateFunnel(userId, eventType) {
-        const funnelKey = `funnel:${userId}`;
-        let stage = FUNNEL_STAGES.VISITOR;
-        
-        switch(eventType) {
-            case ANALYTICS_EVENTS.FIRST_INTERACTION:
-                stage = FUNNEL_STAGES.ENGAGED;
-                break;
-            case ANALYTICS_EVENTS.SIGNUP_COMPLETED:
-                stage = FUNNEL_STAGES.REGISTERED;
-                break;
-            case ANALYTICS_EVENTS.DISCUSSION_STARTED:
-                stage = FUNNEL_STAGES.ACTIVE_USER;
-                break;
-            case ANALYTICS_EVENTS.PAYMENT_COMPLETED:
-                stage = FUNNEL_STAGES.PAYING_USER;
-                break;
-        }
-        
-        await redisSet(funnelKey, stage, 86400 * 90); // 90 days
+        // Disabled after Redis removal
     }
     
     // Get conversion metrics

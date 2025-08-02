@@ -80,6 +80,21 @@ function initializeDatabase() {
         )
     `);
     
+    // Create shared conversations table
+    db.run(`
+        CREATE TABLE IF NOT EXISTS shared_conversations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            share_id TEXT UNIQUE NOT NULL,
+            topic TEXT,
+            format TEXT,
+            participants TEXT,
+            conversation_html TEXT,
+            metadata TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            expires_at DATETIME NOT NULL
+        )
+    `);
+    
     console.log('SQLite database initialized');
 }
 
