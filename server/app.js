@@ -1249,28 +1249,49 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
         // Use SQLite-style placeholders - they'll be converted for PostgreSQL
         const query = `SELECT * FROM shared_conversations WHERE share_id = ? AND expires_at > ${USE_POSTGRES ? 'NOW()' : "datetime('now')"}`;
         
+        console.log('Fetching shared conversation:', shareId);
+        console.log('Query:', query);
+        console.log('USE_POSTGRES:', USE_POSTGRES);
+        
         db.get(query, [shareId], (err, shared) => {
             if (err) {
                 console.error('Database error getting shared conversation:', err);
-                return res.status(500).json({ error: 'Failed to load shared conversation' });
+                console.error('Error details:', err.message, err.code);
+                return res.status(500).json({ 
+                    error: 'Failed to load shared conversation',
+                    details: err.message,
+                    code: err.code 
+                });
             }
             
             if (!shared) {
+                console.log('No shared conversation found for shareId:', shareId);
                 return res.status(404).json({ error: 'Share link not found or expired' });
             }
             
-            // Parse JSON fields
-            const conversation = {
-                topic: shared.topic,
-                format: shared.format,
-                participants: JSON.parse(shared.participants),
-                conversationHtml: shared.conversation_html,
-                metadata: JSON.parse(shared.metadata),
-                createdAt: shared.created_at,
-                expiresAt: shared.expires_at
-            };
+            console.log('Found shared conversation:', shared);
             
-            res.json(conversation);
+            try {
+                // Parse JSON fields
+                const conversation = {
+                    topic: shared.topic,
+                    format: shared.format,
+                    participants: JSON.parse(shared.participants),
+                    conversationHtml: shared.conversation_html,
+                    metadata: JSON.parse(shared.metadata),
+                    createdAt: shared.created_at,
+                    expiresAt: shared.expires_at
+                };
+                
+                res.json(conversation);
+            } catch (parseError) {
+                console.error('Error parsing shared conversation data:', parseError);
+                console.error('Raw data:', shared);
+                res.status(500).json({ 
+                    error: 'Failed to parse conversation data',
+                    details: parseError.message 
+                });
+            }
         });
         
     } catch (error) {
