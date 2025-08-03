@@ -26,6 +26,14 @@ app.set('trust proxy', true);
 // Initialize Sentry error monitoring
 initializeSentry(app);
 
+// Force HTTPS in production
+app.use((req, res, next) => {
+    if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
+        return res.redirect(`https://${req.header('host')}${req.url}`);
+    }
+    next();
+});
+
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
