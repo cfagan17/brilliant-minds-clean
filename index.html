@@ -3249,7 +3249,7 @@
                 <!-- CUSTOM TOPIC SECTION -->
 <div class="custom-topic-section-main">
     <div class="custom-topic-input-container">
-        <input type="text" id="customTopicInput" placeholder="e.g., 'Current state of renewable energy' or 'The philosophy of consciousness'..." />
+        <input type="text" id="customTopicInput" placeholder="e.g., 'Baseball', 'AI agents', 'Renewable energy', 'Philosophy of consciousness'..." />
         <button id="addCustomTopicBtn" onclick="selectCustomTopic()" disabled>
             ✏️ Custom Topic
         </button>
@@ -3877,11 +3877,11 @@ function selectCustomTopic() {
    const customTopic = document.getElementById('customTopicInput').value.trim();
    const button = document.getElementById('addCustomTopicBtn');
 
-   if (customTopic.length < 10) {
+   if (customTopic.length < 3) {
       // Show feedback in the button
       const originalText = button.textContent;
 
-      button.textContent = 'Need 10+ characters';
+      button.textContent = 'Need 3+ characters';
       button.style.background = '#dc3545';
       button.style.borderColor = '#dc3545';
       button.style.color = 'white';

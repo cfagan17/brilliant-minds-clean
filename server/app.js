@@ -764,7 +764,22 @@ app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
 
     } catch (error) {
         console.error('Error creating checkout session:', error);
-        res.status(500).json({ error: 'Failed to create checkout session' });
+        console.error('Stripe error details:', error.message, error.type, error.code);
+        
+        // Provide more specific error messages
+        let userMessage = 'Failed to create checkout session';
+        if (error.type === 'StripeCardError') {
+            userMessage = 'Card was declined';
+        } else if (error.type === 'StripeInvalidRequestError') {
+            userMessage = 'Invalid payment configuration';
+        } else if (error.code === 'payment_method_not_available') {
+            userMessage = 'This payment method is not available in your region';
+        }
+        
+        res.status(500).json({ 
+            error: userMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
