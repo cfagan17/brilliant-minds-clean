@@ -35,11 +35,14 @@ let stripe;
 try {
   if (process.env.STRIPE_SECRET_KEY) {
     stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    console.log('✅ Stripe initialized successfully');
   } else {
-    console.log('⚠️  Stripe not configured - payment features disabled');
+    console.log('⚠️  Stripe not configured - STRIPE_SECRET_KEY not found in environment variables');
+    console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('STRIPE')));
   }
 } catch (error) {
   console.log('⚠️  Stripe initialization failed:', error.message);
+  console.log('Full error:', error);
 }
 
 // Claude API function
@@ -781,9 +784,14 @@ app.post('/api/verify-payment', authenticateToken, async (req, res) => {
 
 app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
     try {
+        console.log('=== Create checkout session request ===');
+        console.log('Stripe initialized:', !!stripe);
+        console.log('Environment:', process.env.NODE_ENV);
+        
         // Check if Stripe is configured
         if (!stripe) {
             console.error('Stripe is not configured');
+            console.error('STRIPE_SECRET_KEY present:', !!process.env.STRIPE_SECRET_KEY);
             return res.status(503).json({ error: 'Payment system is not configured. Please contact support.' });
         }
         
