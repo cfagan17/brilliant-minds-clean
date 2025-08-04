@@ -3186,6 +3186,7 @@
                 <button class="magic-demo-btn" onclick="startMagicDemo('innovation')">
                     ✨ Magic Demo
                 </button>
+                <button class="auth-btn" onclick="showLogin()">🔑 Sign In</button>
                 <a href="#" class="auth-btn" onclick="checkProAccessForConversations(); return false;">📚 My Conversations</a>
                 <button class="auth-btn upgrade-btn" onclick="showUpgradeModal()">⭐ Upgrade $2/mo</button>
             </div>
@@ -3413,6 +3414,9 @@
             <div class="auth-toggle">
                 Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a>
             </div>
+            <div class="auth-toggle" style="margin-top: 10px;">
+                Upgraded to Pro but can't sign in? <a href="#" onclick="switchToClaimPro()">Set password</a>
+            </div>
         </div>
         
         <!-- Signup Form -->
@@ -3433,6 +3437,30 @@
             
             <div class="auth-toggle">
                 Already have an account? <a href="#" onclick="switchToLogin()">Sign in</a>
+            </div>
+            <div class="auth-toggle" style="margin-top: 10px;">
+                Paid but can't sign in? <a href="#" onclick="switchToClaimPro()">Claim Pro Account</a>
+            </div>
+        </div>
+
+        <!-- Claim Pro Form -->
+        <div id="claimProForm" style="display: none;">
+            <div class="auth-header">
+                <h2>Claim Your Pro Account</h2>
+                <p>If you upgraded to Pro but can't sign in, create a password for your account</p>
+            </div>
+            
+            <div class="auth-error" id="claimProError"></div>
+            <div class="auth-success" id="claimProSuccess"></div>
+            
+            <form class="auth-form" onsubmit="handleClaimPro(event)">
+                <input type="email" class="auth-input" placeholder="Email used for payment" required id="claimProEmail">
+                <input type="password" class="auth-input" placeholder="Create password (min 6 characters)" required id="claimProPassword" minlength="6">
+                <button type="submit" class="auth-submit" id="claimProSubmit">Set Password</button>
+            </form>
+            
+            <div class="auth-toggle">
+                Back to <a href="#" onclick="switchToLogin()">Sign in</a>
             </div>
         </div>
     </div>
@@ -9352,12 +9380,21 @@ Keep it concise and forward-looking.`;
    function switchToSignup() {
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('claimProForm').style.display = 'none';
       clearAuthErrors();
    }
 
    function switchToLogin() {
       document.getElementById('loginForm').style.display = 'block';
       document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('claimProForm').style.display = 'none';
+      clearAuthErrors();
+   }
+
+   function switchToClaimPro() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('claimProForm').style.display = 'block';
       clearAuthErrors();
    }
 
@@ -9365,6 +9402,12 @@ Keep it concise and forward-looking.`;
       document.getElementById('loginError').style.display = 'none';
       document.getElementById('signupError').style.display = 'none';
       document.getElementById('signupSuccess').style.display = 'none';
+      if (document.getElementById('claimProError')) {
+         document.getElementById('claimProError').style.display = 'none';
+      }
+      if (document.getElementById('claimProSuccess')) {
+         document.getElementById('claimProSuccess').style.display = 'none';
+      }
    }
 
    // Auth API calls
@@ -9463,6 +9506,59 @@ Keep it concise and forward-looking.`;
 
       submitBtn.disabled = false;
       submitBtn.textContent = 'Create Account';
+   }
+
+   async function handleClaimPro(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('claimProEmail').value;
+      const password = document.getElementById('claimProPassword').value;
+      const submitBtn = document.getElementById('claimProSubmit');
+      const errorDiv = document.getElementById('claimProError');
+      const successDiv = document.getElementById('claimProSuccess');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Setting password...';
+
+      try {
+         const response = await fetch('/api/auth/claim-pro', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+               email,
+               password
+            })
+         });
+
+         const data = await response.json();
+
+         if (response.ok) {
+            authToken = data.token;
+            currentUser = data.user;
+            localStorage.setItem('authToken', authToken);
+            successDiv.textContent = data.user.message || 'Password set successfully!';
+            successDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            setTimeout(() => {
+               updateAuthUI();
+               closeAuthModal();
+               showNotification('Welcome to your Pro account!', 'success');
+            }, 1500);
+         } else {
+            errorDiv.textContent = data.error || 'Failed to claim account';
+            errorDiv.style.display = 'block';
+            successDiv.style.display = 'none';
+         }
+      } catch (error) {
+         errorDiv.textContent = 'Network error. Please try again.';
+         errorDiv.style.display = 'block';
+         successDiv.style.display = 'none';
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Set Password';
    }
 
    function logout() {

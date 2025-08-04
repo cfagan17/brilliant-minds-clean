@@ -246,27 +246,54 @@ app.post('/api/stripe/webhook', (req, res) => {
         const customerEmail = session.customer_details?.email;
         
         if (customerEmail) {
-            // Update user to pro status
-            db.run(`
-                UPDATE users 
-                SET is_pro = TRUE, 
-                    stripe_customer_id = ?, 
-                    subscription_status = 'active'
-                WHERE email = ?
-            `, [session.customer, customerEmail], function(err) {
+            // First check if user exists
+            db.get('SELECT id FROM users WHERE email = ?', [customerEmail], (err, existingUser) => {
                 if (err) {
-                    console.error('Error updating user to pro:', err);
-                } else {
-                    console.log(`✅ User ${customerEmail} upgraded to Pro`);
-                    
-                    // Track payment conversion
-                    db.get('SELECT id FROM users WHERE email = ?', [customerEmail], (err, user) => {
-                        if (!err && user) {
-                            analytics.trackEvent(ANALYTICS_EVENTS.PAYMENT_COMPLETED, user.id, {
+                    console.error('Error checking user existence:', err);
+                    return;
+                }
+                
+                if (existingUser) {
+                    // User exists, update to pro status
+                    db.run(`
+                        UPDATE users 
+                        SET is_pro = TRUE, 
+                            stripe_customer_id = ?, 
+                            subscription_status = 'active'
+                        WHERE email = ?
+                    `, [session.customer, customerEmail], function(err) {
+                        if (err) {
+                            console.error('Error updating user to pro:', err);
+                        } else {
+                            console.log(`✅ Existing user ${customerEmail} upgraded to Pro`);
+                            
+                            // Track payment conversion
+                            analytics.trackEvent(ANALYTICS_EVENTS.PAYMENT_COMPLETED, existingUser.id, {
                                 amount: session.amount_total / 100, // Convert from cents
                                 currency: session.currency,
                                 customerId: session.customer,
                                 subscriptionId: session.subscription
+                            }).catch(err => console.error('Analytics error:', err));
+                        }
+                    });
+                } else {
+                    // User doesn't exist, create new pro user (without password)
+                    db.run(`
+                        INSERT INTO users (email, is_pro, stripe_customer_id, subscription_status)
+                        VALUES (?, TRUE, ?, 'active')
+                    `, [customerEmail, session.customer], function(err) {
+                        if (err) {
+                            console.error('Error creating pro user:', err);
+                        } else {
+                            console.log(`✅ New Pro user ${customerEmail} created from payment`);
+                            
+                            // Track payment conversion for new user
+                            analytics.trackEvent(ANALYTICS_EVENTS.PAYMENT_COMPLETED, this.lastID, {
+                                amount: session.amount_total / 100, // Convert from cents
+                                currency: session.currency,
+                                customerId: session.customer,
+                                subscriptionId: session.subscription,
+                                newUser: true
                             }).catch(err => console.error('Analytics error:', err));
                         }
                     });
@@ -443,6 +470,66 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
             });
         }
     });
+});
+
+// Claim Pro account endpoint (for users who paid but don't have password)
+app.post('/api/auth/claim-pro', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password required' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+
+        // Check if user exists and is Pro but has no password
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) {
+                return res.status(500).json({ error: 'Server error' });
+            }
+
+            if (!user) {
+                return res.status(404).json({ error: 'No Pro account found with this email. Please check your payment email.' });
+            }
+
+            if (user.password_hash) {
+                return res.status(400).json({ error: 'Account already has a password. Please sign in instead.' });
+            }
+
+            if (!user.is_pro) {
+                return res.status(400).json({ error: 'This email is not associated with a Pro account.' });
+            }
+
+            // Hash password and update user
+            const passwordHash = await bcrypt.hash(password, 10);
+            
+            db.run('UPDATE users SET password_hash = ? WHERE id = ?', 
+                   [passwordHash, user.id], function(err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Failed to set password' });
+                }
+
+                // Create token
+                const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '30d' });
+                
+                res.json({
+                    token,
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        isProUser: true,
+                        message: 'Password set successfully! You can now sign in from any device.'
+                    }
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Claim Pro error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // ============================================================================
