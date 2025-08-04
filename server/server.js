@@ -798,6 +798,11 @@ app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
         const { priceId } = req.body;
         
         console.log('Creating checkout session for price:', priceId);
+        console.log('Stripe mode:', process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'TEST' : 'LIVE');
+        
+        if (!priceId) {
+            return res.status(400).json({ error: 'Price ID is required' });
+        }
         
         // Get base URL
         let baseUrl;
@@ -851,7 +856,16 @@ app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
 
     } catch (error) {
         console.error('Error creating checkout session:', error);
-        res.status(500).json({ error: 'Failed to create checkout session' });
+        console.error('Error type:', error.type);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        // Return more specific error message
+        if (error.type === 'StripeInvalidRequestError') {
+            res.status(400).json({ error: error.message || 'Invalid payment configuration' });
+        } else {
+            res.status(500).json({ error: error.message || 'Failed to create checkout session' });
+        }
     }
 });
 
