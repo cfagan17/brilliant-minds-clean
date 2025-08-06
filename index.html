@@ -3447,7 +3447,7 @@
         <div id="claimProForm" style="display: none;">
             <div class="auth-header">
                 <h2>Claim Your Pro Account</h2>
-                <p>If you upgraded to Pro but can't sign in, create a password for your account</p>
+                <p id="claimProMessage">If you upgraded to Pro but can't sign in, create a password for your account</p>
             </div>
             
             <div class="auth-error" id="claimProError"></div>
@@ -5497,12 +5497,46 @@ async function checkPaymentSuccess() {
          }
       }
       
+      // If user is not authenticated, prompt them to claim their Pro account
+      if (!currentUser) {
+         // Show the claim Pro modal immediately
+         showNotification('🎉 Payment successful! Please claim your Pro account to access unlimited discussions.', 'success');
+         
+         // Clean up the URL first
+         window.history.replaceState({}, document.title, window.location.pathname);
+         
+         // Open the authentication modal and show claim pro form
+         setTimeout(() => {
+            showAuthModal();
+            // Switch to claim pro tab
+            const claimProTab = document.querySelector('[onclick*="showClaimProForm"]');
+            if (claimProTab) {
+               claimProTab.click();
+            }
+            // Update the message to be more specific
+            const claimMessage = document.getElementById('claimProMessage');
+            if (claimMessage) {
+               claimMessage.innerHTML = '✅ Payment successful! Enter the email you used for payment and create a password to access your Pro account.';
+            }
+         }, 1000);
+         
+         trackUpgradeFlow('payment_completed', {
+            conversionComplete: true,
+            finalDiscussionsUsed: usageState.totalDiscussions,
+            needsClaim: true
+         });
+         trackUpgrade('stripe');
+         
+         return; // Exit early for anonymous users
+      }
+      
+      // For authenticated users, update their pro status
       usageState.isProUser = true;
       saveUsageState();
       updateUsageDisplayAdvanced({
-    userType: currentUser ? 'authenticated' : 'anonymous',
-    isProUser: usageState.isProUser,
-    remaining: currentUser ? Math.max(0, 10 - usageState.dailyDiscussions) : Math.max(0, 10 - usageState.dailyDiscussions)
+    userType: 'authenticated',
+    isProUser: true,
+    remaining: 'unlimited'
 });
       trackUpgradeFlow('payment_completed', {
          conversionComplete: true,
