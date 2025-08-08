@@ -557,6 +557,19 @@ const guestRateLimit = rateLimit({
     // Trust proxy is already set, use a simple key generator
     keyGenerator: (req) => {
         return req.ip || req.connection.remoteAddress || 'unknown';
+    },
+    handler: (req, res) => {
+        // This handler will be called when rate limit is exceeded
+        console.log('Rate limit exceeded for IP:', req.ip);
+        res.status(429).json({ 
+            error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
+            limit: true,
+            guestLimitReached: true,
+            remaining: 0,
+            dailyLimit: 10,
+            isProUser: false,
+            userType: 'anonymous'
+        });
     }
 });
 
@@ -626,13 +639,30 @@ app.post('/api/claude', optionalAuth, async (req, res) => {
             });
         } else {
             // Guest user - limited to 10 per day (handled by rate limiting middleware)
+            // Check if rate limit has been exceeded
+            const remaining = parseInt(res.getHeader('X-RateLimit-Remaining')) || 0;
+            console.log('Anonymous user - remaining requests:', remaining);
+            
+            if (remaining <= 0) {
+                // Rate limit exceeded - return error immediately
+                console.log('Rate limit exceeded for anonymous user');
+                return res.status(429).json({ 
+                    error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
+                    limit: true,
+                    guestLimitReached: true,
+                    remaining: 0,
+                    limit: 10,
+                    isProUser: false,
+                    userType: 'anonymous'
+                });
+            }
+            
             try {
                 console.log('Making Claude API request for guest user:', req.ip);
                 const claudeResponse = await makeClaudeRequest(message, `anon_${req.ip}`);
                 console.log('Claude API response received for guest');
                 
                 // Get current usage from rate limit headers
-                const remaining = res.getHeader('X-RateLimit-Remaining') || 0;
                 const used = 10 - remaining;
                 
                 res.json({
