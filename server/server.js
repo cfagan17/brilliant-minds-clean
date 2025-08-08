@@ -544,8 +544,7 @@ const guestRateLimit = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, // 24 hours (daily reset)
     max: 10,
     message: { 
-        error: 'You\'ve used your 10 free discussions for today! Upgrade to Pro for unlimited access.',
-        signupRequired: true,
+        error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
         limit: true,
         guestLimitReached: true
     },

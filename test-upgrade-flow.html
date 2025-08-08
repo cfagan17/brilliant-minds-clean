@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upgrade Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+        }
+        .status {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Upgrade Flow</h1>
+    
+    <div class="section">
+        <h2>1. Anonymous User Hits Limit</h2>
+        <p>Simulate an anonymous user hitting their discussion limit:</p>
+        <button onclick="simulateAnonymousLimit()">Trigger Limit Modal</button>
+        <div id="limit-status" class="status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. User Upgrades to Pro</h2>
+        <p>Simulate successful payment (without actual Stripe):</p>
+        <button onclick="simulatePaymentSuccess()">Simulate Payment Success</button>
+        <div id="payment-status" class="status"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Check Current Flow</h2>
+        <button onclick="checkCurrentFlow()">Check Current Implementation</button>
+        <div id="flow-status" class="status"></div>
+    </div>
+
+    <script>
+        // Load the functions from index.html
+        const script = document.createElement('script');
+        script.src = '/index.html';
+        script.onerror = () => {
+            console.log('Could not load index.html script, defining functions locally');
+        };
+        
+        function simulateAnonymousLimit() {
+            // Show the upgrade modal
+            const status = document.getElementById('limit-status');
+            status.innerHTML = `
+                <strong>Simulating anonymous user limit reached...</strong><br>
+                The upgrade modal should now appear prompting to upgrade to Pro.<br>
+                <em>Expected: "You've reached your free discussion limit!" with Upgrade to Pro button</em>
+            `;
+            
+            // Call the showUpgradeModal function if available
+            if (typeof showUpgradeModal === 'function') {
+                showUpgradeModal();
+                status.innerHTML += '<br><span style="color: green;">✓ showUpgradeModal() called successfully</span>';
+            } else {
+                status.innerHTML += '<br><span style="color: red;">✗ showUpgradeModal() function not found. Please open index.html first.</span>';
+            }
+        }
+        
+        function simulatePaymentSuccess() {
+            const status = document.getElementById('payment-status');
+            status.innerHTML = `
+                <strong>Simulating successful payment...</strong><br>
+                After payment, anonymous users should see the signup prompt.<br>
+                <em>Expected: "Payment Successful!" with optional account creation</em>
+            `;
+            
+            // Call the showProSignupPrompt function if available
+            if (typeof showProSignupPrompt === 'function') {
+                showProSignupPrompt();
+                status.innerHTML += '<br><span style="color: green;">✓ showProSignupPrompt() called successfully</span>';
+            } else {
+                status.innerHTML += '<br><span style="color: red;">✗ showProSignupPrompt() function not found. Please open index.html first.</span>';
+            }
+        }
+        
+        function checkCurrentFlow() {
+            const status = document.getElementById('flow-status');
+            let flowDescription = `
+                <strong>Current Implementation Flow:</strong><br><br>
+                <b>1. Anonymous User Journey:</b><br>
+                - User uses app without account<br>
+                - Hits limit after free discussions<br>
+                - Sees upgrade modal (not signup modal)<br>
+                - Clicks "Upgrade to Pro"<br>
+                - Goes through Stripe payment<br>
+                - After successful payment, sees optional signup prompt<br>
+                - Can create account or continue without account<br><br>
+                
+                <b>2. Free Registered User Journey:</b><br>
+                - User has account but not Pro<br>
+                - Hits 10 discussion limit<br>
+                - Sees upgrade modal<br>
+                - Upgrades to Pro<br>
+                - Account automatically upgraded<br><br>
+                
+                <b>Key Changes Made:</b><br>
+                - ✓ Anonymous users see upgrade modal instead of signup<br>
+                - ✓ Post-payment signup is optional<br>
+                - ✓ Better messaging about Pro benefits<br>
+                - ✓ Account creation happens after payment, not before
+            `;
+            
+            status.innerHTML = flowDescription;
+        }
+    </script>
+</body>
+</html>

@@ -52,9 +52,9 @@ Required environment variables:
 
 ## Usage Limits
 
-- **Anonymous users**: 3 discussions
-- **Free registered users**: 10 lifetime discussions  
-- **Pro users**: Unlimited discussions
+- **Anonymous users**: 10 discussions per day (resets daily)
+- **Free registered users**: 10 discussions per day (resets daily)
+- **Pro users**: Unlimited discussions ($2/month)
 
 ## Important Notes
 
