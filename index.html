@@ -5670,7 +5670,7 @@ function showUpgradeModal() {
                 Maybe Later
             </button>
             <div style="margin-top: 20px; font-size: 14px; color: #999;">
-                Free limit: 3 discussions (anonymous) or 10 discussions (registered) • Pro: Unlimited
+                Free limit: 10 discussions per day • Pro: Unlimited
             </div>
         </div>
     `;
@@ -5781,7 +5781,7 @@ function showProSignupPrompt() {
                 </ul>
             </div>
             
-            <button onclick="showAuthModal(); closeProSignupPrompt(); setTimeout(() => { const claimProTab = document.querySelector('[onclick*=\\'showClaimProForm\\']'); if (claimProTab) claimProTab.click(); }, 100);" 
+            <button onclick="closeProSignupPrompt(); showSignup(); setTimeout(() => { switchToClaimPro(); }, 100);" 
                     style="background: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-right: 10px;">
                 Create Account
             </button>
