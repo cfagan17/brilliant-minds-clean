@@ -1281,6 +1281,72 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// Cancel subscription endpoint
+app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
+    try {
+        if (!stripe) {
+            return res.status(503).json({ error: 'Payment system not configured' });
+        }
+        
+        // Get user's subscription info
+        db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], async (err, user) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (!user || !user.stripe_customer_id) {
+                return res.status(400).json({ error: 'No active subscription found' });
+            }
+            
+            try {
+                // List customer's subscriptions
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: user.stripe_customer_id,
+                    status: 'active'
+                });
+                
+                if (subscriptions.data.length === 0) {
+                    return res.status(400).json({ error: 'No active subscription found' });
+                }
+                
+                // Cancel the subscription at period end
+                const subscription = await stripe.subscriptions.update(
+                    subscriptions.data[0].id,
+                    { cancel_at_period_end: true }
+                );
+                
+                // Update database
+                db.run(`
+                    UPDATE users 
+                    SET subscription_status = 'cancelled',
+                        subscription_end_date = ?
+                    WHERE id = ?
+                `, [new Date(subscription.current_period_end * 1000).toISOString(), user.id], (err) => {
+                    if (err) {
+                        console.error('Error updating subscription status:', err);
+                        return res.status(500).json({ error: 'Failed to update subscription status' });
+                    }
+                    
+                    console.log(`✅ Subscription cancelled for user ${user.email}`);
+                    res.json({ 
+                        success: true,
+                        message: 'Subscription cancelled successfully',
+                        endsAt: new Date(subscription.current_period_end * 1000).toISOString()
+                    });
+                });
+                
+            } catch (stripeError) {
+                console.error('Stripe cancellation error:', stripeError);
+                res.status(500).json({ error: 'Failed to cancel subscription with payment provider' });
+            }
+        });
+    } catch (error) {
+        console.error('Cancel subscription error:', error);
+        res.status(500).json({ error: 'Failed to cancel subscription' });
+    }
+});
+
 // Test Claude API endpoint
 app.get('/api/test-claude', async (req, res) => {
     try {

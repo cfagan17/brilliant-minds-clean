@@ -3203,6 +3203,7 @@
                     ✨ Magic Demo
                 </button>
                 <a href="/conversations.html" class="auth-btn">📚 My Conversations</a>
+                <button class="auth-btn" onclick="showSubscriptionManagement()">⚙️ Subscription</button>
                 <button class="auth-btn" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -3466,6 +3467,38 @@
     </div>
 </div>
 
+<!-- Subscription Management Modal -->
+<div class="auth-modal" id="subscriptionModal" style="display: none;">
+    <div class="auth-content">
+        <button class="auth-close" onclick="closeSubscriptionModal()">&times;</button>
+        
+        <div class="auth-header">
+            <h2>Manage Subscription</h2>
+            <p>You are currently on the Pro plan</p>
+        </div>
+        
+        <div style="padding: 20px; text-align: center;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0;">Iconoclash Pro</h3>
+                <p style="margin: 0; font-size: 24px; font-weight: bold;">$9.99/month</p>
+                <p style="margin: 10px 0 0 0; opacity: 0.9;">Unlimited discussions with any historical figure</p>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0; color: #666;">Your subscription will renew automatically each month.</p>
+            </div>
+            
+            <button onclick="cancelSubscription()" style="background: #dc3545; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 10px;">
+                Cancel Subscription
+            </button>
+            
+            <p style="color: #999; font-size: 14px; margin-top: 15px;">
+                You can also manage your subscription directly in 
+                <a href="https://billing.stripe.com/p/login/9AQ01ZgtA8iN2T68ss" target="_blank" style="color: #667eea;">Stripe Customer Portal</a>
+            </p>
+        </div>
+    </div>
+</div>
 
     <script>
    
@@ -6425,10 +6458,18 @@ Keep your response concise but substantive (100-150 words).`;
          assignSpeakerColor(speakerDiv, participant.name);
 
       } catch (error) {
-         speakerDiv.innerHTML = `
-            <div class="speaker-name">${participant.name}</div>
-            <div class="speaker-content">❌ Error getting response: ${error.message}</div>
-        `;
+         // Don't display error details if it's a limit error (modal is shown instead)
+         if (error.message.includes('limit reached') || error.message.includes('sign up')) {
+            speakerDiv.innerHTML = `
+               <div class="speaker-name">${participant.name}</div>
+               <div class="speaker-content" style="color: #999;">Discussion limit reached</div>
+           `;
+         } else {
+            speakerDiv.innerHTML = `
+               <div class="speaker-name">${participant.name}</div>
+               <div class="speaker-content">❌ Error getting response: ${error.message}</div>
+           `;
+         }
       }
    }
 
@@ -7428,11 +7469,12 @@ etc.`;
     `;
       arena.appendChild(openingRound);
 
-      // Get opening statements from each participant
+      // Get opening statements from each participant IN PARALLEL for speed
       const validParticipants = discussionState.participants.filter(p => p);
-      for (let i = 0; i < validParticipants.length; i++) {
-         await getMultiPersonResponse(openingRound, validParticipants[i], 'opening', i);
-      }
+      const openingPromises = validParticipants.map((participant, i) => 
+         getMultiPersonResponse(openingRound, participant, 'opening', i)
+      );
+      await Promise.all(openingPromises);
 
       // Create response round
       const responseRound = document.createElement('div');
@@ -7456,10 +7498,11 @@ etc.`;
     `;
       arena.appendChild(responseRound);
 
-      // Get responses from ALL participants
-      for (let i = 0; i < validParticipants.length; i++) {
-         await getMultiPersonResponse(responseRound, validParticipants[i], 'response', i);
-      }
+      // Get responses from ALL participants IN PARALLEL
+      const responsePromises = validParticipants.map((participant, i) => 
+         getMultiPersonResponse(responseRound, participant, 'response', i)
+      );
+      await Promise.all(responsePromises);
 
       // For debate format, add a third phase for closing arguments
       if (discussionState.format === 'debate') {
@@ -7471,10 +7514,11 @@ etc.`;
         `;
          arena.appendChild(closingRound);
 
-         // Get closing arguments from all participants
-         for (let i = 0; i < validParticipants.length; i++) {
-            await getMultiPersonResponse(closingRound, validParticipants[i], 'closing', i);
-         }
+         // Get closing arguments from all participants IN PARALLEL
+         const closingPromises = validParticipants.map((participant, i) => 
+            getMultiPersonResponse(closingRound, participant, 'closing', i)
+         );
+         await Promise.all(closingPromises);
       }
 
       // Add moderator summary
@@ -7702,7 +7746,9 @@ This is about winning the intellectual battle while maintaining dignity. Show wh
 Deliver your victory closing in 120-150 words.`;
          }
 
+         console.log(`Calling Claude API for ${participant.name} (${stage})...`);
          const response = await callClaude(prompt);
+         console.log(`Response received for ${participant.name}:`, response ? 'Success' : 'Empty');
 
          // Store the response for later use in the summary
          if (!discussionState.responses) {
@@ -7721,6 +7767,7 @@ Deliver your victory closing in 120-150 words.`;
          assignSpeakerColor(speakerDiv, participant.name);
 
       } catch (error) {
+         console.error(`Error for ${participant.name} in panel discussion:`, error);
          speakerDiv.innerHTML = `
             <div class="speaker-name">${participant.name}</div>
             <div>❌ Error: ${error.message}</div>
@@ -8192,10 +8239,11 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
       const validParticipants = discussionState.participants.filter(p => p);
       const recentContext = collectRecentContext(arena, 6); // More context for multi-person
 
-      // Each participant builds on the previous discussion with progressive depth
-      for (let i = 0; i < validParticipants.length; i++) {
-         await getProgressiveContinuationResponse(continuationRound, validParticipants[i], 'participant', round, recentContext);
-      }
+      // Each participant builds on the previous discussion with progressive depth IN PARALLEL
+      const continuationPromises = validParticipants.map((participant, i) => 
+         getProgressiveContinuationResponse(continuationRound, participant, 'participant', round, recentContext)
+      );
+      await Promise.all(continuationPromises);
 
       discussionState.totalExchanges += validParticipants.length;
    }
@@ -9603,6 +9651,60 @@ Keep it concise and forward-looking.`;
       showNotification('Logged out successfully', 'info');
    }
 
+   // Subscription management functions
+   function showSubscriptionManagement() {
+      const modal = document.getElementById('subscriptionModal');
+      if (modal) {
+         modal.style.display = 'flex';
+      }
+   }
+
+   function closeSubscriptionModal() {
+      const modal = document.getElementById('subscriptionModal');
+      if (modal) {
+         modal.style.display = 'none';
+      }
+   }
+
+   async function cancelSubscription() {
+      if (!confirm('Are you sure you want to cancel your subscription? You will lose access to unlimited discussions at the end of your billing period.')) {
+         return;
+      }
+
+      try {
+         const response = await fetch('/api/cancel-subscription', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Authorization': `Bearer ${authToken}`
+            }
+         });
+
+         const data = await response.json();
+
+         if (response.ok) {
+            showNotification('Subscription cancelled successfully. You will retain access until the end of your billing period.', 'success');
+            closeSubscriptionModal();
+            
+            // Update user status
+            if (currentUser) {
+               currentUser.isProUser = false;
+               currentUser.subscriptionStatus = 'cancelled';
+            }
+            
+            // Optionally refresh auth state
+            setTimeout(() => {
+               checkExistingAuth();
+            }, 2000);
+         } else {
+            showNotification(data.error || 'Failed to cancel subscription', 'error');
+         }
+      } catch (error) {
+         console.error('Error cancelling subscription:', error);
+         showNotification('Failed to cancel subscription. Please try again.', 'error');
+      }
+   }
+
    // Add this to your existing code
    async function checkExistingAuth() {
       const token = localStorage.getItem('authToken');
@@ -9644,6 +9746,7 @@ Keep it concise and forward-looking.`;
       const endpoint = isSuggestion ? '/api/suggest-speakers' : '/api/claude';
       
       console.log('Calling endpoint:', endpoint, 'isSuggestion:', isSuggestion);
+      console.log('SessionId being sent:', discussionState.discussionId);
       
       const response = await fetch(endpoint, {
          method: 'POST',
@@ -9652,31 +9755,35 @@ Keep it concise and forward-looking.`;
             message: prompt,
             figure: 'discussion',
             isSuggestion: isSuggestion,
-            discussionId: discussionState.discussionId
+            sessionId: discussionState.discussionId // Server expects sessionId, not discussionId
          })
       });
+      console.log('API Response status:', response.status);
 
       if (!response.ok) {
          const errorData = await response.json();
 
-         // TEMPORARILY DISABLED FOR LOCAL TESTING
-         /*
-         if (response.status === 429 && errorData.limit) {
-            // Usage limit reached
-            if (!currentUser) {
+         // Check if it's a limit error
+         if (response.status === 429 || errorData.limit || errorData.guestLimitReached) {
+            // Usage limit reached - show appropriate modal
+            if (errorData.signupRequired || !currentUser) {
                showSignup();
                throw new Error('Please sign up to continue discussions');
             } else {
                showUpgradeModal();
-               throw new Error('Free discussion limit reached');
+               throw new Error('Discussion limit reached. Please upgrade to Pro for unlimited access.');
             }
          }
-         */
 
-         throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+         throw new Error(`${errorData.error || 'Unknown error'}`);
       }
 
       const data = await response.json();
+      console.log('API Response data structure:', {
+         hasContent: !!data.content,
+         contentLength: data.content ? data.content.length : 0,
+         hasText: data.content && data.content[0] ? !!data.content[0].text : false
+      });
 
       // Update usage display if we have usage info
       if (data.usage) {
@@ -9685,6 +9792,12 @@ Keep it concise and forward-looking.`;
             isProUser: usageState.isProUser,
             remaining: currentUser ? Math.max(0, 10 - usageState.dailyDiscussions) : Math.max(0, 10 - usageState.dailyDiscussions)
          });
+      }
+
+      // Check if data has the expected structure
+      if (!data.content || !data.content[0] || !data.content[0].text) {
+         console.error('Unexpected API response structure. Full response:', data);
+         throw new Error('Invalid response from API - missing content');
       }
 
       return data.content[0].text;

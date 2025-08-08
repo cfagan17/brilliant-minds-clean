@@ -557,7 +557,8 @@
             moderator: 'ai',
             topic: '',
             currentRound: 0,
-            currentPhase: 0
+            currentPhase: 0,
+            sessionId: null
         };
 
         // Enhanced discussion formats with true structural differences
@@ -928,6 +929,9 @@ etc.`;
         async function startGroupDiscussion() {
             discussionState.topic = document.getElementById('topicInput').value.trim();
             
+            // Generate a session ID for this entire group discussion
+            discussionState.sessionId = 'group_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
             // Hide setup and show arena
             document.getElementById('setupSection').style.display = 'none';
             document.getElementById('discussionArena').style.display = 'block';
@@ -1050,10 +1054,18 @@ etc.`;
                 `;
                 
             } catch (error) {
-                speakerDiv.innerHTML = `
-                    <div class="speaker-name">${participant.name}</div>
-                    <div>❌ Error: ${error.message}</div>
-                `;
+                // Don't display error if it's a limit error (modal is shown instead)
+                if (error.message.includes('limit reached')) {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">${participant.name}</div>
+                        <div style="color: #999;">Discussion limit reached</div>
+                    `;
+                } else {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">${participant.name}</div>
+                        <div>❌ Error: ${error.message}</div>
+                    `;
+                }
             }
         }
 
@@ -1077,10 +1089,18 @@ etc.`;
                 `;
                 
             } catch (error) {
-                speakerDiv.innerHTML = `
-                    <div class="speaker-name">Dr. ${participant.name}</div>
-                    <div>❌ Error: ${error.message}</div>
-                `;
+                // Don't display error if it's a limit error (modal is shown instead)
+                if (error.message.includes('limit reached')) {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">Dr. ${participant.name}</div>
+                        <div style="color: #999;">Discussion limit reached</div>
+                    `;
+                } else {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">Dr. ${participant.name}</div>
+                        <div>❌ Error: ${error.message}</div>
+                    `;
+                }
             }
         }
 
@@ -1156,10 +1176,18 @@ Respond in 120-150 words.`;
                 `;
                 
             } catch (error) {
-                speakerDiv.innerHTML = `
-                    <div class="speaker-name">${participant.name}</div>
-                    <div>❌ Error: ${error.message}</div>
-                `;
+                // Don't display error if it's a limit error (modal is shown instead)
+                if (error.message.includes('limit reached')) {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">${participant.name}</div>
+                        <div style="color: #999;">Discussion limit reached</div>
+                    `;
+                } else {
+                    speakerDiv.innerHTML = `
+                        <div class="speaker-name">${participant.name}</div>
+                        <div>❌ Error: ${error.message}</div>
+                    `;
+                }
             }
         }
 
@@ -1215,10 +1243,18 @@ Provide a brief transition that summarizes key points from this phase and sets u
                 `;
                 
             } catch (error) {
-                moderatorDiv.innerHTML = `
-                    <div class="speaker-name">${moderatorInfo.name}</div>
-                    <div>❌ Error: ${error.message}</div>
-                `;
+                // Don't display error if it's a limit error (modal is shown instead)
+                if (error.message.includes('limit reached')) {
+                    moderatorDiv.innerHTML = `
+                        <div class="speaker-name">${moderatorInfo.name}</div>
+                        <div style="color: #999;">Discussion limit reached</div>
+                    `;
+                } else {
+                    moderatorDiv.innerHTML = `
+                        <div class="speaker-name">${moderatorInfo.name}</div>
+                        <div>❌ Error: ${error.message}</div>
+                    `;
+                }
             }
         }
 
@@ -1272,17 +1308,57 @@ Keep it insightful but concise (200-250 words).`;
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: prompt,
-                    figure: 'group-discussion'
+                    figure: 'group-discussion',
+                    sessionId: discussionState.sessionId // Use the same session ID for all calls in this discussion
                 })
             });
             
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+                
+                // Check if it's a limit error and show signup prompt
+                if (response.status === 429 || errorData.limit || errorData.guestLimitReached) {
+                    // Show the upgrade modal
+                    showUpgradeModal();
+                    throw new Error('Discussion limit reached. Please upgrade to Pro for unlimited access.');
+                }
+                
+                throw new Error(`${errorData.error || 'Unknown error'}`);
             }
             
             const data = await response.json();
             return data.content[0].text;
+        }
+        
+        function showUpgradeModal() {
+            // Create a simple upgrade modal
+            const modal = document.createElement('div');
+            modal.id = 'upgradeModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 40px; border-radius: 20px; max-width: 500px; text-align: center;">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">Upgrade to Pro</h2>
+                    <p style="color: #4a5568; margin-bottom: 30px;">You've reached your discussion limit. Upgrade to Pro for unlimited access to all historical figures!</p>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button onclick="window.location.href='/'" style="background: #667eea; color: white; padding: 12px 30px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer;">Upgrade Now</button>
+                        <button onclick="document.getElementById('upgradeModal').remove()" style="background: #e2e8f0; color: #4a5568; padding: 12px 30px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer;">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
 
         // Listen for topic input changes
