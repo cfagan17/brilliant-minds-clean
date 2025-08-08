@@ -1368,13 +1368,24 @@ app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
                     { cancel_at_period_end: true }
                 );
                 
+                // Calculate end date safely
+                let endDate = null;
+                if (subscription.current_period_end) {
+                    try {
+                        endDate = new Date(subscription.current_period_end * 1000).toISOString();
+                    } catch (e) {
+                        console.error('Error parsing subscription end date:', e);
+                        endDate = null;
+                    }
+                }
+                
                 // Update database
                 db.run(`
                     UPDATE users 
                     SET subscription_status = 'cancelled',
                         subscription_end_date = ?
                     WHERE id = ?
-                `, [new Date(subscription.current_period_end * 1000).toISOString(), user.id], (err) => {
+                `, [endDate, user.id], (err) => {
                     if (err) {
                         console.error('Error updating subscription status:', err);
                         return res.status(500).json({ error: 'Failed to update subscription status' });
@@ -1384,7 +1395,7 @@ app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
                     res.json({ 
                         success: true,
                         message: 'Subscription cancelled successfully',
-                        endsAt: new Date(subscription.current_period_end * 1000).toISOString()
+                        endsAt: endDate
                     });
                 });
                 
@@ -1397,6 +1408,16 @@ app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
         console.error('Cancel subscription error:', error);
         res.status(500).json({ error: 'Failed to cancel subscription' });
     }
+});
+
+// Test Stripe configuration
+app.get('/api/test-stripe', async (req, res) => {
+    res.json({
+        configured: !!stripe,
+        hasSecretKey: !!process.env.STRIPE_SECRET_KEY,
+        keyPrefix: process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 7) + '...' : null,
+        mode: process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_') ? 'test' : 'live'
+    });
 });
 
 // Test Claude API endpoint

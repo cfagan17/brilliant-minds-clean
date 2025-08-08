@@ -76,9 +76,14 @@ function requireAdmin(req, res, next) {
 // Check if user is test account (doesn't affect analytics)
 function isTestAccount(userId) {
     return new Promise((resolve, reject) => {
-        db.get('SELECT is_test_account FROM users WHERE id = ?', [userId], (err, user) => {
-            if (err) reject(err);
-            else resolve(user && user.is_test_account);
+        db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
+            if (err) {
+                console.error('Error checking test account:', err);
+                resolve(false); // Default to false if there's an error
+            } else {
+                // Check if is_test_account exists, default to false if not
+                resolve(user && (user.is_test_account || false));
+            }
         });
     });
 }
