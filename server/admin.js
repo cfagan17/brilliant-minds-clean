@@ -27,7 +27,7 @@ async function createAdminUser() {
                 // Update to ensure admin privileges
                 db.run(`
                     UPDATE users 
-                    SET is_admin = 1, is_pro = 1, is_test_account = 1 
+                    SET is_admin = true, is_pro = true, is_test_account = true 
                     WHERE email = ?
                 `, [ADMIN_EMAIL], (err) => {
                     if (err) console.error('Error updating admin privileges:', err);
@@ -42,7 +42,7 @@ async function createAdminUser() {
             
             db.run(`
                 INSERT INTO users (email, password_hash, is_pro, is_admin, is_test_account, discussions_used)
-                VALUES (?, ?, 1, 1, 1, 0)
+                VALUES (?, ?, true, true, true, 0)
             `, [ADMIN_EMAIL, hashedPassword], function(err) {
                 if (err) {
                     console.error('Error creating admin user:', err);

@@ -1322,7 +1322,7 @@ app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
             // For now, just mark as cancelled in the database without Stripe API call
             db.run(`
                 UPDATE users 
-                SET is_pro = 0,
+                SET is_pro = false,
                     subscription_status = 'cancelled'
                 WHERE id = ?
             `, [req.user.userId], (err) => {
