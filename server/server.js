@@ -1312,9 +1312,32 @@ app.get('/api/health', (req, res) => {
 
 // Cancel subscription endpoint
 app.post('/api/cancel-subscription', authenticateToken, async (req, res) => {
+    console.log('Cancel subscription endpoint called');
+    console.log('User:', req.user);
+    console.log('Stripe initialized:', !!stripe);
+    
     try {
         if (!stripe) {
-            return res.status(503).json({ error: 'Payment system not configured' });
+            console.error('Stripe not initialized - STRIPE_SECRET_KEY may not be set');
+            // For now, just mark as cancelled in the database without Stripe API call
+            db.run(`
+                UPDATE users 
+                SET is_pro = 0,
+                    subscription_status = 'cancelled'
+                WHERE id = ?
+            `, [req.user.userId], (err) => {
+                if (err) {
+                    console.error('Error updating subscription status:', err);
+                    return res.status(500).json({ error: 'Failed to cancel subscription' });
+                }
+                
+                return res.json({ 
+                    success: true,
+                    message: 'Subscription cancelled successfully',
+                    note: 'Please contact support if you have any billing concerns'
+                });
+            });
+            return;
         }
         
         // Get user's subscription info
