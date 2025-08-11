@@ -200,11 +200,18 @@ function optionalAuth(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
+        console.log('Token found in request, verifying...');
         jwt.verify(token, JWT_SECRET, (err, user) => {
             if (!err) {
+                console.log('Token verified successfully for user:', user.userId);
                 req.user = user;
+            } else {
+                console.log('Token verification failed:', err.message);
+                // Token is invalid or expired - treat as anonymous
             }
         });
+    } else {
+        console.log('No auth token in request - treating as anonymous');
     }
     next();
 }
@@ -591,8 +598,7 @@ const guestRateLimit = rateLimit({
     }
 });
 
-// Apply rate limiting to Claude endpoint for guests only
-app.use('/api/claude', guestRateLimit);
+// Note: Rate limiting is now applied directly in the route after auth check
 
 // Endpoint for speaker suggestions - doesn't count against usage
 app.post('/api/suggest-speakers', async (req, res) => {
@@ -628,7 +634,7 @@ app.post('/api/suggest-speakers', async (req, res) => {
 });
 
 // API endpoint to proxy Claude requests (UPDATED MODEL)
-app.post('/api/claude', optionalAuth, async (req, res) => {
+app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
     try {
         const { message, figure, format, sessionId } = req.body;
         
@@ -639,6 +645,7 @@ app.post('/api/claude', optionalAuth, async (req, res) => {
         
         // Check usage limits for authenticated users (NO DAILY RESET)
         if (req.user) {
+            console.log('Processing authenticated request for user ID:', req.user.userId);
             // Get user data and check limits - NO daily reset for free users
             db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], async (err, user) => {
                 if (err) {
