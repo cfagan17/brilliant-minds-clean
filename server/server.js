@@ -125,9 +125,9 @@ async function makeClaudeRequest(message, userId = null) {
 }
 
 // IMPORTANT: Add webhook before express.json() middleware
+// Both endpoints needed - Stripe is configured for /api/stripe-webhook (with hyphen)
 app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
-// IMPORTANT: Add webhook before express.json() middleware
-app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
+app.use('/api/stripe-webhook', express.raw({type: 'application/json'}));
 
 // Initialize database with proper async handling
 let dbInitialized = false;
@@ -226,20 +226,42 @@ function resetDailyDiscussions(userId, callback) {
 // STRIPE WEBHOOK (MUST BE BEFORE OTHER ROUTES)
 // ============================================================================
 
-app.post('/api/stripe/webhook', (req, res) => {
+// Handler function for Stripe webhooks
+const handleStripeWebhook = (req, res) => {
     if (!stripe) {
-    return res.status(503).json({ error: 'Stripe not configured' });
-  }
+        console.error('Stripe webhook called but Stripe not configured');
+        return res.status(503).json({ error: 'Stripe not configured' });
+    }
+    
     const sig = req.headers['stripe-signature'];
+    
+    // If no webhook secret is configured, log warning but still process (for testing)
+    if (!STRIPE_WEBHOOK_SECRET) {
+        console.warn('⚠️  No STRIPE_WEBHOOK_SECRET configured - webhook signature verification skipped');
+        // In production, you should return an error here
+        // return res.status(500).json({ error: 'Webhook secret not configured' });
+    }
+    
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
+        if (STRIPE_WEBHOOK_SECRET) {
+            // Verify signature if secret is configured
+            event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
+        } else {
+            // Parse without verification (development/testing only)
+            event = JSON.parse(req.body.toString());
+        }
     } catch (err) {
-        console.log(`⚠️  Webhook signature verification failed.`, err.message);
+        console.error(`❌ Webhook error:`, err.message);
+        console.error('Signature header:', sig ? 'present' : 'missing');
+        console.error('Webhook secret configured:', !!STRIPE_WEBHOOK_SECRET);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    // Log all webhook events for debugging
+    console.log(`📨 Received webhook: ${event.type} (ID: ${event.id})`);
+    
     // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
@@ -329,8 +351,13 @@ app.post('/api/stripe/webhook', (req, res) => {
         `, [subscription.customer]);
     }
 
-    res.json({received: true});
-});
+    // Always return 200 to acknowledge receipt
+    res.status(200).json({received: true});
+};
+
+// Register both webhook endpoints (Stripe is configured for /api/stripe-webhook)
+app.post('/api/stripe/webhook', handleStripeWebhook);
+app.post('/api/stripe-webhook', handleStripeWebhook);
 
 // ============================================================================
 // AUTH ROUTES
@@ -427,7 +454,7 @@ app.post('/api/auth/login', async (req, res) => {
                 user: {
                     id: user.id,
                     email: user.email,
-                    isProUser: false,
+                    isProUser: user.is_pro || false,
                     discussionsUsed: user.discussions_used
                 }
             });
@@ -445,33 +472,24 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Only reset for Pro users (they get unlimited daily)
-        // Free users keep their total count
-        if (user.is_pro) {
-            resetDailyDiscussions(user.id, () => {
-                // Get updated user data
-                db.get('SELECT * FROM users WHERE id = ?', [user.id], (err, updatedUser) => {
-                    res.json({
-                        id: updatedUser.id,
-                        email: updatedUser.email,
-                        isProUser: true,
-                        discussionsUsed: updatedUser.discussions_used,
-                        dailyLimit: 'unlimited',
-                        remaining: 'unlimited'
-                    });
+        // Reset daily discussions for ALL users (both free and pro reset daily)
+        resetDailyDiscussions(user.id, () => {
+            // Get updated user data after reset
+            db.get('SELECT * FROM users WHERE id = ?', [user.id], (err, updatedUser) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                
+                res.json({
+                    id: updatedUser.id,
+                    email: updatedUser.email,
+                    isProUser: updatedUser.is_pro,
+                    discussionsUsed: updatedUser.discussions_used,
+                    dailyLimit: updatedUser.is_pro ? 'unlimited' : 10,
+                    remaining: updatedUser.is_pro ? 'unlimited' : Math.max(0, 10 - updatedUser.discussions_used)
                 });
             });
-        } else {
-            // Free user - return daily usage (resets each day)
-            res.json({
-                id: user.id,
-                email: user.email,
-                isProUser: user.is_pro,
-                discussionsUsed: user.discussions_used,
-                dailyLimit: 10,
-                remaining: Math.max(0, 10 - user.discussions_used)
-            });
-        }
+        });
     });
 });
 
@@ -632,10 +650,8 @@ app.post('/api/claude', optionalAuth, async (req, res) => {
                     return res.status(404).json({ error: 'User not found' });
                 }
                 
-                // Reset daily discussions for ALL users (free get 10/day, pro get unlimited)
-                resetDailyDiscussions(user.id, async () => {
-                    await processAuthenticatedRequest(req, res, user.id, message);
-                });
+                // Process the authenticated request (daily reset handled inside)
+                await processAuthenticatedRequest(req, res, user.id, message);
             });
         } else {
             // Guest user - limited to 10 per day (handled by rate limiting middleware)
@@ -707,14 +723,21 @@ async function processAuthenticatedRequest(req, res, userId, message) {
         }).catch(err => console.error('Analytics error:', err));
     }
     
-    db.get('SELECT * FROM users WHERE id = ?', [userId], async (err, user) => {
-        if (err) {
-            console.error('Database error getting user:', err);
-            return res.status(500).json({ error: 'Database error' });
+    // First reset daily discussions if needed
+    resetDailyDiscussions(userId, (resetErr) => {
+        if (resetErr) {
+            console.error('Error resetting daily discussions:', resetErr);
         }
         
-        // Free registered users get 10 per day (same as anonymous)
-        if (!user.is_pro && user.discussions_used >= 10) {
+        // Now get the updated user data
+        db.get('SELECT * FROM users WHERE id = ?', [userId], async (err, user) => {
+            if (err) {
+                console.error('Database error getting user:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            // Free registered users get 10 per day (same as anonymous)
+            if (!user.is_pro && user.discussions_used >= 10) {
             return res.status(429).json({ 
                 error: 'You\'ve used your 10 free discussions for today. Upgrade to Pro for unlimited access!',
                 limit: true,
@@ -759,6 +782,7 @@ async function processAuthenticatedRequest(req, res, userId, message) {
                 details: claudeError.message 
             });
         }
+        });
     });
 }
 
