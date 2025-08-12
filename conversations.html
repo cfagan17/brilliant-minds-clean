@@ -302,14 +302,13 @@
         function shareConversation(conversationId) {
             // Create shareable link
             const shareUrl = `${window.location.origin}/conversation.html?id=${conversationId}`;
-            const shareMessage = `Check out this fascinating discussion on Iconoclash!\n\n${shareUrl}\n\nEngage with history's greatest thinkers at iconoclash.ai`;
             
             // Find the share button that was clicked
             const shareButton = event.target.closest('.action-button');
             const originalText = shareButton ? shareButton.textContent : '';
             
-            // Copy to clipboard
-            navigator.clipboard.writeText(shareMessage).then(() => {
+            // Copy to clipboard - just the URL
+            navigator.clipboard.writeText(shareUrl).then(() => {
                 // Update button text
                 if (shareButton) {
                     shareButton.textContent = '✅ Link Saved to Clipboard';

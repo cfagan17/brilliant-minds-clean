@@ -8723,14 +8723,13 @@ Keep it concise and forward-looking.`;
    function shareConversation(conversationId) {
       // Create shareable link
       const shareUrl = `${window.location.origin}/conversation.html?id=${conversationId}`;
-      const shareMessage = `Check out this fascinating discussion on Iconoclash!\n\n${shareUrl}\n\nEngage with history's greatest thinkers at iconoclash.ai`;
       
       // Get the share button that was clicked
       const shareButton = document.querySelector('.share-button');
       const originalText = shareButton ? shareButton.textContent : '';
       
-      // Copy to clipboard
-      navigator.clipboard.writeText(shareMessage).then(() => {
+      // Copy to clipboard - just the URL
+      navigator.clipboard.writeText(shareUrl).then(() => {
          showNotification(`📋 Share link copied to clipboard!`, 'success');
          
          // Update button text to show it was copied
@@ -8807,14 +8806,10 @@ Keep it concise and forward-looking.`;
             if (result.shareId) {
                // Create shareable link
                const shareUrl = `${window.location.origin}/conversation.html?share=${result.shareId}`;
-               const shareTitle = `"${discussionState.topic}" - ${conversationData.participants.join(' & ')}`;
-               const shareMessage = `Check out this fascinating discussion on Iconoclash!\n\n${shareTitle}\n\n${shareUrl}\n\n💡 Have your own discussions with history's greatest minds at iconoclash.ai`;
                
                // Try native share first (mobile)
-               if (navigator.share && navigator.canShare && navigator.canShare({ text: shareMessage, url: shareUrl })) {
+               if (navigator.share && navigator.canShare && navigator.canShare({ url: shareUrl })) {
                   navigator.share({
-                     title: `Iconoclash: ${discussionState.topic}`,
-                     text: `Check out this discussion: "${discussionState.topic}" with ${conversationData.participants.join(' & ')}`,
                      url: shareUrl
                   }).then(() => {
                      showNotification('✅ Discussion shared!', 'success');
@@ -8830,11 +8825,11 @@ Keep it concise and forward-looking.`;
                      }
                   }).catch(() => {
                      // User cancelled, fallback to clipboard
-                     copyShareLink(shareMessage, shareButton, originalText);
+                     copyShareLink(shareUrl, shareButton, originalText);
                   });
                } else {
                   // Desktop - copy to clipboard
-                  copyShareLink(shareMessage, shareButton, originalText);
+                  copyShareLink(shareUrl, shareButton, originalText);
                }
             } else {
                throw new Error(result.error || 'Failed to create share link');
@@ -9205,8 +9200,6 @@ Keep it concise and forward-looking.`;
                url: shareUrl
             })) {
             await navigator.share({
-               title: 'Iconoclash Conversation',
-               text: 'Check out this fascinating discussion on Iconoclash!',
                url: shareUrl
             });
          } else {
