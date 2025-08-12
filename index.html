@@ -9332,10 +9332,20 @@ Keep it concise and forward-looking.`;
             
             const isModeratorClass = message.speaker === 'AI Moderator' ? 'moderator-speaker' : '';
             
+            // Add action buttons for non-moderator speakers in non-chat formats
+            let actionButtons = '';
+            if (message.speaker !== 'AI Moderator' && discussionState.format !== 'chat') {
+               actionButtons = `<div class="speaker-actions">
+                  <button class="interject-btn" onclick="startInterjection(this)" title="Ask a follow-up or redirect the conversation">
+                     💬 Ask Follow-up
+                  </button>
+               </div>`;
+            }
+            
             conversationHTML += `
                <div class="speaker ${isModeratorClass}">
                   <div class="speaker-name">${message.speaker}</div>
-                  <div class="speaker-content">${formattedContent}</div>
+                  <div class="speaker-content">${formattedContent}${actionButtons}</div>
                </div>
             `;
          });
