@@ -404,6 +404,21 @@ app.get('/api/test-auth', optionalAuth, (req, res) => {
     });
 });
 
+// Check rate limit status
+app.get('/api/rate-limit-status', optionalAuth, guestRateLimit, (req, res) => {
+    res.json({
+        authenticated: !!req.user,
+        ip: req.ip,
+        rateLimit: {
+            limit: res.getHeader('X-RateLimit-Limit'),
+            remaining: res.getHeader('X-RateLimit-Remaining'),
+            reset: res.getHeader('X-RateLimit-Reset'),
+            resetDate: res.getHeader('X-RateLimit-Reset') ? 
+                new Date(parseInt(res.getHeader('X-RateLimit-Reset'))).toISOString() : null
+        }
+    });
+});
+
 // Register new user (10 daily discussions for free tier)
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -587,10 +602,54 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 // CLAUDE API (FIXED WITH CONSISTENT LIMITS)
 // ============================================================================
 
+// Custom store that resets at midnight local time
+class DailyResetStore {
+    constructor() {
+        this.hits = {};
+        this.resetDate = this.getResetDate();
+    }
+    
+    getResetDate() {
+        const now = new Date();
+        now.setHours(24, 0, 0, 0); // Next midnight
+        return now;
+    }
+    
+    incr(key, cb) {
+        const now = new Date();
+        
+        // Check if we need to reset
+        if (now >= this.resetDate) {
+            this.hits = {};
+            this.resetDate = this.getResetDate();
+            console.log('Rate limiter reset at:', now.toISOString());
+        }
+        
+        if (!this.hits[key]) {
+            this.hits[key] = 0;
+        }
+        
+        this.hits[key]++;
+        
+        cb(null, this.hits[key], this.resetDate);
+    }
+    
+    decrement(key) {
+        if (this.hits[key]) {
+            this.hits[key]--;
+        }
+    }
+    
+    resetKey(key) {
+        delete this.hits[key];
+    }
+}
+
 // Enhanced rate limiting for guests (10 daily)
 const guestRateLimit = rateLimit({
     windowMs: 24 * 60 * 60 * 1000, // 24 hours (daily reset)
     max: 10,
+    store: new DailyResetStore(),
     message: { 
         error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
         limit: true,
@@ -695,10 +754,21 @@ app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
         } else {
             // Guest user - limited to 10 per day (handled by rate limiting middleware)
             // Check if rate limit has been exceeded
-            const remaining = parseInt(res.getHeader('X-RateLimit-Remaining')) || 0;
-            console.log('Anonymous user - remaining requests:', remaining);
+            const limit = res.getHeader('X-RateLimit-Limit');
+            const remaining = res.getHeader('X-RateLimit-Remaining');
+            const reset = res.getHeader('X-RateLimit-Reset');
             
-            if (remaining <= 0) {
+            console.log('Anonymous user rate limit info:', {
+                limit: limit,
+                remaining: remaining,
+                reset: reset ? new Date(parseInt(reset)).toISOString() : 'not set',
+                ip: req.ip,
+                parsedRemaining: parseInt(remaining)
+            });
+            
+            // Only block if we explicitly have a remaining count of 0
+            // If header is missing, allow the request (rate limiter will handle it)
+            if (remaining !== undefined && parseInt(remaining) <= 0) {
                 // Rate limit exceeded - return error immediately
                 console.log('Rate limit exceeded for anonymous user');
                 return res.status(429).json({ 
