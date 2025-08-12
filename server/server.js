@@ -627,6 +627,9 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 // ============================================================================
 
 // Enhanced rate limiting for guests (10 daily)
+// Track discussion sessions to count only once per discussion
+const discussionSessions = new Map();
+
 // NOTE: Using standard memory store with 24-hour window
 // Server restart will reset counts
 const guestRateLimit = rateLimit({
@@ -641,7 +644,32 @@ const guestRateLimit = rateLimit({
     },
     skip: (req) => {
         // Skip rate limiting for authenticated users
-        return !!req.user;
+        if (!!req.user) return true;
+        
+        // Check if this is part of an existing discussion session
+        const sessionId = req.body?.sessionId;
+        const ip = req.ip || req.connection.remoteAddress || 'unknown';
+        
+        if (sessionId && sessionId.startsWith('disc_')) {
+            const sessionKey = `${ip}_${sessionId}`;
+            
+            // If we've seen this session before, skip rate limiting
+            if (discussionSessions.has(sessionKey)) {
+                console.log(`Skipping rate limit for existing session: ${sessionId}`);
+                return true;
+            }
+            
+            // First request for this session - count it and remember it
+            discussionSessions.set(sessionKey, Date.now());
+            console.log(`New discussion session: ${sessionId} - counting toward rate limit`);
+            
+            // Clean up old sessions after 1 hour
+            setTimeout(() => {
+                discussionSessions.delete(sessionKey);
+            }, 60 * 60 * 1000);
+        }
+        
+        return false;
     },
     standardHeaders: true,
     legacyHeaders: false,
