@@ -42,6 +42,13 @@ function initializeDatabase() {
         }
     });
     
+    // Add subscription end date column
+    db.run(`ALTER TABLE users ADD COLUMN subscription_end_date DATETIME`, (err) => {
+        if (err && !err.message.includes('duplicate column')) {
+            console.log('Column subscription_end_date might already exist');
+        }
+    });
+    
     // Add analytics table
     db.run(`
         CREATE TABLE IF NOT EXISTS analytics_events (

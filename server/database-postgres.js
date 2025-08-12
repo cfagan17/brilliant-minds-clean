@@ -88,9 +88,13 @@ async function initializeDatabase() {
         subscription_status VARCHAR(50),
         last_checkout_session VARCHAR(255),
         is_admin BOOLEAN DEFAULT false,
-        is_test_account BOOLEAN DEFAULT false
+        is_test_account BOOLEAN DEFAULT false,
+        subscription_end_date TIMESTAMP
       )
     `);
+    
+    // Add subscription_end_date column if it doesn't exist
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMP`).catch(() => {});
 
     // Create indexes for performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);

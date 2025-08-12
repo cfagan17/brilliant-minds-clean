@@ -348,25 +348,62 @@ const handleStripeWebhook = (req, res) => {
     // Handle subscription updates
     if (event.type === 'customer.subscription.updated') {
         const subscription = event.data.object;
+        console.log('Subscription updated:', {
+            id: subscription.id,
+            status: subscription.status,
+            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_end: subscription.current_period_end
+        });
+        
+        // Determine the effective status
+        let effectiveStatus = subscription.status;
+        if (subscription.cancel_at_period_end) {
+            effectiveStatus = 'canceling'; // Will cancel at period end
+        }
+        
+        // Calculate cancellation date if applicable
+        let cancelAt = null;
+        if (subscription.cancel_at_period_end && subscription.current_period_end) {
+            cancelAt = new Date(subscription.current_period_end * 1000).toISOString();
+        }
+        
+        // User remains Pro until the period ends
+        const isPro = subscription.status === 'active' || subscription.status === 'trialing';
         
         db.run(`
             UPDATE users 
             SET subscription_id = ?, 
-                subscription_status = ?
+                subscription_status = ?,
+                is_pro = ?,
+                subscription_end_date = ?
             WHERE stripe_customer_id = ?
-        `, [subscription.id, subscription.status, subscription.customer]);
+        `, [subscription.id, effectiveStatus, isPro, cancelAt, subscription.customer], (err) => {
+            if (err) {
+                console.error('Error updating subscription:', err);
+            } else {
+                console.log(`Updated subscription for customer ${subscription.customer}: status=${effectiveStatus}, cancelAt=${cancelAt}`);
+            }
+        });
     }
 
-    // Handle subscription cancellations
+    // Handle subscription cancellations (when period actually ends)
     if (event.type === 'customer.subscription.deleted') {
         const subscription = event.data.object;
+        console.log('Subscription deleted/expired for customer:', subscription.customer);
         
         db.run(`
             UPDATE users 
             SET is_pro = FALSE, 
-                subscription_status = 'canceled'
+                subscription_status = 'canceled',
+                subscription_end_date = NULL
             WHERE stripe_customer_id = ?
-        `, [subscription.customer]);
+        `, [subscription.customer], (err) => {
+            if (err) {
+                console.error('Error canceling subscription:', err);
+            } else {
+                console.log(`Subscription ended for customer ${subscription.customer} - reverted to free tier`);
+            }
+        });
     }
 
     // Always return 200 to acknowledge receipt
