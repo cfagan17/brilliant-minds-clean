@@ -11,7 +11,7 @@ const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
+// Removed express-rate-limit - using session-based tracking instead
 const { db, initializeDatabase, USE_POSTGRES } = require('./database');
 const { initializeSentry, errorHandler, logEvent, trackPerformance, trackClaudeUsage } = require('./monitoring');
 // Redis rate limiting removed - using database-based discussion tracking instead
@@ -441,8 +441,6 @@ app.get('/api/test-auth', optionalAuth, (req, res) => {
     });
 });
 
-// Rate limit status endpoint will be defined after guestRateLimit
-
 // Register new user (10 daily discussions for free tier)
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -626,90 +624,12 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 // CLAUDE API (FIXED WITH CONSISTENT LIMITS)
 // ============================================================================
 
-// Enhanced rate limiting for guests (10 daily)
-// Track discussion sessions to count only once per discussion
-// Use global objects that persist across requests
-global.discussionSessions = global.discussionSessions || new Map();
+// Session-based discussion tracking for anonymous users
+// Use global object that persists across requests
 global.anonymousUsage = global.anonymousUsage || new Map();
-const discussionSessions = global.discussionSessions;
 const anonymousUsage = global.anonymousUsage;
 
-// Custom key generator that uses discussion sessions
-const customKeyGenerator = (req) => {
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
-    const sessionId = req.body?.sessionId;
-    
-    // For requests with a discussion session ID
-    if (sessionId && sessionId.startsWith('disc_')) {
-        const sessionKey = `${ip}_${sessionId}`;
-        
-        // Check if we've seen this session before
-        const existingSession = discussionSessions.get(sessionKey);
-        if (existingSession) {
-            // Return the same key for all requests in this session
-            // This makes them all count as one request to the rate limiter
-            console.log(`Using existing session key for ${sessionId}`);
-            return `session_${existingSession.firstRequestKey}`;
-        } else {
-            // First request for this session
-            const firstRequestKey = `${ip}_${Date.now()}`;
-            discussionSessions.set(sessionKey, {
-                firstRequestKey: firstRequestKey,
-                timestamp: Date.now()
-            });
-            console.log(`Creating new session key for ${sessionId}`);
-            
-            // Clean up old sessions after 2 hours
-            setTimeout(() => {
-                discussionSessions.delete(sessionKey);
-            }, 2 * 60 * 60 * 1000);
-            
-            return `session_${firstRequestKey}`;
-        }
-    }
-    
-    // For non-session requests (like suggestions), use normal IP-based key
-    return ip;
-};
-
-// NOTE: Using standard memory store with 24-hour window
-// Server restart will reset counts
-const guestRateLimit = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 hours
-    max: 10,
-    skipSuccessfulRequests: false,
-    skipFailedRequests: true,
-    message: { 
-        error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
-        limit: true,
-        guestLimitReached: true
-    },
-    skip: (req) => {
-        // Skip rate limiting for authenticated users
-        return !!req.user;
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    // Use our custom key generator
-    keyGenerator: customKeyGenerator,
-    handler: (req, res) => {
-        // This handler will be called when rate limit is exceeded
-        console.log('Rate limit exceeded for IP:', req.ip);
-        res.status(429).json({ 
-            error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
-            limit: true,
-            guestLimitReached: true,
-            remaining: 0,
-            dailyLimit: 10,
-            isProUser: false,
-            userType: 'anonymous'
-        });
-    }
-});
-
-// Note: Rate limiting is now applied directly in the route after auth check
-
-// Check rate limit status endpoint - NO RATE LIMIT APPLIED (just checking status)
+// Check usage status endpoint for both authenticated and anonymous users
 app.get('/api/rate-limit-status', optionalAuth, (req, res) => {
     // For authenticated users, return their database usage
     if (req.user) {
