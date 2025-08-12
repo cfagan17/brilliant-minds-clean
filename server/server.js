@@ -635,6 +635,15 @@ app.post('/api/suggest-speakers', async (req, res) => {
 
 // API endpoint to proxy Claude requests (UPDATED MODEL)
 app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
+    console.log('\n=== CLAUDE ENDPOINT DEBUG ===');
+    console.log('1. User authenticated?', !!req.user);
+    console.log('2. User ID:', req.user?.userId);
+    console.log('3. Auth header received:', req.headers.authorization ? 'YES' : 'NO');
+    console.log('4. Rate limit headers:', {
+        remaining: res.getHeader('X-RateLimit-Remaining'),
+        limit: res.getHeader('X-RateLimit-Limit')
+    });
+    
     try {
         const { message, figure, format, sessionId } = req.body;
         

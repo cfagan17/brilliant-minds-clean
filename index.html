@@ -9800,6 +9800,9 @@ Keep it concise and forward-looking.`;
 
       if (authToken) {
          headers['Authorization'] = `Bearer ${authToken}`;
+         console.log('Sending auth token:', authToken.substring(0, 20) + '...');
+      } else {
+         console.log('No auth token available - sending as anonymous');
       }
 
       // Use different endpoint for suggestions to avoid rate limiting
