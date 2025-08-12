@@ -9315,7 +9315,9 @@ Keep it concise and forward-looking.`;
       // Add test auth function for debugging
       window.testAuth = async function() {
          console.log('Testing authentication...');
-         console.log('Current authToken:', authToken);
+         console.log('Current authToken variable:', authToken);
+         console.log('Token in localStorage:', localStorage.getItem('authToken'));
+         console.log('Current user:', currentUser);
          
          try {
             const response = await fetch('/api/test-auth', {
@@ -9399,30 +9401,35 @@ Keep it concise and forward-looking.`;
    function initializeAuth() {
       // Check for stored auth token
       authToken = localStorage.getItem('authToken');
+      console.log('[InitializeAuth] Token from localStorage:', authToken ? authToken.substring(0, 20) + '...' : 'null');
 
       if (authToken) {
          // Verify token with server
+         console.log('[InitializeAuth] Verifying token with server...');
          fetch('/api/auth/me', {
                headers: {
                   'Authorization': `Bearer ${authToken}`
                }
             })
             .then(response => {
+               console.log('[InitializeAuth] Response status:', response.status);
                if (response.ok) {
                   return response.json();
                } else {
                   // Token invalid, clear it
+                  console.log('[InitializeAuth] Token invalid, clearing...');
                   localStorage.removeItem('authToken');
                   authToken = null;
                   throw new Error('Invalid token');
                }
             })
             .then(user => {
+               console.log('[InitializeAuth] User data received:', user);
                currentUser = user;
                updateAuthUI();
             })
             .catch(error => {
-               console.log('Auth check failed:', error);
+               console.log('[InitializeAuth] Auth check failed:', error);
                updateAuthUI();
             });
       } else {
@@ -9793,25 +9800,33 @@ Keep it concise and forward-looking.`;
    // Add this to your existing code
    async function checkExistingAuth() {
       const token = localStorage.getItem('authToken');
+      console.log('[CheckExistingAuth] Token from localStorage:', token ? token.substring(0, 20) + '...' : 'null');
+      
       if (token) {
          try {
+            console.log('[CheckExistingAuth] Verifying token with server...');
             const response = await fetch('/api/auth/me', {
                headers: {
                   'Authorization': `Bearer ${token}`
                }
             });
 
+            console.log('[CheckExistingAuth] Response status:', response.status);
+            
             if (response.ok) {
                const userData = await response.json();
+               console.log('[CheckExistingAuth] User data received:', userData);
                authToken = token;
                currentUser = userData;
+               console.log('[CheckExistingAuth] authToken set to:', authToken ? authToken.substring(0, 20) + '...' : 'null');
                updateAuthUI();
             } else {
                // Token expired or invalid
+               console.log('[CheckExistingAuth] Token invalid, logging out...');
                logout();
             }
          } catch (error) {
-            console.error('Auth check failed:', error);
+            console.error('[CheckExistingAuth] Auth check failed:', error);
             logout();
          }
       }
