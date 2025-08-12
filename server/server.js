@@ -1200,8 +1200,11 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
             return res.status(400).json({ error: 'Missing required conversation data' });
         }
         
+        // Ensure participants is an array
+        const participantsArray = Array.isArray(participants) ? participants : [participants];
+        
         // Auto-generate title
-        const title = generateConversationTitle(participants, topic, format);
+        const title = generateConversationTitle(participantsArray, topic, format);
         
         db.run(`
             INSERT INTO saved_conversations 
@@ -1212,7 +1215,7 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
             title,
             topic,
             format,
-            JSON.stringify(participants),
+            JSON.stringify(participantsArray),
             JSON.stringify(conversationData)
         ], function(err) {
             if (err) {
@@ -1262,11 +1265,30 @@ app.get('/api/conversations', authenticateToken, (req, res) => {
             }
             
             try {
-                // Parse participants JSON
-                const formattedConversations = conversations.map(conv => ({
-                    ...conv,
-                    participants: conv.participants ? JSON.parse(conv.participants) : []
-                }));
+                // Parse participants JSON - handle both array and string formats
+                const formattedConversations = conversations.map(conv => {
+                    let participants = [];
+                    
+                    if (conv.participants) {
+                        try {
+                            // Try parsing as JSON first
+                            participants = JSON.parse(conv.participants);
+                            // If it parsed but isn't an array, wrap it
+                            if (!Array.isArray(participants)) {
+                                participants = [participants];
+                            }
+                        } catch (e) {
+                            // If JSON parse fails, treat it as a plain string
+                            // This handles cases like "Kurt Gödel" stored as a string
+                            participants = [conv.participants];
+                        }
+                    }
+                    
+                    return {
+                        ...conv,
+                        participants: participants
+                    };
+                });
                 
                 res.json(formattedConversations);
             } catch (parseError) {
