@@ -644,32 +644,7 @@ const guestRateLimit = rateLimit({
     },
     skip: (req) => {
         // Skip rate limiting for authenticated users
-        if (!!req.user) return true;
-        
-        // Check if this is part of an existing discussion session
-        const sessionId = req.body?.sessionId;
-        const ip = req.ip || req.connection.remoteAddress || 'unknown';
-        
-        if (sessionId && sessionId.startsWith('disc_')) {
-            const sessionKey = `${ip}_${sessionId}`;
-            
-            // If we've seen this session before, skip rate limiting
-            if (discussionSessions.has(sessionKey)) {
-                console.log(`Skipping rate limit for existing session: ${sessionId}`);
-                return true;
-            }
-            
-            // First request for this session - count it and remember it
-            discussionSessions.set(sessionKey, Date.now());
-            console.log(`New discussion session: ${sessionId} - counting toward rate limit`);
-            
-            // Clean up old sessions after 1 hour
-            setTimeout(() => {
-                discussionSessions.delete(sessionKey);
-            }, 60 * 60 * 1000);
-        }
-        
-        return false;
+        return !!req.user;
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -800,13 +775,50 @@ app.post('/api/suggest-speakers', async (req, res) => {
     }
 });
 
+// Middleware to check if request should skip rate limiting
+function checkDiscussionSession(req, res, next) {
+    // Skip for authenticated users
+    if (req.user) return next();
+    
+    const sessionId = req.body?.sessionId;
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    
+    if (sessionId && sessionId.startsWith('disc_')) {
+        const sessionKey = `${ip}_${sessionId}`;
+        
+        // If we've seen this session before, skip rate limiting
+        if (discussionSessions.has(sessionKey)) {
+            console.log(`Session ${sessionId} already counted - skipping rate limit`);
+            req.skipRateLimit = true;
+        } else {
+            // First request for this session - count it
+            discussionSessions.set(sessionKey, Date.now());
+            console.log(`New session ${sessionId} - will count toward rate limit`);
+            
+            // Clean up old sessions after 1 hour
+            setTimeout(() => {
+                discussionSessions.delete(sessionKey);
+            }, 60 * 60 * 1000);
+        }
+    }
+    next();
+}
+
 // API endpoint to proxy Claude requests (UPDATED MODEL)
-app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
+app.post('/api/claude', optionalAuth, checkDiscussionSession, (req, res, next) => {
+    // Apply rate limit only if not skipped
+    if (req.skipRateLimit || req.user) {
+        next();
+    } else {
+        guestRateLimit(req, res, next);
+    }
+}, async (req, res) => {
     console.log('\n=== CLAUDE ENDPOINT DEBUG ===');
     console.log('1. User authenticated?', !!req.user);
     console.log('2. User ID:', req.user?.userId);
-    console.log('3. Auth header received:', req.headers.authorization ? 'YES' : 'NO');
-    console.log('4. Rate limit headers:', {
+    console.log('3. Session ID:', req.body?.sessionId);
+    console.log('4. Skip rate limit?', req.skipRateLimit);
+    console.log('5. Rate limit headers:', {
         remaining: res.getHeader('X-RateLimit-Remaining'),
         limit: res.getHeader('X-RateLimit-Limit')
     });
