@@ -135,11 +135,17 @@ async function initializeDatabase() {
         format VARCHAR(50),
         participants JSONB,
         conversation_data JSONB,
+        is_shared BOOLEAN DEFAULT false,
+        view_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_conversations_user ON saved_conversations(user_id)`);
+    
+    // Add missing columns if they don't exist (for existing databases)
+    await pool.query(`ALTER TABLE saved_conversations ADD COLUMN IF NOT EXISTS is_shared BOOLEAN DEFAULT false`).catch(() => {});
+    await pool.query(`ALTER TABLE saved_conversations ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0`).catch(() => {});
     
     // Create shared_conversations table
     await pool.query(`

@@ -75,10 +75,25 @@ function initializeDatabase() {
             format TEXT,
             participants TEXT,
             conversation_data TEXT,
+            is_shared INTEGER DEFAULT 0,
+            view_count INTEGER DEFAULT 0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     `);
+    
+    // Add missing columns if they don't exist (for existing databases)
+    db.run(`ALTER TABLE saved_conversations ADD COLUMN is_shared INTEGER DEFAULT 0`, (err) => {
+        if (err && !err.message.includes('duplicate column')) {
+            console.log('is_shared column may already exist');
+        }
+    });
+    
+    db.run(`ALTER TABLE saved_conversations ADD COLUMN view_count INTEGER DEFAULT 0`, (err) => {
+        if (err && !err.message.includes('duplicate column')) {
+            console.log('view_count column may already exist');
+        }
+    });
     
     // Create shared conversations table
     db.run(`
