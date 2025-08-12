@@ -8055,7 +8055,7 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
       // Check if user is approaching limit
       checkAndResetDailyUsage();
       const dailyLimit = 10;
-      const remaining = currentUser ? 999 : Math.max(0, dailyLimit - usageState.dailyDiscussions);
+      const remaining = currentUser ? 'unlimited' : Math.max(0, dailyLimit - usageState.dailyDiscussions);
       let continueButtonText = "🔄 Continue Discussion";
 
       if (!usageState.isProUser && remaining <= 1) {
@@ -9359,7 +9359,7 @@ Keep it concise and forward-looking.`;
             updateUsageDisplayAdvanced({
                userType: currentUser ? 'authenticated' : 'anonymous',
                isProUser: true,
-               remaining: 999
+               remaining: 'unlimited'
             });
          }
       }, 100);
@@ -9567,8 +9567,8 @@ Keep it concise and forward-looking.`;
          // User is not logged in - show anonymous state
          anonymousControls.style.display = 'flex';
          
-         // Show initial estimate - will be updated with real count from server
-         usageIndicator.innerHTML = `10 free today`;
+         // Show loading state initially - will be updated with real count from server
+         usageIndicator.innerHTML = `<span style="opacity: 0.6">Loading...</span>`;
          usageIndicator.className = 'usage-indicator';
          usageIndicator.style.display = 'block';
       }
