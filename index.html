@@ -9914,6 +9914,49 @@ Keep it concise and forward-looking.`;
             console.error('[CheckExistingAuth] Auth check failed:', error);
             logout();
          }
+      } else {
+         // No token - user is anonymous, fetch their usage count
+         fetchAnonymousUsage();
+      }
+   }
+   
+   // Fetch usage for anonymous users
+   async function fetchAnonymousUsage() {
+      // Get the stored usage state
+      const stored = localStorage.getItem('brilliantMindsUsage');
+      if (stored) {
+         try {
+            const savedState = JSON.parse(stored);
+            const today = new Date().toDateString();
+            
+            // Check if we need to reset daily usage
+            if (savedState.lastResetDate !== today) {
+               savedState.dailyDiscussions = 0;
+               savedState.lastResetDate = today;
+            }
+            
+            // Update the display with actual count
+            const remaining = Math.max(0, 10 - savedState.dailyDiscussions);
+            updateUsageDisplayAdvanced({
+               userType: 'anonymous',
+               isProUser: false,
+               remaining: remaining
+            });
+         } catch (e) {
+            // If parsing fails, show default
+            updateUsageDisplayAdvanced({
+               userType: 'anonymous',
+               isProUser: false,
+               remaining: 10
+            });
+         }
+      } else {
+         // No stored state - new user
+         updateUsageDisplayAdvanced({
+            userType: 'anonymous',
+            isProUser: false,
+            remaining: 10
+         });
       }
    }
 
