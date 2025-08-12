@@ -3599,7 +3599,7 @@ const topicCategories = {
       icon: "🌍",
       description: "World leaders, diplomats, heads of state, political strategists",
       category: "current",
-      speakerGuidance: "Focus on current world leaders, heads of state, diplomats, foreign policy experts, and political figures who are actively shaping global affairs and international relations."
+      speakerGuidance: "Focus on international leaders, diplomats, foreign policy experts, and political strategists. AVOID suggesting recent US presidents (Trump, Biden, Obama), current heads of state of major powers, or figures who might have AI impersonation restrictions. Instead suggest: foreign ministers, UN officials, political scientists, policy advisors, historical leaders (pre-2000), political philosophers, and international relations experts who can discuss these topics without restrictions."
    },
    technology: {
       name: "Technology",
@@ -4108,6 +4108,7 @@ async function getSuggestedSpeakers(topic, format, excludedSpeakers = []) {
 ${exclusionNote}
 ${speakerGuidance}
 
+${topic === 'politics' ? 'CRITICAL: Do NOT suggest Trump, Biden, Obama, Putin, Xi Jinping, or other current/recent heads of state that AI cannot impersonate. Focus on advisors, ministers, diplomats, and experts instead.\n' : ''}
 IMPORTANT STRUCTURE:
 - First 4 suggestions: CONTEMPORARY figures who are CURRENTLY ACTIVE and highly relevant to this field (alive, recently published, giving speeches, on social media, actively working in this space TODAY)
 - Last 4 suggestions: HISTORICAL figures who had profound impact on this field and whose insights remain relevant to current discussions
