@@ -196,23 +196,34 @@ function authenticateToken(req, res, next) {
 
 // Optional auth middleware (allows both authenticated and guest users)
 function optionalAuth(req, res, next) {
+    console.log('[OptionalAuth] Starting auth check for', req.path);
+    console.log('[OptionalAuth] Headers:', Object.keys(req.headers).filter(h => h.toLowerCase().includes('auth')));
+    
     // Headers in Express are case-insensitive, but let's be explicit
     const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    console.log('[OptionalAuth] Auth header value:', authHeader ? authHeader.substring(0, 30) + '...' : 'NONE');
+    
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
+        console.log('[OptionalAuth] Token found, attempting verification...');
         try {
             // Use synchronous verify to ensure req.user is set before next middleware
             const user = jwt.verify(token, JWT_SECRET);
             req.user = user;
-            console.log('Auth: User authenticated -', user.userId);
+            console.log('[OptionalAuth] ✅ SUCCESS: User authenticated -', user.userId);
         } catch (err) {
-            console.log('Auth: Token invalid -', err.message);
+            console.log('[OptionalAuth] ❌ FAILED: Token invalid -', err.message);
             // Token is invalid or expired - treat as anonymous
         }
-    } else if (authHeader) {
-        console.log('Auth: Invalid auth header format:', authHeader);
+    } else {
+        console.log('[OptionalAuth] No token found in request');
+        if (authHeader) {
+            console.log('[OptionalAuth] Invalid auth header format:', authHeader);
+        }
     }
+    
+    console.log('[OptionalAuth] Final req.user state:', req.user ? 'SET' : 'NOT SET');
     next();
 }
 
@@ -378,6 +389,18 @@ app.get('/api/health', (req, res) => {
         hasClaudeKey: !!process.env.CLAUDE_API_KEY,
         hasJwtSecret: !!process.env.JWT_SECRET,
         hasStripeKey: !!process.env.STRIPE_SECRET_KEY
+    });
+});
+
+// Test auth endpoint
+app.get('/api/test-auth', optionalAuth, (req, res) => {
+    console.log('[TEST-AUTH] req.user:', req.user);
+    res.json({
+        authenticated: !!req.user,
+        userId: req.user?.userId,
+        headers: {
+            authorization: req.headers.authorization ? 'present' : 'missing'
+        }
     });
 });
 

@@ -9312,6 +9312,31 @@ Keep it concise and forward-looking.`;
       initializeAuth();
       checkExistingAuth();
       
+      // Add test auth function for debugging
+      window.testAuth = async function() {
+         console.log('Testing authentication...');
+         console.log('Current authToken:', authToken);
+         
+         try {
+            const response = await fetch('/api/test-auth', {
+               headers: authToken ? {
+                  'Authorization': `Bearer ${authToken}`
+               } : {}
+            });
+            
+            const data = await response.json();
+            console.log('Test auth response:', data);
+            
+            if (data.authenticated) {
+               console.log('✅ Authentication working! User ID:', data.userId);
+            } else {
+               console.log('❌ Not authenticated');
+            }
+         } catch (error) {
+            console.error('Test auth failed:', error);
+         }
+      };
+      
       // Update format display based on initial auth state
       setTimeout(() => {
          updateFormatDisplay();
