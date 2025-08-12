@@ -5628,14 +5628,19 @@ function addCustomizationHeader() {
 // ADD THE NEW USAGE FUNCTIONS RIGHT HERE
 // Update the usage display function
 function updateUsageDisplayAdvanced(usage) {
+   console.log('[updateUsageDisplayAdvanced] Called with:', usage);
    const indicator = document.getElementById('usageIndicator');
    const proUserControls = document.getElementById('proUserControls');
 
-   if (!indicator) return;
+   if (!indicator) {
+      console.error('[updateUsageDisplayAdvanced] No usage indicator element found!');
+      return;
+   }
 
    if (usage.userType === 'anonymous') {
       // Anonymous user - show daily limit
       const remaining = typeof usage.remaining === 'number' ? usage.remaining : 10;
+      console.log('[updateUsageDisplayAdvanced] Setting indicator to:', `${remaining} free today`);
       indicator.innerHTML = `${remaining} free today`;
       indicator.className = remaining <= 2 ? 'usage-indicator low' : 'usage-indicator';
       indicator.style.display = 'block';
@@ -9961,7 +9966,10 @@ Keep it concise and forward-looking.`;
             
             // Check if we have rate limit data
             if (data.rateLimit && data.rateLimit.remaining !== undefined) {
-               const remaining = parseInt(data.rateLimit.remaining);
+               console.log('[fetchAnonymousUsage] Raw remaining value:', data.rateLimit.remaining, 'Type:', typeof data.rateLimit.remaining);
+               const remaining = typeof data.rateLimit.remaining === 'number' ? 
+                  data.rateLimit.remaining : 
+                  parseInt(data.rateLimit.remaining);
                console.log('[fetchAnonymousUsage] Parsed remaining:', remaining);
                
                // Update the display with actual count from server
