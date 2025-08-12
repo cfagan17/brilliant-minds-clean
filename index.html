@@ -9230,7 +9230,14 @@ Keep it concise and forward-looking.`;
    function loadEngagedConversation(conversation) {
       console.log('Loading engaged conversation:', conversation);
       
-      // First, set up the participants from the conversation
+      // Set the discussion format
+      if (conversation.format) {
+         discussionState.format = conversation.format;
+         discussionState.participantCount = discussionFormats[conversation.format]?.participants || 2;
+         console.log('Set format to:', conversation.format, 'with', discussionState.participantCount, 'participants');
+      }
+      
+      // Set up the participants from the conversation
       if (conversation.participants && conversation.participants.length > 0) {
          // Clear existing selections
          selectedAISpeakers = [];
@@ -9263,11 +9270,28 @@ Keep it concise and forward-looking.`;
          if (questionInput) {
             questionInput.value = conversation.topic;
          }
+         discussionState.currentQuestion = conversation.topic;
+         discussionState.question = conversation.topic;
       }
       
-      // Load the conversation messages into the discussion arena
+      // Set up the participants in discussion state
+      discussionState.participants = selectedAISpeakers.map(speaker => ({
+         name: speaker.name,
+         prompt: speaker.isCustom || speaker.isUserAdded ?
+            `You are ${speaker.name}. Embody their personality, knowledge, and speaking style as accurately as possible based on their known work and public statements.` :
+            (figures[speaker.name] && figures[speaker.name].prompt) || `You are ${speaker.name}. Speak with their knowledge and perspective.`
+      }));
+      
+      // Load the full conversation or the HTML
       const discussionArena = document.getElementById('discussionArena');
-      if (discussionArena && conversation.messages && conversation.messages.length > 0) {
+      if (!discussionArena) {
+         console.error('Discussion arena not found');
+         return;
+      }
+      
+      // Check if we have messages or HTML to display
+      if (conversation.messages && conversation.messages.length > 0) {
+         // We have structured messages - rebuild the conversation
          let conversationHTML = '';
          
          conversation.messages.forEach(message => {
@@ -9287,22 +9311,26 @@ Keep it concise and forward-looking.`;
          });
          
          discussionArena.innerHTML = conversationHTML;
-         discussionArena.style.display = 'block';
-         
-         // Store the conversation state
-         discussionState.isActive = true;
-         discussionState.totalExchanges = conversation.messages.length;
-         discussionState.currentQuestion = conversation.topic;
-         discussionState.participants = selectedAISpeakers.map(speaker => ({
-            name: speaker.name,
-            prompt: speaker.isCustom || speaker.isUserAdded ?
-               `You are ${speaker.name}. Embody their personality, knowledge, and speaking style as accurately as possible based on their known work and public statements.` :
-               (figures[speaker.name] && figures[speaker.name].prompt) || `You are ${speaker.name}. Speak with their knowledge and perspective.`
-         }));
-         
-         // Show the existing discussion controls
-         showDiscussionControls();
+         discussionState.totalExchanges = conversation.messages.filter(m => m.speaker !== 'AI Moderator').length;
+      } else if (conversation.conversationHtml) {
+         // We have HTML directly - use it
+         discussionArena.innerHTML = conversation.conversationHtml;
+         // Count exchanges from the HTML
+         const speakers = discussionArena.querySelectorAll('.speaker:not(.moderator-speaker)');
+         discussionState.totalExchanges = speakers.length;
       }
+      
+      // Show the arena and set state
+      discussionArena.style.display = 'block';
+      discussionState.isActive = true;
+      
+      // Show the existing discussion controls
+      showDiscussionControls();
+      
+      // Scroll to the discussion after a brief delay
+      setTimeout(() => {
+         discussionArena.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 500);
    }
    
    
