@@ -1237,6 +1237,8 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
 // Get user's saved conversations
 app.get('/api/conversations', authenticateToken, (req, res) => {
     try {
+        console.log('Fetching conversations for user:', req.user.userId);
+        
         db.all(`
             SELECT id, title, topic, format, participants, created_at, is_shared, view_count
             FROM saved_conversations 
@@ -1244,22 +1246,42 @@ app.get('/api/conversations', authenticateToken, (req, res) => {
             ORDER BY created_at DESC
         `, [req.user.userId], (err, conversations) => {
             if (err) {
-                console.error('Error fetching conversations:', err);
-                return res.status(500).json({ error: 'Failed to fetch conversations' });
+                console.error('Database error fetching conversations:', err);
+                console.error('Error details:', err.message, err.code);
+                return res.status(500).json({ 
+                    error: 'Failed to fetch conversations',
+                    details: err.message 
+                });
             }
             
-            // Parse participants JSON
-            const formattedConversations = conversations.map(conv => ({
-                ...conv,
-                participants: JSON.parse(conv.participants)
-            }));
+            console.log('Found conversations:', conversations ? conversations.length : 0);
             
-            res.json(formattedConversations);
+            // Handle empty result set
+            if (!conversations || conversations.length === 0) {
+                return res.json([]);
+            }
+            
+            try {
+                // Parse participants JSON
+                const formattedConversations = conversations.map(conv => ({
+                    ...conv,
+                    participants: conv.participants ? JSON.parse(conv.participants) : []
+                }));
+                
+                res.json(formattedConversations);
+            } catch (parseError) {
+                console.error('Error parsing conversation data:', parseError);
+                console.error('Problematic conversation:', conversations);
+                res.status(500).json({ 
+                    error: 'Failed to parse conversation data',
+                    details: parseError.message 
+                });
+            }
         });
         
     } catch (error) {
-        console.error('Fetch conversations error:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Unexpected error in /api/conversations:', error);
+        res.status(500).json({ error: 'Server error', details: error.message });
     }
 });
 
