@@ -1632,15 +1632,11 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
     try {
         const { shareId } = req.params;
         
-        // Get shared conversation from database
-        // Use SQLite-style placeholders - they'll be converted for PostgreSQL
-        const query = `SELECT * FROM shared_conversations WHERE share_id = ? AND expires_at > ${USE_POSTGRES ? 'NOW()' : "datetime('now')"}`;
-        
         console.log('Fetching shared conversation:', shareId);
-        console.log('Query:', query);
         console.log('USE_POSTGRES:', USE_POSTGRES);
         
-        db.get(query, [shareId], (err, shared) => {
+        // First check if the share exists at all
+        db.get('SELECT * FROM shared_conversations WHERE share_id = ?', [shareId], (err, shared) => {
             if (err) {
                 console.error('Database error getting shared conversation:', err);
                 console.error('Error details:', err.message, err.code);
@@ -1653,19 +1649,67 @@ app.get('/api/conversations/shared/:shareId', async (req, res) => {
             
             if (!shared) {
                 console.log('No shared conversation found for shareId:', shareId);
-                return res.status(404).json({ error: 'Share link not found or expired' });
+                return res.status(404).json({ error: 'Share link not found' });
+            }
+            
+            // Check if expired
+            const now = new Date();
+            const expiresAt = new Date(shared.expires_at);
+            
+            console.log('Current time:', now.toISOString());
+            console.log('Expires at:', expiresAt.toISOString());
+            console.log('Is expired?', now > expiresAt);
+            
+            if (now > expiresAt) {
+                return res.status(404).json({ error: 'Share link has expired' });
             }
             
             console.log('Found shared conversation:', shared);
             
             try {
-                // Parse JSON fields - PostgreSQL JSONB returns objects, SQLite returns strings
+                // Parse participants - handle both array and string formats
+                let participants = [];
+                if (shared.participants) {
+                    if (typeof shared.participants === 'object' && !Array.isArray(shared.participants)) {
+                        // PostgreSQL JSONB returns as object
+                        participants = shared.participants;
+                    } else if (typeof shared.participants === 'string') {
+                        try {
+                            // Try parsing as JSON
+                            participants = JSON.parse(shared.participants);
+                            if (!Array.isArray(participants)) {
+                                participants = [participants];
+                            }
+                        } catch (e) {
+                            // If JSON parse fails, treat as plain string
+                            participants = [shared.participants];
+                        }
+                    } else if (Array.isArray(shared.participants)) {
+                        participants = shared.participants;
+                    }
+                }
+                
+                // Parse metadata
+                let metadata = {};
+                if (shared.metadata) {
+                    if (typeof shared.metadata === 'string') {
+                        try {
+                            metadata = JSON.parse(shared.metadata);
+                        } catch (e) {
+                            console.error('Error parsing metadata:', e);
+                            metadata = {};
+                        }
+                    } else {
+                        metadata = shared.metadata;
+                    }
+                }
+                
                 const conversation = {
                     topic: shared.topic,
                     format: shared.format,
-                    participants: typeof shared.participants === 'string' ? JSON.parse(shared.participants) : shared.participants,
+                    participants: participants,
                     conversationHtml: shared.conversation_html,
-                    metadata: typeof shared.metadata === 'string' ? JSON.parse(shared.metadata) : shared.metadata,
+                    metadata: metadata,
                     createdAt: shared.created_at,
                     expiresAt: shared.expires_at
                 };
