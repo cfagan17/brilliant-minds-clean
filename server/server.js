@@ -628,9 +628,11 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 
 // Enhanced rate limiting for guests (10 daily)
 // Track discussion sessions to count only once per discussion
-// Use a global object that persists across requests
+// Use global objects that persist across requests
 global.discussionSessions = global.discussionSessions || new Map();
+global.anonymousUsage = global.anonymousUsage || new Map();
 const discussionSessions = global.discussionSessions;
+const anonymousUsage = global.anonymousUsage;
 
 // Custom key generator that uses discussion sessions
 const customKeyGenerator = (req) => {
@@ -733,50 +735,38 @@ app.get('/api/rate-limit-status', optionalAuth, (req, res) => {
             });
         });
     } else {
-        // For anonymous users, we need to check the rate limiter store
-        // Get the key that would be used for this IP
-        const key = req.ip || req.connection.remoteAddress || 'unknown';
+        // For anonymous users, check our session-based tracking
+        const ip = req.ip || req.connection.remoteAddress || 'unknown';
+        const today = new Date().toDateString();
+        const usageKey = `${ip}_${today}`;
         
-        // Access the rate limiter's store to check current count
-        // Note: This is a bit hacky but necessary to check without consuming
-        const store = guestRateLimit.store || guestRateLimit.memoryStore;
-        
-        if (store && typeof store.get === 'function') {
-            store.get(key, (err, entry) => {
-                if (err || !entry) {
-                    // No entry means they haven't made any requests yet
-                    res.json({
-                        authenticated: false,
-                        ip: req.ip,
-                        rateLimit: {
-                            limit: 10,
-                            remaining: 10
-                        }
-                    });
-                } else {
-                    // Calculate remaining from the entry
-                    const remaining = Math.max(0, 10 - (entry.totalHits || entry.count || 0));
-                    res.json({
-                        authenticated: false,
-                        ip: req.ip,
-                        rateLimit: {
-                            limit: 10,
-                            remaining: remaining
-                        }
-                    });
-                }
-            });
-        } else {
-            // Fallback if we can't access the store
-            res.json({
-                authenticated: false,
-                ip: req.ip,
-                rateLimit: {
-                    limit: 10,
-                    remaining: 10
-                }
-            });
+        // Get or create usage entry for this IP today
+        let usage = anonymousUsage.get(usageKey);
+        if (!usage) {
+            usage = { 
+                discussions: new Set(), 
+                count: 0,
+                date: today 
+            };
+            anonymousUsage.set(usageKey, usage);
         }
+        
+        // Clean up old entries
+        for (const [key, value] of anonymousUsage.entries()) {
+            if (value.date !== today) {
+                anonymousUsage.delete(key);
+            }
+        }
+        
+        const remaining = Math.max(0, 10 - usage.count);
+        res.json({
+            authenticated: false,
+            ip: req.ip,
+            rateLimit: {
+                limit: 10,
+                remaining: remaining
+            }
+        });
     }
 });
 
@@ -814,15 +804,11 @@ app.post('/api/suggest-speakers', async (req, res) => {
 });
 
 // API endpoint to proxy Claude requests (UPDATED MODEL)
-app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
+app.post('/api/claude', optionalAuth, async (req, res) => {
     console.log('\n=== CLAUDE ENDPOINT DEBUG ===');
     console.log('1. User authenticated?', !!req.user);
     console.log('2. User ID:', req.user?.userId);
     console.log('3. Session ID:', req.body?.sessionId);
-    console.log('4. Rate limit headers:', {
-        remaining: res.getHeader('X-RateLimit-Remaining'),
-        limit: res.getHeader('X-RateLimit-Limit')
-    });
     
     try {
         const { message, figure, format, sessionId } = req.body;
@@ -850,25 +836,42 @@ app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
                 await processAuthenticatedRequest(req, res, user.id, message);
             });
         } else {
-            // Guest user - limited to 10 per day (handled by rate limiting middleware)
-            // Check if rate limit has been exceeded
-            const limit = res.getHeader('X-RateLimit-Limit');
-            const remaining = res.getHeader('X-RateLimit-Remaining');
-            const reset = res.getHeader('X-RateLimit-Reset');
+            // Guest user - limited to 10 discussions per day
+            const ip = req.ip || req.connection.remoteAddress || 'unknown';
+            const sessionId = req.body?.sessionId;
+            const today = new Date().toDateString();
+            const usageKey = `${ip}_${today}`;
             
-            console.log('Anonymous user rate limit info:', {
-                limit: limit,
-                remaining: remaining,
-                reset: reset ? new Date(parseInt(reset)).toISOString() : 'not set',
-                ip: req.ip,
-                parsedRemaining: parseInt(remaining)
-            });
+            // Get or create usage entry for this IP today
+            let usage = anonymousUsage.get(usageKey);
+            if (!usage) {
+                usage = { 
+                    discussions: new Set(), 
+                    count: 0,
+                    date: today 
+                };
+                anonymousUsage.set(usageKey, usage);
+            }
             
-            // Only block if we explicitly have a remaining count of 0
-            // If header is missing, allow the request (rate limiter will handle it)
-            if (remaining !== undefined && parseInt(remaining) <= 0) {
-                // Rate limit exceeded - return error immediately
-                console.log('Rate limit exceeded for anonymous user');
+            // Check if this is a new discussion session
+            let isNewDiscussion = false;
+            if (sessionId && sessionId.startsWith('disc_')) {
+                if (!usage.discussions.has(sessionId)) {
+                    // This is the first request for this discussion
+                    usage.discussions.add(sessionId);
+                    usage.count++;
+                    isNewDiscussion = true;
+                    console.log(`New discussion ${sessionId} for IP ${ip}. Count: ${usage.count}/10`);
+                } else {
+                    console.log(`Existing discussion ${sessionId} for IP ${ip}. Count remains: ${usage.count}/10`);
+                }
+            }
+            
+            const remaining = Math.max(0, 10 - usage.count);
+            
+            // Check if limit exceeded
+            if (isNewDiscussion && usage.count > 10) {
+                console.log('Discussion limit exceeded for anonymous user');
                 return res.status(429).json({ 
                     error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
                     limit: true,
@@ -885,22 +888,18 @@ app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
                 const claudeResponse = await makeClaudeRequest(message, `anon_${req.ip}`);
                 console.log('Claude API response received for guest');
                 
-                // Get current usage from rate limit headers - parse to integer
-                const remainingCount = parseInt(remaining) || 0;
-                const used = 10 - remainingCount;
-                
                 res.json({
                     ...claudeResponse,
                     usage: {
-                        used: used,
+                        used: usage.count,
                         limit: 10,
-                        remaining: remainingCount,
+                        remaining: remaining,
                         isProUser: false,
                         userType: 'anonymous'
                     },
-                    message: remainingCount <= 1 
+                    message: remaining <= 1 
                         ? 'Sign up for 10 total discussions and advanced features!' 
-                        : `${remainingCount} anonymous discussions remaining. Sign up for 10 total discussions!`
+                        : `${remaining} anonymous discussions remaining. Sign up for 10 total discussions!`
                 });
             } catch (error) {
                 console.error('Claude API error for guest:', error);
