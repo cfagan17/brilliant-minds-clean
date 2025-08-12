@@ -666,19 +666,77 @@ const guestRateLimit = rateLimit({
 
 // Note: Rate limiting is now applied directly in the route after auth check
 
-// Check rate limit status endpoint
-app.get('/api/rate-limit-status', optionalAuth, guestRateLimit, (req, res) => {
-    res.json({
-        authenticated: !!req.user,
-        ip: req.ip,
-        rateLimit: {
-            limit: res.getHeader('X-RateLimit-Limit'),
-            remaining: res.getHeader('X-RateLimit-Remaining'),
-            reset: res.getHeader('X-RateLimit-Reset'),
-            resetDate: res.getHeader('X-RateLimit-Reset') ? 
-                new Date(parseInt(res.getHeader('X-RateLimit-Reset'))).toISOString() : null
+// Check rate limit status endpoint - NO RATE LIMIT APPLIED (just checking status)
+app.get('/api/rate-limit-status', optionalAuth, (req, res) => {
+    // For authenticated users, return their database usage
+    if (req.user) {
+        db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+            if (err || !user) {
+                return res.json({
+                    authenticated: true,
+                    rateLimit: {
+                        limit: 10,
+                        remaining: 10,
+                        isProUser: false
+                    }
+                });
+            }
+            
+            res.json({
+                authenticated: true,
+                rateLimit: {
+                    limit: user.is_pro ? 'unlimited' : 10,
+                    remaining: user.is_pro ? 'unlimited' : Math.max(0, 10 - user.discussions_used),
+                    isProUser: user.is_pro
+                }
+            });
+        });
+    } else {
+        // For anonymous users, we need to check the rate limiter store
+        // Get the key that would be used for this IP
+        const key = req.ip || req.connection.remoteAddress || 'unknown';
+        
+        // Access the rate limiter's store to check current count
+        // Note: This is a bit hacky but necessary to check without consuming
+        const store = guestRateLimit.store || guestRateLimit.memoryStore;
+        
+        if (store && typeof store.get === 'function') {
+            store.get(key, (err, entry) => {
+                if (err || !entry) {
+                    // No entry means they haven't made any requests yet
+                    res.json({
+                        authenticated: false,
+                        ip: req.ip,
+                        rateLimit: {
+                            limit: 10,
+                            remaining: 10
+                        }
+                    });
+                } else {
+                    // Calculate remaining from the entry
+                    const remaining = Math.max(0, 10 - (entry.totalHits || entry.count || 0));
+                    res.json({
+                        authenticated: false,
+                        ip: req.ip,
+                        rateLimit: {
+                            limit: 10,
+                            remaining: remaining
+                        }
+                    });
+                }
+            });
+        } else {
+            // Fallback if we can't access the store
+            res.json({
+                authenticated: false,
+                ip: req.ip,
+                rateLimit: {
+                    limit: 10,
+                    remaining: 10
+                }
+            });
         }
-    });
+    }
 });
 
 // Endpoint for speaker suggestions - doesn't count against usage

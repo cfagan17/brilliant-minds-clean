@@ -9925,23 +9925,38 @@ Keep it concise and forward-looking.`;
    
    // Fetch usage for anonymous users from server
    async function fetchAnonymousUsage() {
+      console.log('[fetchAnonymousUsage] Starting to fetch usage from server...');
       try {
          // Fetch the actual rate limit status from server
          const response = await fetch('/api/rate-limit-status');
+         console.log('[fetchAnonymousUsage] Response status:', response.status);
+         
          if (response.ok) {
             const data = await response.json();
-            console.log('Rate limit status:', data);
+            console.log('[fetchAnonymousUsage] Rate limit data:', data);
             
-            // Parse the remaining count from rate limit headers
-            const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 10;
-            
-            // Update the display with actual count from server
-            updateUsageDisplayAdvanced({
-               userType: 'anonymous',
-               isProUser: false,
-               remaining: remaining
-            });
+            // Check if we have rate limit data
+            if (data.rateLimit && data.rateLimit.remaining !== undefined) {
+               const remaining = parseInt(data.rateLimit.remaining);
+               console.log('[fetchAnonymousUsage] Parsed remaining:', remaining);
+               
+               // Update the display with actual count from server
+               updateUsageDisplayAdvanced({
+                  userType: 'anonymous',
+                  isProUser: false,
+                  remaining: remaining
+               });
+            } else {
+               console.log('[fetchAnonymousUsage] No rate limit data in response, using default');
+               // No rate limit data - show default
+               updateUsageDisplayAdvanced({
+                  userType: 'anonymous',
+                  isProUser: false,
+                  remaining: 10
+               });
+            }
          } else {
+            console.error('[fetchAnonymousUsage] Failed to fetch, status:', response.status);
             // If fetch fails, show default
             updateUsageDisplayAdvanced({
                userType: 'anonymous',
@@ -9950,7 +9965,7 @@ Keep it concise and forward-looking.`;
             });
          }
       } catch (error) {
-         console.error('Error fetching usage status:', error);
+         console.error('[fetchAnonymousUsage] Error fetching usage status:', error);
          // On error, show default
          updateUsageDisplayAdvanced({
             userType: 'anonymous',
