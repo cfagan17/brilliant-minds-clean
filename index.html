@@ -8565,11 +8565,6 @@ Keep it concise and forward-looking.`;
          controls.innerHTML = '';
       }
       
-      // Hide all sections first
-      document.querySelectorAll('.topics-container, .speaker-selection-main, .format-selection-main, .question-section-main, .start-discussion-section').forEach(el => {
-         el.style.display = 'none';
-      });
-      
       // Reset topic selection
       document.querySelectorAll('.topic-type-slim').forEach(topic => {
          topic.classList.remove('selected');
@@ -8646,16 +8641,39 @@ Keep it concise and forward-looking.`;
          aiButton.style.opacity = '0.5';
       }
       
-      // Show ONLY the topics container to start fresh
+      // Show all main sections in their initial state
+      // These should all be visible for a fresh start
       const topicsContainer = document.querySelector('.topics-container');
       if (topicsContainer) {
          topicsContainer.style.display = 'block';
-         // Scroll to topics section instead of top
-         topicsContainer.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-         });
       }
+      
+      const speakerSection = document.querySelector('.speaker-selection-main');
+      if (speakerSection) {
+         speakerSection.style.display = 'block';
+         speakerSection.classList.add('active');
+      }
+      
+      const formatSection = document.querySelector('.format-selection-main');
+      if (formatSection) {
+         formatSection.style.display = 'block';
+      }
+      
+      const questionSection = document.querySelector('.question-section-main');
+      if (questionSection) {
+         questionSection.style.display = 'block';
+      }
+      
+      const startSection = document.querySelector('.start-discussion-section');
+      if (startSection) {
+         startSection.style.display = 'block';
+      }
+      
+      // Scroll to top of the page for a fresh start
+      window.scrollTo({ 
+         top: 0,
+         behavior: 'smooth'
+      });
       
       // Update the start button state
       updateStartButtonState();
@@ -9609,12 +9627,16 @@ Keep it concise and forward-looking.`;
          });
 
          const data = await response.json();
+         console.log('[Login] Response:', response.status, data);
 
          if (response.ok) {
             // Success
+            console.log('[Login] Login successful, token:', data.token ? data.token.substring(0, 20) + '...' : 'NO TOKEN');
             authToken = data.token;
             currentUser = data.user;
             localStorage.setItem('authToken', authToken);
+            console.log('[Login] Token saved to localStorage');
+            console.log('[Login] Verify localStorage:', localStorage.getItem('authToken') ? 'Token exists' : 'Token NOT saved');
 
             updateAuthUI();
             closeAuthModal();
@@ -9658,12 +9680,16 @@ Keep it concise and forward-looking.`;
          });
 
          const data = await response.json();
+         console.log('[Register] Response:', response.status, data);
 
          if (response.ok) {
             // Success
+            console.log('[Register] Registration successful, token:', data.token ? data.token.substring(0, 20) + '...' : 'NO TOKEN');
             authToken = data.token;
             currentUser = data.user;
             localStorage.setItem('authToken', authToken);
+            console.log('[Register] Token saved to localStorage');
+            console.log('[Register] Verify localStorage:', localStorage.getItem('authToken') ? 'Token exists' : 'Token NOT saved');
 
             updateAuthUI();
             closeAuthModal();
