@@ -628,7 +628,47 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 
 // Enhanced rate limiting for guests (10 daily)
 // Track discussion sessions to count only once per discussion
-const discussionSessions = new Map();
+// Use a global object that persists across requests
+global.discussionSessions = global.discussionSessions || new Map();
+const discussionSessions = global.discussionSessions;
+
+// Custom key generator that uses discussion sessions
+const customKeyGenerator = (req) => {
+    const ip = req.ip || req.connection.remoteAddress || 'unknown';
+    const sessionId = req.body?.sessionId;
+    
+    // For requests with a discussion session ID
+    if (sessionId && sessionId.startsWith('disc_')) {
+        const sessionKey = `${ip}_${sessionId}`;
+        
+        // Check if we've seen this session before
+        const existingSession = discussionSessions.get(sessionKey);
+        if (existingSession) {
+            // Return the same key for all requests in this session
+            // This makes them all count as one request to the rate limiter
+            console.log(`Using existing session key for ${sessionId}`);
+            return `session_${existingSession.firstRequestKey}`;
+        } else {
+            // First request for this session
+            const firstRequestKey = `${ip}_${Date.now()}`;
+            discussionSessions.set(sessionKey, {
+                firstRequestKey: firstRequestKey,
+                timestamp: Date.now()
+            });
+            console.log(`Creating new session key for ${sessionId}`);
+            
+            // Clean up old sessions after 2 hours
+            setTimeout(() => {
+                discussionSessions.delete(sessionKey);
+            }, 2 * 60 * 60 * 1000);
+            
+            return `session_${firstRequestKey}`;
+        }
+    }
+    
+    // For non-session requests (like suggestions), use normal IP-based key
+    return ip;
+};
 
 // NOTE: Using standard memory store with 24-hour window
 // Server restart will reset counts
@@ -648,10 +688,8 @@ const guestRateLimit = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // Trust proxy is already set, use a simple key generator
-    keyGenerator: (req) => {
-        return req.ip || req.connection.remoteAddress || 'unknown';
-    },
+    // Use our custom key generator
+    keyGenerator: customKeyGenerator,
     handler: (req, res) => {
         // This handler will be called when rate limit is exceeded
         console.log('Rate limit exceeded for IP:', req.ip);
@@ -775,50 +813,13 @@ app.post('/api/suggest-speakers', async (req, res) => {
     }
 });
 
-// Middleware to check if request should skip rate limiting
-function checkDiscussionSession(req, res, next) {
-    // Skip for authenticated users
-    if (req.user) return next();
-    
-    const sessionId = req.body?.sessionId;
-    const ip = req.ip || req.connection.remoteAddress || 'unknown';
-    
-    if (sessionId && sessionId.startsWith('disc_')) {
-        const sessionKey = `${ip}_${sessionId}`;
-        
-        // If we've seen this session before, skip rate limiting
-        if (discussionSessions.has(sessionKey)) {
-            console.log(`Session ${sessionId} already counted - skipping rate limit`);
-            req.skipRateLimit = true;
-        } else {
-            // First request for this session - count it
-            discussionSessions.set(sessionKey, Date.now());
-            console.log(`New session ${sessionId} - will count toward rate limit`);
-            
-            // Clean up old sessions after 1 hour
-            setTimeout(() => {
-                discussionSessions.delete(sessionKey);
-            }, 60 * 60 * 1000);
-        }
-    }
-    next();
-}
-
 // API endpoint to proxy Claude requests (UPDATED MODEL)
-app.post('/api/claude', optionalAuth, checkDiscussionSession, (req, res, next) => {
-    // Apply rate limit only if not skipped
-    if (req.skipRateLimit || req.user) {
-        next();
-    } else {
-        guestRateLimit(req, res, next);
-    }
-}, async (req, res) => {
+app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
     console.log('\n=== CLAUDE ENDPOINT DEBUG ===');
     console.log('1. User authenticated?', !!req.user);
     console.log('2. User ID:', req.user?.userId);
     console.log('3. Session ID:', req.body?.sessionId);
-    console.log('4. Skip rate limit?', req.skipRateLimit);
-    console.log('5. Rate limit headers:', {
+    console.log('4. Rate limit headers:', {
         remaining: res.getHeader('X-RateLimit-Remaining'),
         limit: res.getHeader('X-RateLimit-Limit')
     });
