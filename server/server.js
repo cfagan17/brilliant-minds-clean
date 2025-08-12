@@ -602,54 +602,14 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 // CLAUDE API (FIXED WITH CONSISTENT LIMITS)
 // ============================================================================
 
-// Custom store that resets at midnight local time
-class DailyResetStore {
-    constructor() {
-        this.hits = {};
-        this.resetDate = this.getResetDate();
-    }
-    
-    getResetDate() {
-        const now = new Date();
-        now.setHours(24, 0, 0, 0); // Next midnight
-        return now;
-    }
-    
-    incr(key, cb) {
-        const now = new Date();
-        
-        // Check if we need to reset
-        if (now >= this.resetDate) {
-            this.hits = {};
-            this.resetDate = this.getResetDate();
-            console.log('Rate limiter reset at:', now.toISOString());
-        }
-        
-        if (!this.hits[key]) {
-            this.hits[key] = 0;
-        }
-        
-        this.hits[key]++;
-        
-        cb(null, this.hits[key], this.resetDate);
-    }
-    
-    decrement(key) {
-        if (this.hits[key]) {
-            this.hits[key]--;
-        }
-    }
-    
-    resetKey(key) {
-        delete this.hits[key];
-    }
-}
-
 // Enhanced rate limiting for guests (10 daily)
+// NOTE: Using standard memory store with 24-hour window
+// Server restart will reset counts
 const guestRateLimit = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 hours (daily reset)
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
     max: 10,
-    store: new DailyResetStore(),
+    skipSuccessfulRequests: false,
+    skipFailedRequests: true,
     message: { 
         error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
         limit: true,
