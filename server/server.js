@@ -196,22 +196,22 @@ function authenticateToken(req, res, next) {
 
 // Optional auth middleware (allows both authenticated and guest users)
 function optionalAuth(req, res, next) {
-    const authHeader = req.headers['authorization'];
+    // Headers in Express are case-insensitive, but let's be explicit
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-        console.log('Token found in request, verifying...');
-        jwt.verify(token, JWT_SECRET, (err, user) => {
-            if (!err) {
-                console.log('Token verified successfully for user:', user.userId);
-                req.user = user;
-            } else {
-                console.log('Token verification failed:', err.message);
-                // Token is invalid or expired - treat as anonymous
-            }
-        });
-    } else {
-        console.log('No auth token in request - treating as anonymous');
+        try {
+            // Use synchronous verify to ensure req.user is set before next middleware
+            const user = jwt.verify(token, JWT_SECRET);
+            req.user = user;
+            console.log('Auth: User authenticated -', user.userId);
+        } catch (err) {
+            console.log('Auth: Token invalid -', err.message);
+            // Token is invalid or expired - treat as anonymous
+        }
+    } else if (authHeader) {
+        console.log('Auth: Invalid auth header format:', authHeader);
     }
     next();
 }
