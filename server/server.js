@@ -1311,14 +1311,20 @@ app.get('/api/conversations', authenticateToken, (req, res) => {
 app.get('/api/conversations/:id', optionalAuth, (req, res) => {
     try {
         const conversationId = req.params.id;
+        console.log('Fetching conversation with ID:', conversationId);
+        console.log('User ID from auth:', req.user?.userId || 'not authenticated');
         
         db.get(`
             SELECT * FROM saved_conversations 
             WHERE id = ?
         `, [conversationId], (err, conversation) => {
             if (err) {
-                console.error('Error fetching conversation:', err);
-                return res.status(500).json({ error: 'Failed to fetch conversation' });
+                console.error('Database error fetching conversation:', err);
+                console.error('Error details:', err.message, err.code);
+                return res.status(500).json({ 
+                    error: 'Failed to fetch conversation',
+                    details: err.message 
+                });
             }
             
             if (!conversation) {
@@ -1335,14 +1341,45 @@ app.get('/api/conversations/:id', optionalAuth, (req, res) => {
             //     return res.status(403).json({ error: 'Access denied' });
             // }
             
-            // Parse JSON fields
-            const formattedConversation = {
-                ...conversation,
-                participants: JSON.parse(conversation.participants),
-                conversation_data: JSON.parse(conversation.conversation_data)
-            };
-            
-            res.json(formattedConversation);
+            // Parse JSON fields with error handling
+            try {
+                // Parse participants - handle both array and string formats
+                let participants = [];
+                if (conversation.participants) {
+                    try {
+                        participants = JSON.parse(conversation.participants);
+                        if (!Array.isArray(participants)) {
+                            participants = [participants];
+                        }
+                    } catch (e) {
+                        // If JSON parse fails, treat as plain string
+                        participants = [conversation.participants];
+                    }
+                }
+                
+                // Parse conversation data
+                let conversationData = {};
+                if (conversation.conversation_data) {
+                    try {
+                        conversationData = JSON.parse(conversation.conversation_data);
+                    } catch (e) {
+                        console.error('Error parsing conversation_data:', e);
+                        conversationData = {};
+                    }
+                }
+                
+                const formattedConversation = {
+                    ...conversation,
+                    participants: participants,
+                    conversation_data: conversationData
+                };
+                
+                res.json(formattedConversation);
+            } catch (parseError) {
+                console.error('Error parsing conversation:', parseError);
+                console.error('Raw conversation data:', conversation);
+                res.status(500).json({ error: 'Failed to parse conversation data' });
+            }
         });
         
     } catch (error) {
