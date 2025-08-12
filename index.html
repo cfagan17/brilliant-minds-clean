@@ -3875,15 +3875,8 @@ async function startDiscussion() {
       return;
    }
 
-   // Increment usage counter
-   checkAndResetDailyUsage();
-   usageState.dailyDiscussions++;
-   saveUsageState();
-   updateUsageDisplayAdvanced({
-    userType: currentUser ? 'authenticated' : 'anonymous',
-    isProUser: usageState.isProUser,
-    remaining: currentUser ? 'unlimited' : Math.max(0, 10 - usageState.dailyDiscussions)
-});
+   // Don't increment locally - server will tell us the actual count
+   // The server response will update the display with the real remaining count
 
    // Set up discussion participants
    discussionState.participants = selectedAISpeakers.map(speaker => ({
@@ -6438,15 +6431,7 @@ function showShareModal(shareText) {
             format: discussionState.format
          });
 
-         // Update usage counter
-         checkAndResetDailyUsage();
-         usageState.dailyDiscussions++;
-         saveUsageState();
-         updateUsageDisplayAdvanced({
-    userType: currentUser ? 'authenticated' : 'anonymous',
-    isProUser: usageState.isProUser,
-    remaining: currentUser ? 'unlimited' : Math.max(0, 10 - usageState.dailyDiscussions)
-});
+         // Don't update locally - server response will update with real count
 
       }, 100); // Small delay to let DOM update
    }
@@ -6579,15 +6564,7 @@ Keep your response concise but substantive (100-150 words).`;
          return;
       }
 
-      // Increment usage
-      checkAndResetDailyUsage();
-      usageState.dailyDiscussions++;
-      saveUsageState();
-      updateUsageDisplayAdvanced({
-    userType: currentUser ? 'authenticated' : 'anonymous',
-    isProUser: usageState.isProUser,
-    remaining: currentUser ? 'unlimited' : Math.max(0, 10 - usageState.dailyDiscussions)
-});
+      // Don't increment locally - server response will update with real count
 
       const branchContainer = buttonElement.closest('.branch-container');
 
@@ -8139,15 +8116,7 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
          return;
       }
 
-      // INCREMENT USAGE COUNTER FOR CONTINUATIONS
-      checkAndResetDailyUsage();
-      usageState.dailyDiscussions++;
-      saveUsageState();
-      updateUsageDisplayAdvanced({
-    userType: currentUser ? 'authenticated' : 'anonymous',
-    isProUser: usageState.isProUser,
-    remaining: currentUser ? 'unlimited' : Math.max(0, 10 - usageState.dailyDiscussions)
-});
+      // Don't increment locally - server response will update with real count
 
       // NEW: Handle personal chat differently
       if (discussionState.format === 'chat') {
@@ -9506,11 +9475,9 @@ Keep it concise and forward-looking.`;
          // User is not logged in - show anonymous state
          anonymousControls.style.display = 'flex';
          
-         // Show anonymous usage
-         checkAndResetDailyUsage();
-         const remaining = Math.max(0, 10 - usageState.dailyDiscussions);
-         usageIndicator.innerHTML = `${remaining} free today`;
-         usageIndicator.className = remaining <= 2 ? 'usage-indicator low' : 'usage-indicator';
+         // Show initial estimate - will be updated with real count from server
+         usageIndicator.innerHTML = `10 free today`;
+         usageIndicator.className = 'usage-indicator';
          usageIndicator.style.display = 'block';
       }
       
@@ -9860,6 +9827,13 @@ Keep it concise and forward-looking.`;
 
    // Update your existing callClaude function to include auth
    async function callClaude(prompt, isSuggestion = false) {
+      // Check auth status before making request
+      console.log('[CallClaude] Auth check:', {
+         hasAuthToken: !!authToken,
+         hasCurrentUser: !!currentUser,
+         localStorage: !!localStorage.getItem('authToken')
+      });
+      
       const headers = {
          'Content-Type': 'application/json'
       };
@@ -9869,6 +9843,13 @@ Keep it concise and forward-looking.`;
          console.log('Sending auth token:', authToken.substring(0, 20) + '...');
       } else {
          console.log('No auth token available - sending as anonymous');
+         // Try to get from localStorage as backup
+         const storedToken = localStorage.getItem('authToken');
+         if (storedToken) {
+            console.log('Found token in localStorage, using it');
+            authToken = storedToken;
+            headers['Authorization'] = `Bearer ${storedToken}`;
+         }
       }
 
       // Use different endpoint for suggestions to avoid rate limiting
@@ -9909,13 +9890,19 @@ Keep it concise and forward-looking.`;
          hasText: data.content && data.content[0] ? !!data.content[0].text : false
       });
 
-      // Update usage display if we have usage info
+      // Update usage display if we have usage info from server
       if (data.usage) {
+         // Use the ACTUAL remaining count from the server's rate limiter
          updateUsageDisplayAdvanced({
-            userType: currentUser ? 'authenticated' : 'anonymous',
-            isProUser: usageState.isProUser,
-            remaining: currentUser ? Math.max(0, 10 - usageState.dailyDiscussions) : Math.max(0, 10 - usageState.dailyDiscussions)
+            userType: data.usage.userType || 'anonymous',
+            isProUser: data.usage.isProUser || false,
+            remaining: data.usage.remaining // Use server's actual count!
          });
+         
+         // Also update the local state to match server (for consistency)
+         if (typeof data.usage.remaining === 'number') {
+            usageState.dailyDiscussions = 10 - data.usage.remaining;
+         }
       }
 
       // Check if data has the expected structure
@@ -10111,15 +10098,7 @@ Keep it concise and forward-looking.`;
          return;
       }
 
-      // Increment usage counter for the AI response
-      checkAndResetDailyUsage();
-      usageState.dailyDiscussions++;
-      saveUsageState();
-      updateUsageDisplayAdvanced({
-         userType: currentUser ? 'authenticated' : 'anonymous',
-         isProUser: usageState.isProUser,
-         remaining: currentUser ? 'unlimited' : Math.max(0, 10 - usageState.dailyDiscussions)
-      });
+      // Don't increment locally - server response will update with real count
 
       // Remove the entire chat container (input + controls)
       const chatContainer = document.querySelector('.chat-continuation-container');
