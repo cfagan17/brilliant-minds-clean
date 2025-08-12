@@ -8672,52 +8672,9 @@ Keep it concise and forward-looking.`;
          showUpgradeForFeature('save');
          return;
       }
-
-      try {
-         // Collect conversation data
-         const conversationData = {
-            topic: discussionState.topic,
-            format: discussionState.format,
-            participants: discussionState.participants.filter(p => p).map(p => p.name),
-            conversationData: {
-               html: cleanConversationHTML(document.getElementById('discussionArena').innerHTML),
-               metadata: {
-                  totalExchanges: discussionState.totalExchanges,
-                  continuationRound: discussionState.continuationRound,
-                  timestamp: new Date().toISOString()
-               }
-            }
-         };
-
-         const response = await fetch('/api/conversations/save', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(conversationData)
-         });
-
-         const result = await response.json();
-
-         if (response.ok) {
-            showNotification('💾 Conversation saved successfully!', 'success');
-            
-            // Change button to show it's been saved
-            const saveButton = document.querySelector('.save-button');
-            if (saveButton) {
-               saveButton.textContent = '✅ Saved';
-               saveButton.disabled = true;
-               saveButton.style.opacity = '0.7';
-            }
-         } else {
-            throw new Error(result.error || 'Failed to save conversation');
-         }
-
-      } catch (error) {
-         console.error('Save error:', error);
-         showNotification(`❌ Failed to save conversation: ${error.message}`, 'error');
-      }
+      
+      // Use the saveConversation function which properly extracts messages
+      return saveConversation();
    }
 
    function shareConversation(conversationId) {
