@@ -9922,41 +9922,35 @@ Keep it concise and forward-looking.`;
       }
    }
    
-   // Fetch usage for anonymous users
+   // Fetch usage for anonymous users from server
    async function fetchAnonymousUsage() {
-      // Get the stored usage state - use the correct key 'usageState'
-      const stored = localStorage.getItem('usageState');
-      if (stored) {
-         try {
-            const savedState = JSON.parse(stored);
-            const today = new Date().toDateString();
+      try {
+         // Fetch the actual rate limit status from server
+         const response = await fetch('/api/rate-limit-status');
+         if (response.ok) {
+            const data = await response.json();
+            console.log('Rate limit status:', data);
             
-            // Check if we need to reset daily usage
-            if (savedState.lastResetDate !== today) {
-               savedState.dailyDiscussions = 0;
-               savedState.lastResetDate = today;
-               // Save the reset state
-               localStorage.setItem('usageState', JSON.stringify(savedState));
-            }
+            // Parse the remaining count from rate limit headers
+            const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 10;
             
-            // Update the display with actual count
-            const remaining = Math.max(0, 10 - (savedState.dailyDiscussions || 0));
+            // Update the display with actual count from server
             updateUsageDisplayAdvanced({
                userType: 'anonymous',
                isProUser: false,
                remaining: remaining
             });
-         } catch (e) {
-            console.error('Error parsing usage state:', e);
-            // If parsing fails, show default
+         } else {
+            // If fetch fails, show default
             updateUsageDisplayAdvanced({
                userType: 'anonymous',
                isProUser: false,
                remaining: 10
             });
          }
-      } else {
-         // No stored state - new user
+      } catch (error) {
+         console.error('Error fetching usage status:', error);
+         // On error, show default
          updateUsageDisplayAdvanced({
             userType: 'anonymous',
             isProUser: false,
@@ -10039,10 +10033,10 @@ Keep it concise and forward-looking.`;
             remaining: data.usage.remaining // Use server's actual count!
          });
          
-         // Also update the local state to match server (for consistency)
+         // For production, we don't need to save locally - server tracks everything
+         // Just update the local state for consistency during the session
          if (typeof data.usage.remaining === 'number') {
             usageState.dailyDiscussions = 10 - data.usage.remaining;
-            saveUsageState(); // Save the updated state to localStorage
          }
       }
 
