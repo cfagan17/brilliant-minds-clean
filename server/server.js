@@ -1196,6 +1196,14 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
     try {
         const { topic, format, participants, conversationData } = req.body;
         
+        console.log('Saving conversation - received data:', {
+            topic,
+            format,
+            participants,
+            conversationDataKeys: conversationData ? Object.keys(conversationData) : null,
+            messagesCount: conversationData?.messages?.length
+        });
+        
         if (!topic || !format || !participants || !conversationData) {
             return res.status(400).json({ error: 'Missing required conversation data' });
         }
@@ -1205,6 +1213,9 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
         
         // Auto-generate title
         const title = generateConversationTitle(participantsArray, topic, format);
+        
+        const conversationDataString = JSON.stringify(conversationData);
+        console.log('Stringified conversation data length:', conversationDataString.length);
         
         db.run(`
             INSERT INTO saved_conversations 
@@ -1216,7 +1227,7 @@ app.post('/api/conversations/save', authenticateToken, (req, res) => {
             topic,
             format,
             JSON.stringify(participantsArray),
-            JSON.stringify(conversationData)
+            conversationDataString
         ], function(err) {
             if (err) {
                 console.error('Error saving conversation:', err);
@@ -1359,13 +1370,20 @@ app.get('/api/conversations/:id', optionalAuth, (req, res) => {
                 
                 // Parse conversation data
                 let conversationData = {};
+                console.log('Raw conversation_data from DB:', conversation.conversation_data);
+                console.log('Type of conversation_data:', typeof conversation.conversation_data);
+                
                 if (conversation.conversation_data) {
                     try {
                         conversationData = JSON.parse(conversation.conversation_data);
+                        console.log('Parsed conversation_data:', conversationData);
                     } catch (e) {
                         console.error('Error parsing conversation_data:', e);
+                        console.error('Failed to parse:', conversation.conversation_data);
                         conversationData = {};
                     }
+                } else {
+                    console.log('conversation_data is null or undefined');
                 }
                 
                 const formattedConversation = {
