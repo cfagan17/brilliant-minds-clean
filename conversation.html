@@ -243,14 +243,22 @@
                 
                 const data = await response.json();
                 
-                console.log('Conversation data:', data);
+                console.log('Full conversation data:', data);
+                console.log('conversation_data field:', data.conversation_data);
+                console.log('Type of conversation_data:', typeof data.conversation_data);
+                if (data.conversation_data) {
+                    console.log('conversation_data.messages:', data.conversation_data.messages);
+                    console.log('Is messages an array?', Array.isArray(data.conversation_data.messages));
+                }
                 
                 // Generate HTML from conversation data
                 let conversationHTML = '';
                 
                 if (data.conversation_data && data.conversation_data.messages) {
+                    console.log('Processing messages, count:', data.conversation_data.messages.length);
                     // Format saved conversation with messages array
-                    data.conversation_data.messages.forEach(message => {
+                    data.conversation_data.messages.forEach((message, index) => {
+                        console.log(`Message ${index}:`, message);
                         conversationHTML += `
                             <div class="speaker">
                                 <div class="speaker-name">${message.speaker}</div>

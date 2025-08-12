@@ -1357,30 +1357,44 @@ app.get('/api/conversations/:id', optionalAuth, (req, res) => {
                 // Parse participants - handle both array and string formats
                 let participants = [];
                 if (conversation.participants) {
-                    try {
-                        participants = JSON.parse(conversation.participants);
-                        if (!Array.isArray(participants)) {
-                            participants = [participants];
+                    if (typeof conversation.participants === 'object') {
+                        // PostgreSQL JSONB returns as object/array
+                        participants = Array.isArray(conversation.participants) 
+                            ? conversation.participants 
+                            : [conversation.participants];
+                    } else if (typeof conversation.participants === 'string') {
+                        try {
+                            participants = JSON.parse(conversation.participants);
+                            if (!Array.isArray(participants)) {
+                                participants = [participants];
+                            }
+                        } catch (e) {
+                            // If JSON parse fails, treat as plain string
+                            participants = [conversation.participants];
                         }
-                    } catch (e) {
-                        // If JSON parse fails, treat as plain string
-                        participants = [conversation.participants];
                     }
                 }
                 
-                // Parse conversation data
+                // Parse conversation data - handle both string and object formats
                 let conversationData = {};
                 console.log('Raw conversation_data from DB:', conversation.conversation_data);
                 console.log('Type of conversation_data:', typeof conversation.conversation_data);
                 
                 if (conversation.conversation_data) {
-                    try {
-                        conversationData = JSON.parse(conversation.conversation_data);
-                        console.log('Parsed conversation_data:', conversationData);
-                    } catch (e) {
-                        console.error('Error parsing conversation_data:', e);
-                        console.error('Failed to parse:', conversation.conversation_data);
-                        conversationData = {};
+                    if (typeof conversation.conversation_data === 'object') {
+                        // PostgreSQL JSONB returns as object
+                        conversationData = conversation.conversation_data;
+                        console.log('Using conversation_data as object (PostgreSQL JSONB):', conversationData);
+                    } else if (typeof conversation.conversation_data === 'string') {
+                        // SQLite returns as string
+                        try {
+                            conversationData = JSON.parse(conversation.conversation_data);
+                            console.log('Parsed conversation_data from string:', conversationData);
+                        } catch (e) {
+                            console.error('Error parsing conversation_data:', e);
+                            console.error('Failed to parse:', conversation.conversation_data);
+                            conversationData = {};
+                        }
                     }
                 } else {
                     console.log('conversation_data is null or undefined');
