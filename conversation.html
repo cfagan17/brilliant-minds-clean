@@ -244,17 +244,36 @@
                 const data = await response.json();
                 
                 console.log('Conversation data:', data);
-                console.log('HTML content:', data.conversationHtml);
+                
+                // Generate HTML from conversation data
+                let conversationHTML = '';
+                
+                if (data.conversation_data && data.conversation_data.messages) {
+                    // Format saved conversation with messages array
+                    data.conversation_data.messages.forEach(message => {
+                        conversationHTML += `
+                            <div class="speaker">
+                                <div class="speaker-name">${message.speaker}</div>
+                                <div class="speaker-content">${message.content}</div>
+                            </div>
+                        `;
+                    });
+                } else if (data.conversationHtml) {
+                    // Format for anonymous shared conversations
+                    conversationHTML = data.conversationHtml;
+                } else {
+                    conversationHTML = '<p>No conversation content available.</p>';
+                }
                 
                 // Display the conversation
                 contentDiv.innerHTML = `
                     <div class="conversation-meta">
                         <div class="meta-item">🎭 Topic: ${data.topic}</div>
                         <div class="meta-item">💬 Format: ${data.format}</div>
-                        <div class="meta-item">📅 Shared: ${new Date(data.createdAt).toLocaleDateString()}</div>
+                        <div class="meta-item">📅 Saved: ${new Date(data.created_at || data.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div class="conversation-content">
-                        ${data.conversationHtml}
+                        ${conversationHTML}
                     </div>
                 `;
                 
