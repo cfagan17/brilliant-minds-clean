@@ -9389,7 +9389,7 @@ Keep it concise and forward-looking.`;
       // AUTHENTICATION INITIALIZATION
       // ============================================================================
       initializeAuth();
-      checkExistingAuth();
+      // Don't call checkExistingAuth() here - initializeAuth() handles it
       
       // Add test auth function for debugging
       window.testAuth = async function() {
@@ -9513,6 +9513,8 @@ Keep it concise and forward-looking.`;
             });
       } else {
          updateAuthUI();
+         // Fetch usage for anonymous users
+         fetchAnonymousUsage();
       }
    }
 
