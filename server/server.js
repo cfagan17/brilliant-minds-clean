@@ -786,21 +786,22 @@ app.post('/api/claude', optionalAuth, guestRateLimit, async (req, res) => {
                 const claudeResponse = await makeClaudeRequest(message, `anon_${req.ip}`);
                 console.log('Claude API response received for guest');
                 
-                // Get current usage from rate limit headers
-                const used = 10 - remaining;
+                // Get current usage from rate limit headers - parse to integer
+                const remainingCount = parseInt(remaining) || 0;
+                const used = 10 - remainingCount;
                 
                 res.json({
                     ...claudeResponse,
                     usage: {
                         used: used,
                         limit: 10,
-                        remaining: remaining,
+                        remaining: remainingCount,
                         isProUser: false,
                         userType: 'anonymous'
                     },
-                    message: remaining <= 1 
+                    message: remainingCount <= 1 
                         ? 'Sign up for 10 total discussions and advanced features!' 
-                        : `${remaining} anonymous discussions remaining. Sign up for 10 total discussions!`
+                        : `${remainingCount} anonymous discussions remaining. Sign up for 10 total discussions!`
                 });
             } catch (error) {
                 console.error('Claude API error for guest:', error);
