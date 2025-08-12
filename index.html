@@ -8897,19 +8897,24 @@ Keep it concise and forward-looking.`;
    // Extract conversation data from the current discussion
    function extractConversationData() {
       const arena = document.getElementById('discussionArena');
+      console.log('[ExtractData] Arena element:', arena);
       if (!arena) return null;
 
       const messages = [];
       const speakers = arena.querySelectorAll('.speaker');
+      console.log('[ExtractData] Found speakers:', speakers.length);
 
       speakers.forEach((speakerElement, index) => {
          const nameElement = speakerElement.querySelector('.speaker-name');
          const contentElement = speakerElement.querySelector('.speaker-content');
+         
+         console.log('[ExtractData] Speaker', index, '- name element:', nameElement?.textContent);
 
          if (nameElement && contentElement) {
             const speakerName = nameElement.textContent.trim();
             // Get clean text content without buttons
             const content = extractCleanContent(contentElement);
+            console.log('[ExtractData] Speaker', index, '- content length:', content?.length);
 
             if (content && content.length > 10) { // Only save substantial content
                messages.push({
@@ -8963,6 +8968,9 @@ Keep it concise and forward-looking.`;
       }
 
       const conversationData = extractConversationData();
+      console.log('[SaveConversation] Extracted data:', conversationData);
+      console.log('[SaveConversation] Messages count:', conversationData?.messages?.length);
+      
       if (!conversationData || conversationData.messages.length === 0) {
          showNotification('No conversation content to save', 'info');
          return;
@@ -8976,18 +8984,23 @@ Keep it concise and forward-looking.`;
       }
 
       try {
+         const requestBody = {
+            topic: discussionState.topic,
+            format: discussionState.format,
+            participants: discussionState.participants.map(p => p.name),
+            conversationData: conversationData
+         };
+         
+         console.log('[SaveConversation] Sending to server:', requestBody);
+         console.log('[SaveConversation] ConversationData being sent:', JSON.stringify(conversationData));
+         
          const response = await fetch('/api/conversations/save', {
             method: 'POST',
             headers: {
                'Content-Type': 'application/json',
                'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({
-               topic: discussionState.topic,
-               format: discussionState.format,
-               participants: discussionState.participants.map(p => p.name),
-               conversationData: conversationData
-            })
+            body: JSON.stringify(requestBody)
          });
 
          const result = await response.json();
