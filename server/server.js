@@ -404,20 +404,7 @@ app.get('/api/test-auth', optionalAuth, (req, res) => {
     });
 });
 
-// Check rate limit status
-app.get('/api/rate-limit-status', optionalAuth, guestRateLimit, (req, res) => {
-    res.json({
-        authenticated: !!req.user,
-        ip: req.ip,
-        rateLimit: {
-            limit: res.getHeader('X-RateLimit-Limit'),
-            remaining: res.getHeader('X-RateLimit-Remaining'),
-            reset: res.getHeader('X-RateLimit-Reset'),
-            resetDate: res.getHeader('X-RateLimit-Reset') ? 
-                new Date(parseInt(res.getHeader('X-RateLimit-Reset'))).toISOString() : null
-        }
-    });
-});
+// Rate limit status endpoint will be defined after guestRateLimit
 
 // Register new user (10 daily discussions for free tier)
 app.post('/api/auth/register', async (req, res) => {
@@ -641,6 +628,21 @@ const guestRateLimit = rateLimit({
 });
 
 // Note: Rate limiting is now applied directly in the route after auth check
+
+// Check rate limit status endpoint
+app.get('/api/rate-limit-status', optionalAuth, guestRateLimit, (req, res) => {
+    res.json({
+        authenticated: !!req.user,
+        ip: req.ip,
+        rateLimit: {
+            limit: res.getHeader('X-RateLimit-Limit'),
+            remaining: res.getHeader('X-RateLimit-Remaining'),
+            reset: res.getHeader('X-RateLimit-Reset'),
+            resetDate: res.getHeader('X-RateLimit-Reset') ? 
+                new Date(parseInt(res.getHeader('X-RateLimit-Reset'))).toISOString() : null
+        }
+    });
+});
 
 // Endpoint for speaker suggestions - doesn't count against usage
 app.post('/api/suggest-speakers', async (req, res) => {
