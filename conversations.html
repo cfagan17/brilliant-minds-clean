@@ -330,7 +330,7 @@
             }).catch(() => {
                 // Fallback for older browsers
                 const textArea = document.createElement('textarea');
-                textArea.value = shareMessage;
+                textArea.value = shareUrl;
                 textArea.style.position = 'fixed';
                 textArea.style.opacity = '0';
                 document.body.appendChild(textArea);

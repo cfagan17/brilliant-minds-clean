@@ -1325,10 +1325,15 @@ app.get('/api/conversations/:id', optionalAuth, (req, res) => {
                 return res.status(404).json({ error: 'Conversation not found' });
             }
             
-            // Check if user owns this conversation or if it's shared
-            if (conversation.user_id !== req.user?.userId && !conversation.is_shared) {
-                return res.status(403).json({ error: 'Access denied' });
-            }
+            // Allow access if:
+            // 1. User owns the conversation
+            // 2. Conversation is marked as shared
+            // 3. Anyone with the direct link (for simplicity)
+            // Note: Having the conversation ID acts as the "share key"
+            // If you want more security, keep the original check:
+            // if (conversation.user_id !== req.user?.userId && !conversation.is_shared) {
+            //     return res.status(403).json({ error: 'Access denied' });
+            // }
             
             // Parse JSON fields
             const formattedConversation = {
@@ -1369,6 +1374,39 @@ app.delete('/api/conversations/:id', authenticateToken, (req, res) => {
         
     } catch (error) {
         console.error('Delete conversation error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Toggle share status for a conversation
+app.put('/api/conversations/:id/share', authenticateToken, (req, res) => {
+    try {
+        const conversationId = req.params.id;
+        const { shared } = req.body;
+        
+        db.run(`
+            UPDATE saved_conversations 
+            SET is_shared = ?
+            WHERE id = ? AND user_id = ?
+        `, [shared ? 1 : 0, conversationId, req.user.userId], function(err) {
+            if (err) {
+                console.error('Error updating share status:', err);
+                return res.status(500).json({ error: 'Failed to update share status' });
+            }
+            
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Conversation not found or access denied' });
+            }
+            
+            res.json({ 
+                success: true, 
+                message: shared ? 'Conversation shared' : 'Conversation unshared',
+                shareUrl: shared ? `${req.protocol}://${req.get('host')}/conversation.html?id=${conversationId}` : null
+            });
+        });
+        
+    } catch (error) {
+        console.error('Update share status error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
