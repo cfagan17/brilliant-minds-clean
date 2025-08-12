@@ -3847,18 +3847,30 @@ function populateAISuggestions(suggestedSpeakers) {
 
 
 async function startDiscussion() {
-   console.log('Start discussion called, daily discussions:', usageState.totalDiscussions);
+   console.log('Start discussion called');
 
-   // Check usage limits for free users
-   checkAndResetDailyUsage();
-   const dailyLimit = 10;
-   if (!currentUser && usageState.dailyDiscussions >= dailyLimit) {
-      trackUpgradeFlow('limit_reached', {
-         attemptedFormat: discussionState.format,
-         lastDiscussionTopic: discussionState.topic
-      });
-      showUpgradeModal();
-      return;
+   // Check usage limits for anonymous users - fetch actual count from server
+   if (!currentUser) {
+      try {
+         const response = await fetch('/api/rate-limit-status');
+         if (response.ok) {
+            const data = await response.json();
+            const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 0;
+            console.log('Start check - remaining discussions:', remaining);
+            
+            if (remaining <= 0) {
+               trackUpgradeFlow('limit_reached', {
+                  attemptedFormat: discussionState.format,
+                  lastDiscussionTopic: discussionState.topic,
+                  actualRemaining: remaining
+               });
+               showUpgradeModal();
+               return;
+            }
+         }
+      } catch (error) {
+         console.error('Error checking usage limit:', error);
+      }
    }
 
    // Generate a unique discussion ID for this session
@@ -8104,17 +8116,29 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
    }
 
    async function continueDiscussion() {
-      // CHECK USAGE LIMITS BEFORE CONTINUING
-      checkAndResetDailyUsage();
-      const dailyLimit = 10;
-      if (!currentUser && usageState.dailyDiscussions >= dailyLimit) {
-         trackUpgradeFlow('limit_reached_on_continue', {
-            continuationRound: discussionState.continuationRound,
-            totalExchanges: discussionState.totalExchanges,
-            currentFormat: discussionState.format
-         });
-         showUpgradeModal();
-         return;
+      // CHECK USAGE LIMITS BEFORE CONTINUING - fetch actual count from server
+      if (!currentUser) {
+         try {
+            const response = await fetch('/api/rate-limit-status');
+            if (response.ok) {
+               const data = await response.json();
+               const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 0;
+               console.log('Continue check - remaining discussions:', remaining);
+               
+               if (remaining <= 0) {
+                  trackUpgradeFlow('limit_reached_on_continue', {
+                     continuationRound: discussionState.continuationRound,
+                     totalExchanges: discussionState.totalExchanges,
+                     currentFormat: discussionState.format,
+                     actualRemaining: remaining
+                  });
+                  showUpgradeModal();
+                  return;
+               }
+            }
+         } catch (error) {
+            console.error('Error checking usage limit:', error);
+         }
       }
 
       // Don't increment locally - server response will update with real count
