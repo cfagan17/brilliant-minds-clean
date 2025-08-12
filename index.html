@@ -9226,6 +9226,86 @@ Keep it concise and forward-looking.`;
    // ============================================================================
 
    // Initialize the application
+   // Function to load an engaged conversation from sharing
+   function loadEngagedConversation(conversation) {
+      console.log('Loading engaged conversation:', conversation);
+      
+      // First, set up the participants from the conversation
+      if (conversation.participants && conversation.participants.length > 0) {
+         // Clear existing selections
+         selectedAISpeakers = [];
+         
+         // Try to match and select the speakers from the conversation
+         conversation.participants.forEach(participantName => {
+            // Create speaker object from the participant name
+            // Check if it's a known figure from the figures database
+            const figureData = figures[participantName];
+            const speaker = {
+               name: participantName,
+               fullDisplay: participantName,
+               description: figureData ? figureData.description : `Historical figure`,
+               prompt: figureData ? figureData.prompt : `You are ${participantName}. Embody their personality, knowledge, and speaking style.`,
+               isCustom: !figureData
+            };
+            
+            if (selectedAISpeakers.length < 5) {
+               selectedAISpeakers.push(speaker);
+            }
+         });
+         
+         // Update the UI to show selected speakers
+         updateSelectedSpeakerDisplay();
+      }
+      
+      // Set the topic/question if available
+      if (conversation.topic) {
+         const questionInput = document.getElementById('userQuestionInput');
+         if (questionInput) {
+            questionInput.value = conversation.topic;
+         }
+      }
+      
+      // Load the conversation messages into the discussion arena
+      const discussionArena = document.getElementById('discussionArena');
+      if (discussionArena && conversation.messages && conversation.messages.length > 0) {
+         let conversationHTML = '';
+         
+         conversation.messages.forEach(message => {
+            // Format content - convert markdown-style formatting
+            let formattedContent = message.content;
+            formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedContent = formattedContent.replace(/\n/g, '<br>');
+            
+            const isModeratorClass = message.speaker === 'AI Moderator' ? 'moderator-speaker' : '';
+            
+            conversationHTML += `
+               <div class="speaker ${isModeratorClass}">
+                  <div class="speaker-name">${message.speaker}</div>
+                  <div class="speaker-content">${formattedContent}</div>
+               </div>
+            `;
+         });
+         
+         discussionArena.innerHTML = conversationHTML;
+         discussionArena.style.display = 'block';
+         
+         // Store the conversation state
+         discussionState.isActive = true;
+         discussionState.totalExchanges = conversation.messages.length;
+         discussionState.currentQuestion = conversation.topic;
+         discussionState.participants = selectedAISpeakers.map(speaker => ({
+            name: speaker.name,
+            prompt: speaker.isCustom || speaker.isUserAdded ?
+               `You are ${speaker.name}. Embody their personality, knowledge, and speaking style as accurately as possible based on their known work and public statements.` :
+               (figures[speaker.name] && figures[speaker.name].prompt) || `You are ${speaker.name}. Speak with their knowledge and perspective.`
+         }));
+         
+         // Show the existing discussion controls
+         showDiscussionControls();
+      }
+   }
+   
+   
    // Initialize the app when page loads
    // Close modal when clicking outside (with null check)
    document.addEventListener('DOMContentLoaded', function () {
@@ -9256,6 +9336,27 @@ Keep it concise and forward-looking.`;
          }
       }, 100);
 
+      // ============================================================================
+      // CHECK FOR ENGAGE MODE (from shared conversation)
+      // ============================================================================
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('engage') === 'true') {
+         const engageData = sessionStorage.getItem('engageConversation');
+         if (engageData) {
+            try {
+               const conversation = JSON.parse(engageData);
+               sessionStorage.removeItem('engageConversation'); // Clean up
+               
+               // Load the conversation after a short delay to ensure everything is initialized
+               setTimeout(() => {
+                  loadEngagedConversation(conversation);
+               }, 500);
+            } catch (error) {
+               console.error('Error loading engaged conversation:', error);
+            }
+         }
+      }
+      
       // ============================================================================
       // AUTHENTICATION INITIALIZATION
       // ============================================================================

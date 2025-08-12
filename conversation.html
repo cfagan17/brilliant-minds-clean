@@ -218,9 +218,9 @@
         </div>
         
         <div class="cta-section">
-            <h2>Want to create your own discussions?</h2>
-            <p>Engage with history's greatest minds on any topic</p>
-            <a href="/" class="cta-button">Start Your Discussion</a>
+            <h2>Continue this fascinating discussion!</h2>
+            <p>Engage with these speakers or ask your own questions</p>
+            <a href="#" class="cta-button" id="engageButton">Engage Discussion</a>
         </div>
     </div>
     
@@ -229,6 +229,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const shareId = urlParams.get('share');
         const conversationId = urlParams.get('id');
+        let currentConversationData = null; // Store the conversation data globally
         
         async function loadConversation() {
             const contentDiv = document.getElementById('content');
@@ -251,6 +252,7 @@
                 }
                 
                 const data = await response.json();
+                currentConversationData = data; // Store for later use
                 
                 console.log('Full conversation data:', data);
                 console.log('conversation_data field:', data.conversation_data);
@@ -317,6 +319,33 @@
                 `;
             }
         }
+        
+        // Handle Engage Discussion button click
+        document.getElementById('engageButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (!currentConversationData) {
+                alert('Please wait for the conversation to load');
+                return;
+            }
+            
+            // Prepare the conversation data for the main app
+            const engageData = {
+                topic: currentConversationData.topic,
+                format: currentConversationData.format,
+                participants: currentConversationData.participants,
+                messages: currentConversationData.conversation_data?.messages || [],
+                conversationHtml: currentConversationData.conversationHtml || '',
+                shareId: shareId,
+                conversationId: conversationId
+            };
+            
+            // Store in sessionStorage for the main app to retrieve
+            sessionStorage.setItem('engageConversation', JSON.stringify(engageData));
+            
+            // Redirect to main app with special parameter
+            window.location.href = '/?engage=true';
+        });
         
         // Load conversation on page load
         loadConversation();

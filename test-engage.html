@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Engage Feature</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .test-case {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .test-case h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Test Engage Feature</h1>
+        <p>This page helps test the new "Engage Discussion" feature for Iconoclash.</p>
+        
+        <div class="test-case">
+            <h3>Test Case 1: Simulate Loading a Shared Conversation</h3>
+            <p>Click this button to simulate what happens when someone clicks "Engage Discussion" from a shared conversation.</p>
+            <button onclick="testEngageFlow()">Test Engage Flow</button>
+        </div>
+        
+        <div class="test-case">
+            <h3>Test Case 2: Direct Navigation Test</h3>
+            <p>This tests direct navigation with the engage parameter.</p>
+            <button onclick="testDirectNavigation()">Test Direct Navigation</button>
+        </div>
+        
+        <div class="test-case">
+            <h3>Test Case 3: View Sample Shared Conversation</h3>
+            <p>This opens a sample conversation in the viewer to test the "Engage Discussion" button.</p>
+            <button onclick="viewSampleConversation()">View Sample Conversation</button>
+        </div>
+        
+        <div id="output" style="margin-top: 30px;"></div>
+    </div>
+    
+    <script>
+        function testEngageFlow() {
+            // Create sample conversation data
+            const sampleConversation = {
+                topic: "What makes a great leader?",
+                format: "arena",
+                participants: ["Winston Churchill", "Nelson Mandela"],
+                messages: [
+                    {
+                        speaker: "AI Moderator",
+                        content: "Welcome to this discussion about leadership. Let's explore what makes a great leader.",
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        speaker: "Winston Churchill",
+                        content: "**Leadership in times of crisis** requires unwavering resolve and the ability to inspire hope when all seems lost. During Britain's darkest hour, I learned that a leader must embody the spirit of their people.",
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        speaker: "Nelson Mandela",
+                        content: "True leadership is about **reconciliation and forgiveness**. After 27 years in prison, I chose to lead with compassion rather than vengeance, understanding that a divided nation cannot prosper.",
+                        timestamp: new Date().toISOString()
+                    }
+                ],
+                conversationHtml: "",
+                shareId: "test_share_123",
+                conversationId: null
+            };
+            
+            // Store in sessionStorage
+            sessionStorage.setItem('engageConversation', JSON.stringify(sampleConversation));
+            
+            // Redirect to main app with engage parameter
+            window.location.href = '/?engage=true';
+        }
+        
+        function testDirectNavigation() {
+            // Just navigate with the parameter
+            window.location.href = '/?engage=true';
+        }
+        
+        function viewSampleConversation() {
+            // Create a sample shared conversation in sessionStorage
+            const sampleData = {
+                topic: "The nature of consciousness",
+                format: "symposium",
+                participants: ["René Descartes", "David Chalmers", "Daniel Dennett"],
+                conversation_data: {
+                    messages: [
+                        {
+                            speaker: "AI Moderator",
+                            content: "Welcome to our symposium on consciousness. Let's explore this fundamental question of human experience."
+                        },
+                        {
+                            speaker: "René Descartes",
+                            content: "**I think, therefore I am.** This fundamental truth reveals that consciousness is the one thing we cannot doubt. The mind exists separately from the physical world."
+                        },
+                        {
+                            speaker: "David Chalmers",
+                            content: "The **hard problem of consciousness** is explaining how we have qualitative, subjective experiences. Why is there something it is like to see red or taste coffee?"
+                        },
+                        {
+                            speaker: "Daniel Dennett",
+                            content: "Consciousness is not as mysterious as we think. It's a **collection of tricks** our brains play - multiple drafts of reality being constantly revised."
+                        }
+                    ]
+                },
+                conversationHtml: "",
+                created_at: new Date().toISOString()
+            };
+            
+            // For testing, we'll simulate the conversation viewer
+            // In production, this would be a real share ID
+            alert('In production, this would open the conversation viewer. For testing, click "Test Engage Flow" to see the full experience.');
+            
+            document.getElementById('output').innerHTML = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h3>Sample Conversation Data:</h3>
+                    <pre style="background: white; padding: 10px; border-radius: 5px; overflow-x: auto;">
+${JSON.stringify(sampleData, null, 2)}
+                    </pre>
+                    <p style="margin-top: 15px;">
+                        <strong>What happens next:</strong><br>
+                        1. User views this conversation at <code>/conversation.html?share=XXX</code><br>
+                        2. User clicks "Engage Discussion" button<br>
+                        3. Conversation data is stored in sessionStorage<br>
+                        4. User is redirected to <code>/?engage=true</code><br>
+                        5. Main app loads the conversation and shows engagement options
+                    </p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
