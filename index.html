@@ -2160,6 +2160,12 @@
         gap: 12px;
     }
     
+    .header-controls button,
+    .header-controls a {
+        flex: 1 1 100%; /* 1 button per row on very small screens */
+        max-width: 100%;
+    }
+    
     .auth-buttons {
         width: 100%;
         justify-content: center;
@@ -2687,14 +2693,28 @@
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .header-controls button,
+    .header-controls a {
+        flex: 1 1 calc(50% - 4px); /* 2 buttons per row with gap */
+        min-width: 120px;
+        max-width: 200px;
     }
     
     .auth-btn, .magic-demo-btn {
         min-height: 44px; /* Accessibility: minimum touch target */
         padding: 12px 16px;
         font-size: 14px;
-        flex: 1;
-        min-width: 120px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     /* Topic selection mobile */
