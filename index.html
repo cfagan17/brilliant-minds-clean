@@ -4809,7 +4809,7 @@ function removeSpeaker(speakerName) {
 function changeFormat(newFormat, newCount) {
    // Check if this is a premium format for non-pro users
    const premiumFormats = ['symposium', 'debate', 'roundtable'];
-   const isProUser = currentUser && currentUser.isProUser;
+   const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
    
    if (!isProUser && premiumFormats.includes(newFormat)) {
       showUpgradeForFeature('format');
@@ -8711,7 +8711,7 @@ Keep it concise and forward-looking.`;
 
    async function saveDiscussion() {
       // Check if user is pro
-      const isProUser = currentUser && currentUser.isProUser;
+      const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
       if (!isProUser) {
          showUpgradeForFeature('save');
          return;
@@ -9595,7 +9595,7 @@ Keep it concise and forward-looking.`;
    function updateFormatDisplay() {
       // Update format display based on user status
       const premiumFormats = document.querySelectorAll('.premium-format');
-      const isProUser = currentUser && currentUser.isProUser;
+      const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
       
       premiumFormats.forEach(format => {
          const badge = format.querySelector('.premium-badge');
@@ -9626,10 +9626,10 @@ Keep it concise and forward-looking.`;
          // User is logged in
          // SYNC SERVER DISCUSSION COUNT TO CLIENT STATE
          usageState.totalDiscussions = currentUser.discussionsUsed || 0;
-         usageState.isProUser = currentUser.isProUser || false;
+         usageState.isProUser = currentUser.isProUser || currentUser.isAdmin || false;
          saveUsageState();
 
-         if (currentUser.isProUser) {
+         if (currentUser.isProUser || currentUser.isAdmin) {
             // Pro user
             proUserControls.style.display = 'flex';
             // Hide usage indicator for pro users (they have unlimited)
@@ -9654,7 +9654,7 @@ Keep it concise and forward-looking.`;
    }
 
    function checkProAccessForConversations() {
-      const isProUser = currentUser && currentUser.isProUser;
+      const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
       if (isProUser) {
          window.location.href = '/conversations.html';
       } else {

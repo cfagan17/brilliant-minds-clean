@@ -405,7 +405,9 @@ app.post('/api/auth/login', async (req, res) => {
                 user: {
                     id: user.id,
                     email: user.email,
-                    isProUser: false,
+                    isProUser: user.is_pro || false,
+                    isAdmin: user.is_admin || false,
+                    isTestAccount: user.is_test_account || false,
                     discussionsUsed: user.discussions_used
                 }
             });
