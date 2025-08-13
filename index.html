@@ -7966,79 +7966,11 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
    // ============================================================================
 
    async function quickShareDiscussion() {
-      // Quick share - for anonymous users, just copy the text
+      // Quick share - creates a public share link for all users
       
-      // Check if user is authenticated
-      if (!currentUser) {
-         // For anonymous users, use the text-based share
-         shareDiscussion();
-         return;
-      }
-
-      try {
-         // Show loading state on button
-         const shareButton = document.querySelector('.share-button');
-         const originalText = shareButton.textContent;
-         shareButton.textContent = '⏳ Creating share link...';
-         shareButton.disabled = true;
-
-         // Collect conversation data
-         const conversationData = {
-            topic: discussionState.topic,
-            format: discussionState.format,
-            participants: discussionState.participants.filter(p => p).map(p => p.name),
-            conversationData: {
-               html: cleanConversationHTML(document.getElementById('discussionArena').innerHTML),
-               metadata: {
-                  totalExchanges: discussionState.totalExchanges,
-                  continuationRound: discussionState.continuationRound,
-                  timestamp: new Date().toISOString()
-               }
-            }
-         };
-
-         const response = await fetch('/api/conversations/save', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json',
-               'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify(conversationData)
-         });
-
-         const result = await response.json();
-
-         if (response.ok) {
-            // Immediately share the conversation
-            shareConversation(result.conversationId);
-            
-            // Update button to show it's been shared
-            shareButton.textContent = '✅ Shared!';
-            setTimeout(() => {
-               shareButton.textContent = originalText;
-               shareButton.disabled = false;
-            }, 3000);
-            
-            // Also update save button if it exists
-            const saveButton = document.querySelector('.save-button');
-            if (saveButton) {
-               saveButton.textContent = '✅ Saved';
-               saveButton.disabled = true;
-               saveButton.style.opacity = '0.7';
-            }
-         } else {
-            throw new Error(result.error || 'Failed to create share link');
-         }
-
-      } catch (error) {
-         console.error('Quick share error:', error);
-         showNotification(`❌ Failed to share: ${error.message}`, 'error');
-         
-         // Reset button
-         const shareButton = document.querySelector('.share-button');
-         shareButton.textContent = '📤 Share Conversation';
-         shareButton.disabled = false;
-      }
+      // For ALL users (both anonymous and authenticated), create a public share link
+      // This ensures the link can be accessed by anyone, not just the user who created it
+      shareDiscussion();
    }
 
    function shareDiscussionHighlight() {
