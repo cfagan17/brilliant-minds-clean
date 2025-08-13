@@ -265,7 +265,12 @@
                 // Generate HTML from conversation data
                 let conversationHTML = '';
                 
-                if (data.conversation_data && data.conversation_data.messages) {
+                // Check for different data structures
+                if (data.conversation_data && data.conversation_data.html) {
+                    console.log('Using conversation_data.html');
+                    // New format - HTML stored directly
+                    conversationHTML = data.conversation_data.html;
+                } else if (data.conversation_data && data.conversation_data.messages) {
                     console.log('Processing messages, count:', data.conversation_data.messages.length);
                     // Format saved conversation with messages array
                     data.conversation_data.messages.forEach((message, index) => {
