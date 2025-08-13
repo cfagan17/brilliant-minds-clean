@@ -342,7 +342,9 @@
                 format: currentConversationData.format,
                 participants: currentConversationData.participants,
                 messages: currentConversationData.conversation_data?.messages || [],
-                conversationHtml: currentConversationData.conversationHtml || '',
+                // Handle both data structures - saved conversations have html in conversation_data
+                conversationHtml: currentConversationData.conversationHtml || 
+                                 currentConversationData.conversation_data?.html || '',
                 shareId: shareId,
                 conversationId: conversationId
             };
