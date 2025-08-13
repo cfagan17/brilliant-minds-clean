@@ -9355,9 +9355,29 @@ Keep it concise and forward-looking.`;
       } else if (conversation.conversationHtml) {
          // We have HTML directly - use it
          discussionArena.innerHTML = conversation.conversationHtml;
-         // Count exchanges from the HTML
-         const speakers = discussionArena.querySelectorAll('.speaker:not(.moderator-speaker)');
-         discussionState.totalExchanges = speakers.length;
+         
+         // Add "Ask Follow-up" buttons to each speaker (except moderator) if not in chat format
+         if (discussionState.format !== 'chat') {
+            const speakers = discussionArena.querySelectorAll('.speaker:not(.moderator-speaker)');
+            speakers.forEach(speaker => {
+               const speakerContent = speaker.querySelector('.speaker-content');
+               if (speakerContent && !speakerContent.querySelector('.speaker-actions')) {
+                  const actionButtons = document.createElement('div');
+                  actionButtons.className = 'speaker-actions';
+                  actionButtons.innerHTML = `
+                     <button class="interject-btn" onclick="startInterjection(this)" title="Ask a follow-up or redirect the conversation">
+                        💬 Ask Follow-up
+                     </button>
+                  `;
+                  speakerContent.appendChild(actionButtons);
+               }
+            });
+            discussionState.totalExchanges = speakers.length;
+         } else {
+            // Count exchanges from the HTML for chat format
+            const speakers = discussionArena.querySelectorAll('.speaker:not(.moderator-speaker)');
+            discussionState.totalExchanges = speakers.length;
+         }
       }
       
       // Show the arena and set state
