@@ -3295,7 +3295,7 @@
             <!-- CUSTOM SPEAKER SECTION -->
             <div class="custom-speaker-section-main">
                 <div class="custom-speaker-input-container">
-                    <input type="text" id="customSpeakerInput" placeholder="Enter any name... e.g., 'Barack Obama', 'Marie Curie', 'Your favorite expert'..." />
+                    <input type="text" id="customSpeakerInput" placeholder="Enter any name or description... e.g., 'Stephen Curry', 'Jerry Garcia', 'Richard Feynman', 'Your favorite expert'..." />
                     <button id="addCustomSpeakerBtn" onclick="addCustomSpeaker()" disabled>
                         ➕ Add Speaker
                     </button>
@@ -3393,7 +3393,7 @@
     <div class="question-input-section-main">
         <div class="question-input-container">
             <textarea id="userQuestionInput" 
-                     placeholder="e.g., 'What are the most important leadership qualities?' or 'How can we solve climate change?' or 'What makes a great work of art?'..."
+                     placeholder="Enter any question or topic... e.g., 'What are the most important leadership qualities?', 'What makes a great work of art?', 'Let's discuss recent AI advances'..."
                      rows="3"></textarea>
             <button class="start-button" onclick="startDiscussion()" id="startDiscussionBtn" disabled>
                 🚀 Start Discussion
@@ -4530,7 +4530,7 @@ async function showAISpeakerSuggestions(suggestedSpeakers, format, count) {
             </div>
             <div class="custom-speaker-section" style="grid-column: 1 / -1;">
                 <div class="custom-speaker-input-container">
-                    <input type="text" id="customSpeakerInputAI" placeholder="Enter any name... e.g., 'Barack Obama', 'Marie Curie', 'Your favorite expert'..." />
+                    <input type="text" id="customSpeakerInputAI" placeholder="Enter any name or description... e.g., 'Stephen Curry', 'Jerry Garcia', 'Richard Feynman', 'Your favorite expert'..." />
                     <button id="addCustomSpeakerBtnAI" onclick="addCustomSpeaker()" disabled>
                         ➕ Add Speaker
                     </button>
@@ -6989,7 +6989,7 @@ Keep your response substantive but focused (120-150 words).`;
                 </optgroup>
             </select>
             
-            <input type="text" id="participant${i}Custom" class="custom-input" placeholder="Enter any name..." 
+            <input type="text" id="participant${i}Custom" class="custom-input" placeholder="Enter any name or description..." 
                    style="display: none;">
         `;
          grid.appendChild(slot);
