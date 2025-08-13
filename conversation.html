@@ -300,11 +300,14 @@
                 // Display the conversation
                 contentDiv.innerHTML = `
                     <div class="conversation-meta">
-                        <div class="meta-item">🎭 Topic: ${data.topic}</div>
-                        <div class="meta-item">💬 Format: ${data.format}</div>
-                        <div class="meta-item">📅 Saved: ${new Date(data.created_at || data.createdAt).toLocaleDateString()}</div>
+                        <div class="meta-item">💬 Format: ${data.format ? data.format.charAt(0).toUpperCase() + data.format.slice(1) : ''}</div>
+                        <div class="meta-item">📅 Date: ${new Date(data.created_at || data.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px 30px; background: #f0f8ff; border-bottom: 2px solid #e9ecef;">
+                        <a href="#" class="cta-button" onclick="document.getElementById('engageButton').click(); return false;" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 25px; border-radius: 25px; text-decoration: none; font-weight: 600; display: inline-block;">Engage Discussion</a>
                     </div>
                     <div class="conversation-content">
+                        <h2 style="color: #2c3e50; margin-bottom: 20px; font-size: 1.5rem;">${data.topic}</h2>
                         ${conversationHTML}
                     </div>
                 `;
