@@ -6403,6 +6403,9 @@ function showShareModal(shareText) {
          return;
       }
 
+      // Generate new discussion ID for this interjection
+      generateNewDiscussionId();
+
       const interjectionElement = document.getElementById(interjectionId);
 
       // Replace input with user's interjection as a speaker tile
@@ -8120,7 +8123,18 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
       // Removed auto-scroll to prevent interrupting user's reading
    }
 
+   // Helper function to generate new discussion ID
+   function generateNewDiscussionId() {
+      const newId = 'disc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      discussionState.discussionId = newId;
+      console.log('Generated new discussion ID:', newId);
+      return newId;
+   }
+
    async function continueDiscussion() {
+      // Generate new discussion ID for this continuation
+      generateNewDiscussionId();
+      
       // CHECK USAGE LIMITS BEFORE CONTINUING - fetch actual count from server
       if (!currentUser) {
          try {
@@ -10302,6 +10316,9 @@ Keep it concise and forward-looking.`;
          alert('Please enter a more substantial response');
          return;
       }
+
+      // Generate new discussion ID for each chat response
+      generateNewDiscussionId();
 
       // Check usage limits before processing
       checkAndResetDailyUsage();
