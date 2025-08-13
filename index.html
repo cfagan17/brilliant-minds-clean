@@ -4120,10 +4120,10 @@ async function getSuggestedSpeakers(topic, format, excludedSpeakers = []) {
 ${exclusionNote}
 ${speakerGuidance}
 
-${topic === 'politics' ? 'CRITICAL: Do NOT suggest Trump, Biden, Obama, Putin, Xi Jinping, or other current/recent heads of state that AI cannot impersonate. Focus on advisors, ministers, diplomats, and experts instead.\n' : ''}
+${topic === 'politics' ? 'CRITICAL: Do NOT suggest Trump, Biden, Obama, Putin, Xi Jinping, or other current/recent heads of state that AI cannot impersonate. Focus on advisors, ministers, diplomats, and experts instead.\nVERY IMPORTANT: Ensure a balanced mix of conservative and liberal viewpoints. Include at least 2 conservative-leaning and 2 liberal-leaning voices among your contemporary suggestions.\n' : ''}
 IMPORTANT STRUCTURE:
-- First 4 suggestions: CONTEMPORARY figures who are CURRENTLY ACTIVE and highly relevant to this field (alive, recently published, giving speeches, on social media, actively working in this space TODAY)
-- Last 4 suggestions: HISTORICAL figures who had profound impact on this field and whose insights remain relevant to current discussions
+- First 4 suggestions: CONTEMPORARY figures who are CURRENTLY ACTIVE and highly relevant to this field (alive, recently published, giving speeches, on social media, actively working in this space TODAY)${topic === 'politics' ? ' - Mix of conservative and liberal perspectives' : ''}
+- Last 4 suggestions: HISTORICAL figures who had profound impact on this field and whose insights remain relevant to current discussions${topic === 'politics' ? ' - Include diverse political philosophies' : ''}
 
 Consider:
 1. Current activity and engagement in this specific field
@@ -4420,8 +4420,8 @@ function getBackupSpeakers(topic) {
    const backupMap = {
       // CURRENT AFFAIRS
       politics: {
-         contemporary: ['Joe Biden', 'Donald Trump', 'Alexandria Ocasio-Cortez', 'Ron DeSantis', 'Kamala Harris', 'Tucker Carlson'],
-         historical: ['Abraham Lincoln', 'Winston Churchill']
+         contemporary: ['Nancy Pelosi', 'Mitch McConnell', 'Alexandria Ocasio-Cortez', 'Ben Shapiro', 'Rachel Maddow', 'Tucker Carlson'],
+         historical: ['Ronald Reagan', 'Franklin D. Roosevelt']
       },
       // Add a default fallback
       default: {
