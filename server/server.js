@@ -457,12 +457,16 @@ app.post('/api/setup-admin-user', async (req, res) => {
             }
             
             if (existingUser) {
-                // Update existing user
+                // Update existing user (PostgreSQL uses true/false for booleans)
+                const isPostgres = process.env.DATABASE_URL && process.env.NODE_ENV === 'production';
+                const adminValue = isPostgres ? 'true' : '1';
+                const proValue = isPostgres ? 'true' : '1';
+                
                 db.run(`
                     UPDATE users 
                     SET password_hash = ?, 
-                        is_admin = 1, 
-                        is_pro = 1
+                        is_admin = ${adminValue}, 
+                        is_pro = ${proValue}
                     WHERE email = ?
                 `, [hashedPassword, ADMIN_EMAIL], (err) => {
                     if (err) {
@@ -477,10 +481,15 @@ app.post('/api/setup-admin-user', async (req, res) => {
                     });
                 });
             } else {
-                // Create new admin user
+                // Create new admin user (PostgreSQL uses true/false for booleans)
+                const isPostgres = process.env.DATABASE_URL && process.env.NODE_ENV === 'production';
+                const adminValue = isPostgres ? 'true' : '1';
+                const proValue = isPostgres ? 'true' : '1';
+                const testValue = isPostgres ? 'false' : '0';
+                
                 db.run(`
                     INSERT INTO users (email, password_hash, is_pro, is_admin, is_test_account, discussions_used)
-                    VALUES (?, ?, 1, 1, 0, 0)
+                    VALUES (?, ?, ${proValue}, ${adminValue}, ${testValue}, 0)
                 `, [ADMIN_EMAIL, hashedPassword], function(err) {
                     if (err) {
                         console.error('Insert error:', err);
