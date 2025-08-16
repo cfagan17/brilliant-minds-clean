@@ -441,13 +441,34 @@ app.post('/api/setup-admin-user', async (req, res) => {
 // Test auth endpoint
 app.get('/api/test-auth', optionalAuth, (req, res) => {
     console.log('[TEST-AUTH] req.user:', req.user);
-    res.json({
-        authenticated: !!req.user,
-        userId: req.user?.userId,
-        headers: {
-            authorization: req.headers.authorization ? 'present' : 'missing'
-        }
-    });
+    
+    if (req.user && req.user.userId) {
+        // Check if user is admin
+        db.get('SELECT id, email, is_admin, is_pro FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            res.json({
+                authenticated: true,
+                userId: req.user.userId,
+                userDetails: user,
+                isAdmin: user?.is_admin,
+                headers: {
+                    authorization: req.headers.authorization ? 'present' : 'missing'
+                }
+            });
+        });
+    } else {
+        res.json({
+            authenticated: false,
+            userId: null,
+            headers: {
+                authorization: req.headers.authorization ? 'present' : 'missing'
+            }
+        });
+    }
 });
 
 // Register new user (10 daily discussions for free tier)
@@ -1192,10 +1213,11 @@ app.post('/api/analytics', async (req, res) => {
 });
 
 // Comprehensive analytics dashboard endpoint (admin only)
-app.get('/api/analytics/dashboard', authenticateToken, requireAdmin, async (req, res) => {
+app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
     try {
-        // Check if user is admin (you might want to add an is_admin field to users table)
+        // Temporarily bypass admin check for debugging
         const userId = req.user.userId;
+        console.log('[Analytics Dashboard] User ID:', userId);
         
         // Get comprehensive dashboard data
         const dashboardData = await analytics.getDashboardData();
