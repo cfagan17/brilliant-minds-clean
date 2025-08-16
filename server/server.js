@@ -430,6 +430,78 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// One-time admin setup endpoint (remove after use)
+app.post('/api/setup-admin-user', async (req, res) => {
+    try {
+        // Only allow this endpoint if ADMIN_PASSWORD is set
+        const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@iconoclash.com';
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        
+        if (!ADMIN_PASSWORD) {
+            return res.status(400).json({ error: 'ADMIN_PASSWORD not configured' });
+        }
+        
+        // Check if this is the correct setup request
+        const { setupKey } = req.body;
+        if (setupKey !== ADMIN_PASSWORD) {
+            return res.status(403).json({ error: 'Invalid setup key' });
+        }
+        
+        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
+        
+        // Check if user exists
+        db.get('SELECT * FROM users WHERE email = ?', [ADMIN_EMAIL], (err, existingUser) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            
+            if (existingUser) {
+                // Update existing user
+                db.run(`
+                    UPDATE users 
+                    SET password_hash = ?, 
+                        is_admin = 1, 
+                        is_pro = 1
+                    WHERE email = ?
+                `, [hashedPassword, ADMIN_EMAIL], (err) => {
+                    if (err) {
+                        console.error('Update error:', err);
+                        return res.status(500).json({ error: 'Failed to update admin user' });
+                    }
+                    console.log('✅ Admin user updated:', ADMIN_EMAIL);
+                    res.json({ 
+                        success: true, 
+                        message: 'Admin user updated successfully',
+                        email: ADMIN_EMAIL 
+                    });
+                });
+            } else {
+                // Create new admin user
+                db.run(`
+                    INSERT INTO users (email, password_hash, is_pro, is_admin, is_test_account, discussions_used)
+                    VALUES (?, ?, 1, 1, 0, 0)
+                `, [ADMIN_EMAIL, hashedPassword], function(err) {
+                    if (err) {
+                        console.error('Insert error:', err);
+                        return res.status(500).json({ error: 'Failed to create admin user' });
+                    }
+                    console.log('✅ Admin user created:', ADMIN_EMAIL);
+                    res.json({ 
+                        success: true, 
+                        message: 'Admin user created successfully',
+                        email: ADMIN_EMAIL,
+                        id: this.lastID
+                    });
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Setup error:', error);
+        res.status(500).json({ error: 'Setup failed' });
+    }
+});
+
 // Test auth endpoint
 app.get('/api/test-auth', optionalAuth, (req, res) => {
     console.log('[TEST-AUTH] req.user:', req.user);
