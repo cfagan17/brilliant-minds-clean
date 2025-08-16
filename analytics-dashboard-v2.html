@@ -362,6 +362,7 @@
                 <button class="tab" onclick="switchTab('users')">Users</button>
                 <button class="tab" onclick="switchTab('revenue')">Revenue</button>
                 <button class="tab" onclick="switchTab('engagement')">Engagement</button>
+                <button class="tab" onclick="switchTab('anonymous')">Anonymous Users</button>
                 <button class="tab" onclick="switchTab('realtime')">Real-Time</button>
             </div>
 
@@ -458,6 +459,48 @@
                             <tr><td colspan="4" style="text-align: center;">Loading...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Anonymous Users Tab -->
+            <div class="tab-content" id="anonymous-tab">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Anonymous Users</div>
+                        <div class="metric-value" id="totalAnonValue">0</div>
+                        <div class="metric-change">Unique sessions tracked</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Anonymous Discussions</div>
+                        <div class="metric-value" id="anonDiscussionsValue">0</div>
+                        <div class="metric-change">Before signup/login</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Conversion Rate</div>
+                        <div class="metric-value" id="anonConversionValue">0%</div>
+                        <div class="metric-change">Anonymous → Registered</div>
+                    </div>
+                </div>
+                <div class="table-card" style="margin-top: 20px;">
+                    <h3 class="chart-title">Recent Anonymous Sessions</h3>
+                    <table id="anonUsersTable">
+                        <thead>
+                            <tr>
+                                <th>Session ID</th>
+                                <th>Discussions Used</th>
+                                <th>First Seen</th>
+                                <th>Last Active</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="chart-card" style="margin-top: 20px;">
+                    <h3 class="chart-title">Anonymous User Activity (Last 7 Days)</h3>
+                    <canvas id="anonActivityChart"></canvas>
                 </div>
             </div>
 
@@ -766,6 +809,8 @@
                 loadRevenueData();
             } else if (tabName === 'engagement') {
                 loadEngagementData();
+            } else if (tabName === 'anonymous') {
+                loadAnonymousData();
             }
         }
 
@@ -839,6 +884,68 @@
                 }
             } catch (error) {
                 console.error('Error loading revenue data:', error);
+            }
+        }
+
+        // Load anonymous user data
+        async function loadAnonymousData() {
+            try {
+                const response = await fetch('/api/analytics/anonymous', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Update metrics
+                    document.getElementById('totalAnonValue').textContent = data.totalAnonymous || 0;
+                    document.getElementById('anonDiscussionsValue').textContent = data.totalDiscussions || 0;
+                    document.getElementById('anonConversionValue').textContent = `${(data.conversionRate || 0).toFixed(1)}%`;
+                    
+                    // Update table
+                    const tableBody = document.querySelector('#anonUsersTable tbody');
+                    if (data.recentSessions && data.recentSessions.length > 0) {
+                        tableBody.innerHTML = data.recentSessions.map(session => {
+                            const duration = session.last_active && session.created_at ? 
+                                Math.round((new Date(session.last_active) - new Date(session.created_at)) / (1000 * 60)) : 0;
+                            return `
+                                <tr>
+                                    <td>${session.session_id.substring(0, 8)}...</td>
+                                    <td>${session.discussions_used || 0}</td>
+                                    <td>${new Date(session.created_at).toLocaleDateString()}</td>
+                                    <td>${new Date(session.last_active).toLocaleDateString()}</td>
+                                    <td>${duration} min</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No anonymous sessions found</td></tr>';
+                    }
+                    
+                    // Update activity chart
+                    if (charts.anonActivity) charts.anonActivity.destroy();
+                    const ctx = document.getElementById('anonActivityChart').getContext('2d');
+                    charts.anonActivity = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dailyActivity?.map(d => d.date) || [],
+                            datasets: [{
+                                label: 'Anonymous Sessions',
+                                data: data.dailyActivity?.map(d => d.count) || [],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading anonymous data:', error);
             }
         }
 

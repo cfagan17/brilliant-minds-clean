@@ -1347,6 +1347,68 @@ app.get('/api/analytics/realtime', authenticateToken, requireAdmin, async (req, 
     }
 });
 
+// Anonymous users analytics endpoint
+app.get('/api/analytics/anonymous', authenticateToken, async (req, res) => {
+    try {
+        const anonData = await new Promise((resolve, reject) => {
+            const data = {
+                totalAnonymous: 0,
+                totalDiscussions: 0,
+                conversionRate: 0,
+                recentSessions: [],
+                dailyActivity: []
+            };
+            
+            // Get anonymous user stats
+            db.get(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(discussions_used) as total_discussions
+                FROM anonymous_users
+            `, [], (err, stats) => {
+                if (err) {
+                    console.error('Anonymous stats error:', err);
+                    return reject(err);
+                }
+                
+                data.totalAnonymous = stats?.total || 0;
+                data.totalDiscussions = stats?.total_discussions || 0;
+                
+                // Get recent anonymous sessions
+                db.all(`
+                    SELECT session_id, discussions_used, created_at, last_active
+                    FROM anonymous_users
+                    ORDER BY last_active DESC
+                    LIMIT 20
+                `, [], (err, sessions) => {
+                    if (err) {
+                        console.error('Anonymous sessions error:', err);
+                    }
+                    data.recentSessions = sessions || [];
+                    
+                    // Calculate conversion rate (anonymous users who became registered)
+                    db.get(`
+                        SELECT COUNT(DISTINCT u.id) as converted
+                        FROM users u
+                        WHERE u.created_at > (SELECT MIN(created_at) FROM anonymous_users)
+                    `, [], (err, converted) => {
+                        if (!err && converted && data.totalAnonymous > 0) {
+                            data.conversionRate = (converted.converted / data.totalAnonymous) * 100;
+                        }
+                        
+                        resolve(data);
+                    });
+                });
+            });
+        });
+        
+        res.json(anonData);
+    } catch (error) {
+        console.error('Anonymous analytics error:', error);
+        res.status(500).json({ error: 'Failed to get anonymous user data' });
+    }
+});
+
 // Engagement analytics endpoint
 app.get('/api/analytics/engagement', authenticateToken, requireAdmin, async (req, res) => {
     try {
