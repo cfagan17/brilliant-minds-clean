@@ -283,6 +283,164 @@ class Analytics {
         });
     }
     
+    // Get real-time metrics
+    async getRealtimeMetrics(fiveMinutesAgo, todayStart) {
+        return new Promise((resolve, reject) => {
+            const queries = {
+                activeNow: `
+                    SELECT COUNT(DISTINCT user_id) as count
+                    FROM analytics_events
+                    WHERE timestamp > ?
+                `,
+                todayDiscussions: `
+                    SELECT COUNT(*) as count
+                    FROM analytics_events
+                    WHERE event_type = ?
+                    AND timestamp > ?
+                `,
+                todayRevenue: `
+                    SELECT SUM(CAST(json_extract(event_data, '$.amount') AS REAL)) as total
+                    FROM analytics_events
+                    WHERE event_type = ?
+                    AND timestamp > ?
+                `,
+                recentActivity: `
+                    SELECT 
+                        ae.timestamp,
+                        ae.event_type,
+                        ae.user_id,
+                        u.email as user_email,
+                        ae.event_data
+                    FROM analytics_events ae
+                    LEFT JOIN users u ON ae.user_id = u.id
+                    ORDER BY ae.timestamp DESC
+                    LIMIT 20
+                `
+            };
+            
+            const results = {};
+            
+            db.get(queries.activeNow, [fiveMinutesAgo], (err, row) => {
+                if (err) return reject(err);
+                results.activeNow = row?.count || 0;
+                
+                db.get(queries.todayDiscussions, [ANALYTICS_EVENTS.DISCUSSION_STARTED, todayStart], (err, row) => {
+                    if (err) return reject(err);
+                    results.todayDiscussions = row?.count || 0;
+                    
+                    db.get(queries.todayRevenue, [ANALYTICS_EVENTS.PAYMENT_COMPLETED, todayStart], (err, row) => {
+                        if (err) return reject(err);
+                        results.todayRevenue = row?.total || 0;
+                        
+                        db.all(queries.recentActivity, [], (err, rows) => {
+                            if (err) return reject(err);
+                            results.recentActivity = rows.map(row => ({
+                                ...row,
+                                details: this.formatEventDetails(row.event_type, row.event_data)
+                            }));
+                            resolve(results);
+                        });
+                    });
+                });
+            });
+        });
+    }
+    
+    // Get engagement metrics
+    async getEngagementMetrics(startDate, endDate) {
+        return new Promise((resolve, reject) => {
+            const queries = {
+                retentionRates: `
+                    SELECT 
+                        CAST((julianday(ae2.timestamp) - julianday(ae1.timestamp)) AS INTEGER) as days_after,
+                        COUNT(DISTINCT ae2.user_id) * 100.0 / 
+                        (SELECT COUNT(DISTINCT user_id) FROM analytics_events WHERE event_type = ? AND timestamp BETWEEN ? AND ?) as retention_rate
+                    FROM analytics_events ae1
+                    JOIN analytics_events ae2 ON ae1.user_id = ae2.user_id
+                    WHERE ae1.event_type = ?
+                    AND ae1.timestamp BETWEEN ? AND ?
+                    AND ae2.timestamp > ae1.timestamp
+                    AND (julianday(ae2.timestamp) - julianday(ae1.timestamp)) IN (1, 7, 14, 30)
+                    GROUP BY days_after
+                `,
+                sessionDistribution: `
+                    SELECT 
+                        CASE 
+                            WHEN session_duration < 60 THEN '< 1 min'
+                            WHEN session_duration < 300 THEN '1-5 min'
+                            WHEN session_duration < 900 THEN '5-15 min'
+                            WHEN session_duration < 1800 THEN '15-30 min'
+                            ELSE '> 30 min'
+                        END as duration_bucket,
+                        COUNT(*) as count
+                    FROM (
+                        SELECT 
+                            user_id,
+                            session_id,
+                            (julianday(MAX(timestamp)) - julianday(MIN(timestamp))) * 24 * 60 * 60 as session_duration
+                        FROM analytics_events
+                        WHERE timestamp BETWEEN ? AND ?
+                        AND session_id IS NOT NULL
+                        GROUP BY user_id, session_id
+                    )
+                    GROUP BY duration_bucket
+                `
+            };
+            
+            const results = {};
+            
+            db.all(queries.retentionRates, [
+                ANALYTICS_EVENTS.SIGNUP_COMPLETED, startDate, endDate,
+                ANALYTICS_EVENTS.SIGNUP_COMPLETED, startDate, endDate
+            ], (err, rows) => {
+                if (err) return reject(err);
+                results.retentionRates = [100]; // Day 0 is always 100%
+                const retentionMap = {};
+                rows.forEach(row => {
+                    retentionMap[row.days_after] = row.retention_rate;
+                });
+                [1, 7, 14, 30].forEach(day => {
+                    results.retentionRates.push(retentionMap[day] || 0);
+                });
+                
+                db.all(queries.sessionDistribution, [startDate, endDate], (err, rows) => {
+                    if (err) return reject(err);
+                    const distribution = {
+                        '< 1 min': 0,
+                        '1-5 min': 0,
+                        '5-15 min': 0,
+                        '15-30 min': 0,
+                        '> 30 min': 0
+                    };
+                    rows.forEach(row => {
+                        distribution[row.duration_bucket] = row.count;
+                    });
+                    results.sessionDistribution = Object.values(distribution);
+                    resolve(results);
+                });
+            });
+        });
+    }
+    
+    // Helper to format event details for display
+    formatEventDetails(eventType, eventData) {
+        try {
+            const data = typeof eventData === 'string' ? JSON.parse(eventData) : eventData;
+            switch(eventType) {
+                case ANALYTICS_EVENTS.DISCUSSION_STARTED:
+                    return `${data.format || 'chat'} discussion`;
+                case ANALYTICS_EVENTS.PAYMENT_COMPLETED:
+                    return `$${(data.amount || 0).toFixed(2)} payment`;
+                case ANALYTICS_EVENTS.SIGNUP_COMPLETED:
+                    return 'New user signup';
+                default:
+                    return '-';
+            }
+        } catch {
+            return '-';
+        }
+    }
+    
     // Get comprehensive dashboard data
     async getDashboardData() {
         const today = new Date().toISOString().split('T')[0];

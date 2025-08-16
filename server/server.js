@@ -124,10 +124,8 @@ async function makeClaudeRequest(message, userId = null) {
     }
 }
 
-// IMPORTANT: Add webhook before express.json() middleware
-// Both endpoints needed - Stripe is configured for /api/stripe-webhook (with hyphen)
-app.use('/api/stripe/webhook', express.raw({type: 'application/json'}));
-app.use('/api/stripe-webhook', express.raw({type: 'application/json'}));
+// IMPORTANT: Webhook endpoints MUST be registered before express.json() middleware
+// to preserve the raw body for signature verification
 
 // Initialize database with proper async handling
 let dbInitialized = false;
@@ -166,85 +164,10 @@ if (typeof createAdminUser === 'function') {
     }, 1000);
 }
 
-// Enable CORS and JSON parsing
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '..'))); // Serve static files from current directory
-
-// Favicon route
-app.get('/favicon.ico', (req, res) => {
-    res.status(204).end();
-});
-
-// Auth middleware
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ error: 'Access token required' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-}
-
-// Optional auth middleware (allows both authenticated and guest users)
-function optionalAuth(req, res, next) {
-    console.log('[OptionalAuth] Starting auth check for', req.path);
-    console.log('[OptionalAuth] Headers:', Object.keys(req.headers).filter(h => h.toLowerCase().includes('auth')));
-    
-    // Headers in Express are case-insensitive, but let's be explicit
-    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-    console.log('[OptionalAuth] Auth header value:', authHeader ? authHeader.substring(0, 30) + '...' : 'NONE');
-    
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (token) {
-        console.log('[OptionalAuth] Token found, attempting verification...');
-        try {
-            // Use synchronous verify to ensure req.user is set before next middleware
-            const user = jwt.verify(token, JWT_SECRET);
-            req.user = user;
-            console.log('[OptionalAuth] ✅ SUCCESS: User authenticated -', user.userId);
-        } catch (err) {
-            console.log('[OptionalAuth] ❌ FAILED: Token invalid -', err.message);
-            // Token is invalid or expired - treat as anonymous
-        }
-    } else {
-        console.log('[OptionalAuth] No token found in request');
-        if (authHeader) {
-            console.log('[OptionalAuth] Invalid auth header format:', authHeader);
-        }
-    }
-    
-    console.log('[OptionalAuth] Final req.user state:', req.user ? 'SET' : 'NOT SET');
-    next();
-}
-
-// Helper function to reset daily discussions if new day
-function resetDailyDiscussions(userId, callback) {
-    db.run(`
-        UPDATE users 
-        SET discussions_used = CASE 
-            WHEN last_reset_date != CURRENT_DATE THEN 0
-            ELSE discussions_used 
-        END,
-        last_reset_date = CURRENT_DATE
-        WHERE id = ?
-    `, [userId], callback);
-}
-
 // ============================================================================
-// STRIPE WEBHOOK (MUST BE BEFORE OTHER ROUTES)
+// STRIPE WEBHOOK HANDLER (MUST BE DEFINED BEFORE USE)
 // ============================================================================
 
-// Handler function for Stripe webhooks
 const handleStripeWebhook = (req, res) => {
     if (!stripe) {
         console.error('Stripe webhook called but Stripe not configured');
@@ -410,9 +333,87 @@ const handleStripeWebhook = (req, res) => {
     res.status(200).json({received: true});
 };
 
-// Register both webhook endpoints (Stripe is configured for /api/stripe-webhook)
-app.post('/api/stripe/webhook', handleStripeWebhook);
-app.post('/api/stripe-webhook', handleStripeWebhook);
+// Enable CORS first
+app.use(cors());
+
+// IMPORTANT: Register webhook routes BEFORE express.json() middleware
+// Webhook endpoints need raw body for signature verification
+app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), handleStripeWebhook);
+
+// Now add JSON parsing for all other routes
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '..'))); // Serve static files from current directory
+
+// Favicon route
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end();
+});
+
+// Auth middleware
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ error: 'Access token required' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid token' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+// Optional auth middleware (allows both authenticated and guest users)
+function optionalAuth(req, res, next) {
+    console.log('[OptionalAuth] Starting auth check for', req.path);
+    console.log('[OptionalAuth] Headers:', Object.keys(req.headers).filter(h => h.toLowerCase().includes('auth')));
+    
+    // Headers in Express are case-insensitive, but let's be explicit
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    console.log('[OptionalAuth] Auth header value:', authHeader ? authHeader.substring(0, 30) + '...' : 'NONE');
+    
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+        console.log('[OptionalAuth] Token found, attempting verification...');
+        try {
+            // Use synchronous verify to ensure req.user is set before next middleware
+            const user = jwt.verify(token, JWT_SECRET);
+            req.user = user;
+            console.log('[OptionalAuth] ✅ SUCCESS: User authenticated -', user.userId);
+        } catch (err) {
+            console.log('[OptionalAuth] ❌ FAILED: Token invalid -', err.message);
+            // Token is invalid or expired - treat as anonymous
+        }
+    } else {
+        console.log('[OptionalAuth] No token found in request');
+        if (authHeader) {
+            console.log('[OptionalAuth] Invalid auth header format:', authHeader);
+        }
+    }
+    
+    console.log('[OptionalAuth] Final req.user state:', req.user ? 'SET' : 'NOT SET');
+    next();
+}
+
+// Helper function to reset daily discussions if new day
+function resetDailyDiscussions(userId, callback) {
+    db.run(`
+        UPDATE users 
+        SET discussions_used = CASE 
+            WHEN last_reset_date != CURRENT_DATE THEN 0
+            ELSE discussions_used 
+        END,
+        last_reset_date = CURRENT_DATE
+        WHERE id = ?
+    `, [userId], callback);
+}
+
 
 // ============================================================================
 // AUTH ROUTES
@@ -1246,6 +1247,37 @@ app.get('/api/analytics/retention/:cohortDate', authenticateToken, requireAdmin,
     } catch (error) {
         console.error('Retention analytics error:', error);
         res.status(500).json({ error: 'Failed to get retention data' });
+    }
+});
+
+// Real-time analytics endpoint
+app.get('/api/analytics/realtime', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const now = new Date();
+        const fiveMinutesAgo = new Date(now - 5 * 60 * 1000);
+        const todayStart = new Date(now.setHours(0, 0, 0, 0));
+        
+        // Get real-time metrics
+        const realtimeData = await analytics.getRealtimeMetrics(fiveMinutesAgo, todayStart);
+        res.json(realtimeData);
+    } catch (error) {
+        console.error('Realtime analytics error:', error);
+        res.status(500).json({ error: 'Failed to get realtime data' });
+    }
+});
+
+// Engagement analytics endpoint
+app.get('/api/analytics/engagement', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const end = endDate || new Date().toISOString();
+        
+        const engagementData = await analytics.getEngagementMetrics(start, end);
+        res.json(engagementData);
+    } catch (error) {
+        console.error('Engagement analytics error:', error);
+        res.status(500).json({ error: 'Failed to get engagement data' });
     }
 });
 
