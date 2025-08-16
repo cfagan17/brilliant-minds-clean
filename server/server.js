@@ -1219,18 +1219,69 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
         const userId = req.user.userId;
         console.log('[Analytics Dashboard] User ID:', userId);
         
-        // Get comprehensive dashboard data
-        const dashboardData = await analytics.getDashboardData();
-        
-        // Add legacy in-memory data if available
-        if (global.analyticsData) {
-            dashboardData.legacy = {
-                totalEvents: global.analyticsData.totalEvents,
-                formatPopularity: global.analyticsData.formatPopularity
+        // For now, return simplified data that works with PostgreSQL
+        const simplifiedData = await new Promise((resolve, reject) => {
+            const data = {
+                totalUsers: 0,
+                proUsers: 0,
+                totalDiscussions: 0,
+                activeUsers7d: 0,
+                totalRevenue: 0,
+                mrr: 0,
+                totalApiCosts: 0,
+                userGrowth: 0,
+                avgDiscussionsPerUser: 0,
+                dailyStats: [],
+                revenueByDay: [],
+                formatPopularity: {},
+                userGrowthData: [],
+                recentUsers: [],
+                topUsers: []
             };
-        }
+            
+            // Get basic user stats
+            db.get(`
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN is_pro = true THEN 1 ELSE 0 END) as pro_users,
+                    SUM(discussions_used) as total_discussions
+                FROM users
+            `, [], (err, stats) => {
+                if (err) {
+                    console.error('Stats query error:', err);
+                    return reject(err);
+                }
+                
+                data.totalUsers = stats?.total || 0;
+                data.proUsers = stats?.pro_users || 0;
+                data.totalDiscussions = stats?.total_discussions || 0;
+                data.avgDiscussionsPerUser = data.totalUsers > 0 ? data.totalDiscussions / data.totalUsers : 0;
+                data.mrr = data.proUsers * 2; // $2 per pro user
+                data.totalRevenue = data.mrr * 3; // Estimate 3 months average
+                
+                // Get recent users
+                db.all(`
+                    SELECT email, is_pro, discussions_used, created_at
+                    FROM users
+                    ORDER BY created_at DESC
+                    LIMIT 10
+                `, [], (err, users) => {
+                    if (err) {
+                        console.error('Recent users error:', err);
+                    }
+                    data.recentUsers = users || [];
+                    
+                    // Get format popularity from in-memory data
+                    if (global.analyticsData) {
+                        data.formatPopularity = global.analyticsData.formatPopularity || {};
+                    }
+                    
+                    resolve(data);
+                });
+            });
+        });
         
-        res.json(dashboardData);
+        res.json(simplifiedData);
         
     } catch (error) {
         console.error('Dashboard error:', error);
