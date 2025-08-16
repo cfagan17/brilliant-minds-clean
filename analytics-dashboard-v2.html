@@ -499,10 +499,11 @@
     </div>
 
     <script>
-        // Authentication check
-        const token = localStorage.getItem('token');
+        // Authentication check - use authToken to match main app
+        const token = localStorage.getItem('authToken');
         if (!token) {
-            window.location.href = '/login.html?redirect=analytics-dashboard-v2.html';
+            alert('Please sign in first to access the analytics dashboard');
+            window.location.href = '/?showLogin=true';
         }
 
         // Global variables
