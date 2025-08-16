@@ -3869,7 +3869,18 @@ async function startDiscussion() {
    // Check usage limits for anonymous users - fetch actual count from server
    if (!currentUser) {
       try {
-         const response = await fetch('/api/rate-limit-status');
+         // Get or create anonymous session ID
+         let anonSessionId = localStorage.getItem('anonSessionId');
+         if (!anonSessionId) {
+             anonSessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+             localStorage.setItem('anonSessionId', anonSessionId);
+         }
+         
+         const response = await fetch('/api/rate-limit-status', {
+             headers: {
+                 'X-Session-Id': anonSessionId
+             }
+         });
          if (response.ok) {
             const data = await response.json();
             const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 0;
@@ -10033,6 +10044,16 @@ Keep it concise and forward-looking.`;
       
       console.log('Calling endpoint:', endpoint, 'isSuggestion:', isSuggestion);
       console.log('SessionId being sent:', discussionState.discussionId);
+      
+      // Add anonymous session ID to headers if not logged in
+      if (!currentUser) {
+         let anonSessionId = localStorage.getItem('anonSessionId');
+         if (!anonSessionId) {
+            anonSessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            localStorage.setItem('anonSessionId', anonSessionId);
+         }
+         headers['X-Session-Id'] = anonSessionId;
+      }
       
       const response = await fetch(endpoint, {
          method: 'POST',

@@ -661,8 +661,46 @@ app.post('/api/auth/claim-pro', async (req, res) => {
 global.anonymousUsage = global.anonymousUsage || new Map();
 const anonymousUsage = global.anonymousUsage;
 
+// Helper function to get or create anonymous user in database
+async function getOrCreateAnonymousUser(sessionId, ip) {
+    return new Promise((resolve, reject) => {
+        // First check if this session exists
+        db.get('SELECT * FROM anonymous_users WHERE session_id = ?', [sessionId], (err, user) => {
+            if (err) {
+                console.error('Error checking anonymous user:', err);
+                return reject(err);
+            }
+            
+            if (user) {
+                // Update last_active timestamp
+                db.run('UPDATE anonymous_users SET last_active = CURRENT_TIMESTAMP WHERE session_id = ?', 
+                    [sessionId], (err) => {
+                    if (err) console.error('Error updating anonymous user:', err);
+                });
+                resolve(user);
+            } else {
+                // Create new anonymous user
+                db.run(`
+                    INSERT INTO anonymous_users (session_id, discussions_used, created_at, last_active)
+                    VALUES (?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                `, [sessionId], function(err) {
+                    if (err) {
+                        console.error('Error creating anonymous user:', err);
+                        return reject(err);
+                    }
+                    resolve({
+                        id: this.lastID,
+                        session_id: sessionId,
+                        discussions_used: 0
+                    });
+                });
+            }
+        });
+    });
+}
+
 // Check usage status endpoint for both authenticated and anonymous users
-app.get('/api/rate-limit-status', optionalAuth, (req, res) => {
+app.get('/api/rate-limit-status', optionalAuth, async (req, res) => {
     // For authenticated users, return their database usage
     if (req.user) {
         db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], (err, user) => {
@@ -687,37 +725,34 @@ app.get('/api/rate-limit-status', optionalAuth, (req, res) => {
             });
         });
     } else {
-        // For anonymous users, check our session-based tracking
+        // For anonymous users, check database using session ID
+        const sessionId = req.headers['x-session-id'] || req.query.sessionId || `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const ip = req.ip || req.connection.remoteAddress || 'unknown';
-        const today = new Date().toDateString();
-        const usageKey = `${ip}_${today}`;
         
-        // Get or create usage entry for this IP today
-        let usage = anonymousUsage.get(usageKey);
-        if (!usage) {
-            usage = { 
-                discussions: new Set(), 
-                count: 0,
-                date: today 
-            };
-            anonymousUsage.set(usageKey, usage);
-        }
-        
-        // Clean up old entries
-        for (const [key, value] of anonymousUsage.entries()) {
-            if (value.date !== today) {
-                anonymousUsage.delete(key);
-            }
-        }
-        
-        const remaining = Math.max(0, 10 - usage.count);
-        res.json({
-            authenticated: false,
-            ip: req.ip,
-            rateLimit: {
-                limit: 10,
-                remaining: remaining
-            }
+        // Save to database for tracking
+        getOrCreateAnonymousUser(sessionId, ip).then(anonUser => {
+            const remaining = Math.max(0, 10 - (anonUser.discussions_used || 0));
+            res.json({
+                authenticated: false,
+                sessionId: sessionId,
+                ip: req.ip,
+                rateLimit: {
+                    limit: 10,
+                    remaining: remaining
+                }
+            });
+        }).catch(error => {
+            console.error('Error with anonymous user:', error);
+            // Fallback response
+            res.json({
+                authenticated: false,
+                sessionId: sessionId,
+                ip: req.ip,
+                rateLimit: {
+                    limit: 10,
+                    remaining: 10
+                }
+            });
         });
     }
 });
@@ -790,60 +825,66 @@ app.post('/api/claude', optionalAuth, async (req, res) => {
         } else {
             // Guest user - limited to 10 discussions per day
             const ip = req.ip || req.connection.remoteAddress || 'unknown';
-            const sessionId = req.body?.sessionId;
-            const today = new Date().toDateString();
-            const usageKey = `${ip}_${today}`;
+            const discussionSessionId = req.body?.sessionId;
+            const anonSessionId = req.headers['x-session-id'] || `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
             
-            // Get or create usage entry for this IP today
-            let usage = anonymousUsage.get(usageKey);
-            if (!usage) {
-                usage = { 
-                    discussions: new Set(), 
-                    count: 0,
-                    date: today 
-                };
-                anonymousUsage.set(usageKey, usage);
-            }
-            
-            // Check if this is a new discussion session
-            let isNewDiscussion = false;
-            if (sessionId && sessionId.startsWith('disc_')) {
-                if (!usage.discussions.has(sessionId)) {
-                    // This is the first request for this discussion
-                    usage.discussions.add(sessionId);
-                    usage.count++;
-                    isNewDiscussion = true;
-                    console.log(`New discussion ${sessionId} for IP ${ip}. Count: ${usage.count}/10`);
-                } else {
-                    console.log(`Existing discussion ${sessionId} for IP ${ip}. Count remains: ${usage.count}/10`);
-                }
-            }
-            
-            const remaining = Math.max(0, 10 - usage.count);
-            
-            // Check if limit exceeded
-            if (isNewDiscussion && usage.count > 10) {
-                console.log('Discussion limit exceeded for anonymous user');
-                return res.status(429).json({ 
-                    error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
-                    limit: true,
-                    guestLimitReached: true,
-                    remaining: 0,
-                    limit: 10,
-                    isProUser: false,
-                    userType: 'anonymous'
-                });
-            }
-            
+            // Track in database
             try {
-                console.log('Making Claude API request for guest user:', req.ip);
+                const anonUser = await getOrCreateAnonymousUser(anonSessionId, ip);
+                
+                // Check if this is a new discussion session
+                let isNewDiscussion = false;
+                if (discussionSessionId && discussionSessionId.startsWith('disc_')) {
+                    // Track in memory for backward compatibility
+                    const today = new Date().toDateString();
+                    const usageKey = `${ip}_${today}`;
+                    let usage = anonymousUsage.get(usageKey);
+                    if (!usage) {
+                        usage = { discussions: new Set(), count: 0, date: today };
+                        anonymousUsage.set(usageKey, usage);
+                    }
+                    
+                    if (!usage.discussions.has(discussionSessionId)) {
+                        usage.discussions.add(discussionSessionId);
+                        usage.count++;
+                        isNewDiscussion = true;
+                        
+                        // Update database
+                        db.run('UPDATE anonymous_users SET discussions_used = discussions_used + 1, last_active = CURRENT_TIMESTAMP WHERE session_id = ?',
+                            [anonSessionId], (err) => {
+                            if (err) console.error('Error updating anonymous discussion count:', err);
+                        });
+                        
+                        console.log(`New discussion ${discussionSessionId} for anonymous session ${anonSessionId}. Count: ${anonUser.discussions_used + 1}/10`);
+                    }
+                }
+                
+                const currentCount = anonUser.discussions_used + (isNewDiscussion ? 1 : 0);
+                const remaining = Math.max(0, 10 - currentCount);
+                
+                // Check if limit exceeded
+                if (isNewDiscussion && currentCount > 10) {
+                    console.log('Discussion limit exceeded for anonymous user');
+                    return res.status(429).json({ 
+                        error: 'You\'ve reached your free discussion limit! Upgrade to Pro for unlimited access.',
+                        limit: true,
+                        guestLimitReached: true,
+                        remaining: 0,
+                        limit: 10,
+                        isProUser: false,
+                        userType: 'anonymous'
+                    });
+                }
+                
+                console.log('Making Claude API request for anonymous user:', anonSessionId);
                 const claudeResponse = await makeClaudeRequest(message, `anon_${req.ip}`);
-                console.log('Claude API response received for guest');
+                console.log('Claude API response received for anonymous');
                 
                 res.json({
                     ...claudeResponse,
+                    sessionId: anonSessionId,
                     usage: {
-                        used: usage.count,
+                        used: currentCount,
                         limit: 10,
                         remaining: remaining,
                         isProUser: false,
@@ -854,9 +895,9 @@ app.post('/api/claude', optionalAuth, async (req, res) => {
                         : `${remaining} anonymous discussions remaining. Sign up for 10 total discussions!`
                 });
             } catch (error) {
-                console.error('Claude API error for guest:', error);
+                console.error('Error handling anonymous request:', error);
                 res.status(500).json({ 
-                    error: 'Failed to get AI response',
+                    error: 'Failed to process request',
                     details: error.message 
                 });
             }
