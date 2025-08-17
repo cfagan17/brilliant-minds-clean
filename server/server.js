@@ -623,10 +623,13 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             // Store token in database (expires in 1 hour)
             const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
             
+            // Use proper boolean for PostgreSQL
+            const usedValue = USE_POSTGRES ? false : 0;
+            
             db.run(`
                 INSERT INTO password_resets (user_email, token, expires_at, used)
-                VALUES (?, ?, ?, false)
-            `, [user.email, hashedToken, expiresAt.toISOString()], async (insertErr) => {
+                VALUES (?, ?, ?, ?)
+            `, [user.email, hashedToken, expiresAt.toISOString(), usedValue], async (insertErr) => {
                 if (insertErr) {
                     console.error('Failed to store reset token:', insertErr);
                     return res.status(500).json({ error: 'Failed to create reset token' });
@@ -734,13 +737,20 @@ app.post('/api/auth/reset-password', async (req, res) => {
         const crypto = require('crypto');
         const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
         
-        // Find valid reset token
-        db.get(`
+        // Find valid reset token (PostgreSQL compatible)
+        const resetQuery = USE_POSTGRES ? `
+            SELECT * FROM password_resets 
+            WHERE token = ? 
+            AND expires_at > NOW()
+            AND used = false
+        ` : `
             SELECT * FROM password_resets 
             WHERE token = ? 
             AND expires_at > datetime('now')
-            AND used = false
-        `, [hashedToken], async (err, resetRecord) => {
+            AND used = 0
+        `;
+        
+        db.get(resetQuery, [hashedToken], async (err, resetRecord) => {
             if (err || !resetRecord) {
                 return res.status(400).json({ error: 'Invalid or expired reset token' });
             }
@@ -760,11 +770,12 @@ app.post('/api/auth/reset-password', async (req, res) => {
                 }
                 
                 // Mark token as used
+                const usedUpdateValue = USE_POSTGRES ? true : 1;
                 db.run(`
                     UPDATE password_resets 
-                    SET used = true 
+                    SET used = ? 
                     WHERE id = ?
-                `, [resetRecord.id]);
+                `, [usedUpdateValue, resetRecord.id]);
                 
                 console.log('Password reset successful for:', resetRecord.user_email);
                 res.json({ message: 'Password has been reset successfully' });
