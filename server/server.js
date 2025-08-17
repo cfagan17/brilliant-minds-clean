@@ -33,12 +33,17 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 // Initialize Resend for email sending
 let resend;
-if (RESEND_API_KEY) {
-    const { Resend } = require('resend');
-    resend = new Resend(RESEND_API_KEY);
-    console.log('✅ Resend email service initialized');
-} else {
-    console.log('⚠️  Resend not configured - password reset emails will not be sent');
+try {
+    if (RESEND_API_KEY) {
+        const { Resend } = require('resend');
+        resend = new Resend(RESEND_API_KEY);
+        console.log('✅ Resend email service initialized');
+    } else {
+        console.log('⚠️  Resend not configured - password reset emails will not be sent');
+    }
+} catch (resendError) {
+    console.log('⚠️  Resend initialization error:', resendError.message);
+    resend = null;
 }
 
 // Initialize Stripe
