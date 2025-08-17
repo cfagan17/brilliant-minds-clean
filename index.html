@@ -3430,6 +3430,10 @@
             </form>
             
             <div class="auth-toggle">
+                <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+            </div>
+            
+            <div class="auth-toggle">
                 Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a>
             </div>
             <div class="auth-toggle" style="margin-top: 10px;">
@@ -3492,6 +3496,26 @@
         <div class="auth-header">
             <h2>Manage Subscription</h2>
             <p>You are currently on the Pro plan</p>
+        </div>
+        
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordForm" style="display: none;">
+            <div class="auth-header">
+                <h2>Reset Password</h2>
+                <p>Enter your email and we'll send you a reset link</p>
+            </div>
+            
+            <div class="auth-error" id="forgotPasswordError"></div>
+            <div class="auth-success" id="forgotPasswordSuccess" style="display: none; color: #4caf50; margin-bottom: 15px;"></div>
+            
+            <form class="auth-form" onsubmit="handleForgotPassword(event)">
+                <input type="email" class="auth-input" placeholder="Email" required id="forgotEmail">
+                <button type="submit" class="auth-submit" id="forgotSubmit">Send Reset Link</button>
+            </form>
+            
+            <div class="auth-toggle">
+                <a href="#" onclick="showLogin()">Back to Sign In</a>
+            </div>
         </div>
         
         <div style="padding: 20px; text-align: center;">
@@ -5853,6 +5877,29 @@ async function upgradeToProDemo() {
    trackUpgradeFlow('payment_started', {
       paymentMethod: 'stripe'
    });
+   
+   // Check if user is logged in FIRST
+   if (!authToken) {
+      console.log('User not logged in, showing signup modal');
+      alert('Please create an account or sign in first to upgrade to Pro');
+      
+      // Close upgrade modal
+      const upgradeModal = document.getElementById('upgradeModal');
+      if (upgradeModal) {
+         upgradeModal.style.display = 'none';
+      }
+      
+      // Show login modal
+      showLogin();
+      
+      // Track that login was required
+      trackUpgradeFlow('login_required', {
+         reason: 'checkout_without_account'
+      });
+      
+      return; // Stop here - don't proceed to checkout
+   }
+   
    try {
       // Create checkout session
       if (!stripe) {
@@ -5868,12 +5915,8 @@ async function upgradeToProDemo() {
       console.log('Creating checkout session...');
       const headers = {
          'Content-Type': 'application/json',
+         'Authorization': `Bearer ${authToken}` // We know authToken exists now
       };
-      
-      // Add auth token if available
-      if (authToken) {
-         headers['Authorization'] = `Bearer ${authToken}`;
-      }
       
       const response = await fetch('/api/create-checkout-session', {
          method: 'POST',
@@ -9650,6 +9693,7 @@ Keep it concise and forward-looking.`;
       document.getElementById('authModal').classList.add('show');
       document.getElementById('loginForm').style.display = 'block';
       document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('forgotPasswordForm').style.display = 'none';
       clearAuthErrors();
    }
 
@@ -9657,6 +9701,15 @@ Keep it concise and forward-looking.`;
       document.getElementById('authModal').classList.add('show');
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('forgotPasswordForm').style.display = 'none';
+      clearAuthErrors();
+   }
+   
+   function showForgotPassword() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('forgotPasswordForm').style.display = 'block';
+      document.getElementById('claimProForm').style.display = 'none';
       clearAuthErrors();
    }
 
@@ -9802,6 +9855,53 @@ Keep it concise and forward-looking.`;
 
       submitBtn.disabled = false;
       submitBtn.textContent = 'Create Account';
+   }
+   
+   async function handleForgotPassword(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('forgotEmail').value;
+      const errorDiv = document.getElementById('forgotPasswordError');
+      const successDiv = document.getElementById('forgotPasswordSuccess');
+      const submitBtn = document.getElementById('forgotSubmit');
+      
+      errorDiv.style.display = 'none';
+      successDiv.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+      
+      try {
+         const response = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email })
+         });
+         
+         const data = await response.json();
+         
+         if (response.ok) {
+            successDiv.textContent = data.message || 'If that email exists, a reset link has been sent.';
+            successDiv.style.display = 'block';
+            document.getElementById('forgotEmail').value = '';
+            
+            // Show reset URL in development
+            if (data.resetUrl) {
+               console.log('Reset URL (dev only):', data.resetUrl);
+               successDiv.innerHTML += `<br><br><small>Dev mode: <a href="${data.resetUrl}" target="_blank">Open reset link</a></small>`;
+            }
+         } else {
+            errorDiv.textContent = data.error || 'Failed to send reset link';
+            errorDiv.style.display = 'block';
+         }
+      } catch (error) {
+         errorDiv.textContent = 'Network error. Please try again.';
+         errorDiv.style.display = 'block';
+      }
+      
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send Reset Link';
    }
 
    async function handleClaimPro(event) {

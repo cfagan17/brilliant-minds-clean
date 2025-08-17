@@ -29,6 +29,17 @@ initializeSentry(app);
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-here';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+// Initialize Resend for email sending
+let resend;
+if (RESEND_API_KEY) {
+    const { Resend } = require('resend');
+    resend = new Resend(RESEND_API_KEY);
+    console.log('✅ Resend email service initialized');
+} else {
+    console.log('⚠️  Resend not configured - password reset emails will not be sent');
+}
 
 // Initialize Stripe
 let stripe;
@@ -243,15 +254,33 @@ const handleStripeWebhook = (req, res) => {
                         }
                     });
                 } else {
-                    // User doesn't exist, create new pro user (without password)
+                    // User doesn't exist, create new pro user with temporary password
+                    // They'll need to use "forgot password" to set their password
+                    const tempPasswordHash = '$2b$10$TEMP.NEEDS.RESET.HASH'; // Invalid hash that can't be logged into
+                    
                     db.run(`
-                        INSERT INTO users (email, is_pro, stripe_customer_id, subscription_status)
-                        VALUES (?, TRUE, ?, 'active')
-                    `, [customerEmail, session.customer], function(err) {
+                        INSERT INTO users (
+                            email, 
+                            password_hash,
+                            is_pro, 
+                            stripe_customer_id, 
+                            subscription_status,
+                            discussions_used,
+                            total_messages,
+                            created_at
+                        )
+                        VALUES (?, ?, TRUE, ?, 'active', 0, 0, CURRENT_TIMESTAMP)
+                    `, [customerEmail, tempPasswordHash, session.customer], function(err) {
                         if (err) {
-                            console.error('Error creating pro user:', err);
+                            console.error('❌ CRITICAL: Failed to create user after payment:', err);
+                            console.error('Customer email:', customerEmail);
+                            console.error('Stripe customer:', session.customer);
+                            
+                            // TODO: Send alert to admin or create a recovery mechanism
+                            // This is a paying customer who can't access their account!
                         } else {
                             console.log(`✅ New Pro user ${customerEmail} created from payment`);
+                            console.log(`⚠️  User needs to set password via forgot password flow`);
                             
                             // Track payment conversion for new user
                             analytics.trackEvent(ANALYTICS_EVENTS.PAYMENT_COMPLETED, this.lastID, {
@@ -560,6 +589,189 @@ app.post('/api/auth/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Login error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Password reset request - sends reset link via email
+app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+        
+        // Check if user exists
+        db.get('SELECT id, email FROM users WHERE email = ?', [email.toLowerCase()], async (err, user) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Server error' });
+            }
+            
+            // Always return success to prevent email enumeration
+            if (!user) {
+                console.log('Password reset requested for non-existent email:', email);
+                return res.json({ message: 'If that email exists, a reset link has been sent.' });
+            }
+            
+            // Generate reset token
+            const crypto = require('crypto');
+            const resetToken = crypto.randomBytes(32).toString('hex');
+            const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+            
+            // Store token in database (expires in 1 hour)
+            const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
+            
+            db.run(`
+                INSERT INTO password_resets (user_email, token, expires_at, used)
+                VALUES (?, ?, ?, false)
+            `, [user.email, hashedToken, expiresAt.toISOString()], async (insertErr) => {
+                if (insertErr) {
+                    console.error('Failed to store reset token:', insertErr);
+                    return res.status(500).json({ error: 'Failed to create reset token' });
+                }
+                
+                // Create reset URL
+                const baseUrl = req.headers.origin || 'https://iconoclash.ai';
+                const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}`;
+                
+                console.log('Password reset requested for:', user.email);
+                console.log('Reset URL:', resetUrl);
+                
+                // Send email with Resend
+                if (resend) {
+                    try {
+                        const emailHtml = `
+                            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
+                                    <h1 style="color: white; margin: 0;">Iconoclash</h1>
+                                </div>
+                                <div style="background: white; padding: 40px; border: 1px solid #e5e5e5; border-radius: 0 0 12px 12px;">
+                                    <h2 style="color: #333; margin-top: 0;">Reset Your Password</h2>
+                                    <p style="color: #666; line-height: 1.6;">
+                                        We received a request to reset your password. Click the button below to create a new password:
+                                    </p>
+                                    <div style="text-align: center; margin: 30px 0;">
+                                        <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                                            Reset Password
+                                        </a>
+                                    </div>
+                                    <p style="color: #999; font-size: 14px;">
+                                        This link will expire in 1 hour. If you didn't request this, you can safely ignore this email.
+                                    </p>
+                                    <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
+                                    <p style="color: #999; font-size: 12px; text-align: center;">
+                                        If the button doesn't work, copy and paste this link into your browser:<br>
+                                        <a href="${resetUrl}" style="color: #667eea; word-break: break-all;">${resetUrl}</a>
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        const { data, error } = await resend.emails.send({
+                            from: 'Iconoclash <onboarding@resend.dev>', // Use Resend's domain until yours is verified
+                            // from: 'Iconoclash <noreply@iconoclash.ai>', // Use this after domain verification
+                            to: [user.email],
+                            subject: 'Reset Your Iconoclash Password',
+                            html: emailHtml
+                        });
+                        
+                        if (error) {
+                            console.error('Failed to send reset email:', error);
+                            // Still log for manual sending as backup
+                            console.log('=== PASSWORD RESET LINK (Email failed) ===');
+                            console.log('Email to:', user.email);
+                            console.log('Reset link:', resetUrl);
+                            console.log('========================');
+                        } else {
+                            console.log('Reset email sent successfully:', data.id);
+                        }
+                    } catch (emailError) {
+                        console.error('Error sending email:', emailError);
+                        // Log for manual sending as backup
+                        console.log('=== PASSWORD RESET LINK (Email error) ===');
+                        console.log('Email to:', user.email);
+                        console.log('Reset link:', resetUrl);
+                        console.log('========================');
+                    }
+                } else {
+                    // No email service configured, log for manual sending
+                    console.log('=== PASSWORD RESET LINK (No email service) ===');
+                    console.log('Email to:', user.email);
+                    console.log('Reset link:', resetUrl);
+                    console.log('Expires in 1 hour');
+                    console.log('========================');
+                }
+                
+                res.json({ 
+                    message: 'If that email exists, a reset link has been sent.',
+                    // In development, include the link in response
+                    ...(process.env.NODE_ENV !== 'production' && { resetUrl })
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Reset password with token
+app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        
+        if (!token || !newPassword) {
+            return res.status(400).json({ error: 'Token and new password are required' });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+        
+        // Hash the token to match stored version
+        const crypto = require('crypto');
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+        
+        // Find valid reset token
+        db.get(`
+            SELECT * FROM password_resets 
+            WHERE token = ? 
+            AND expires_at > datetime('now')
+            AND used = false
+        `, [hashedToken], async (err, resetRecord) => {
+            if (err || !resetRecord) {
+                return res.status(400).json({ error: 'Invalid or expired reset token' });
+            }
+            
+            // Hash new password
+            const passwordHash = await bcrypt.hash(newPassword, 10);
+            
+            // Update user's password
+            db.run(`
+                UPDATE users 
+                SET password_hash = ?
+                WHERE email = ?
+            `, [passwordHash, resetRecord.user_email], (updateErr) => {
+                if (updateErr) {
+                    console.error('Failed to update password:', updateErr);
+                    return res.status(500).json({ error: 'Failed to update password' });
+                }
+                
+                // Mark token as used
+                db.run(`
+                    UPDATE password_resets 
+                    SET used = true 
+                    WHERE id = ?
+                `, [resetRecord.id]);
+                
+                console.log('Password reset successful for:', resetRecord.user_email);
+                res.json({ message: 'Password has been reset successfully' });
+            });
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1035,9 +1247,10 @@ app.post('/api/verify-payment', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
+app.post('/api/create-checkout-session', authenticateToken, async (req, res) => {
     try {
         console.log('=== Create checkout session request ===');
+        console.log('User ID:', req.user.userId); // Now guaranteed to exist
         console.log('Stripe initialized:', !!stripe);
         console.log('Environment:', process.env.NODE_ENV);
         
@@ -1080,32 +1293,31 @@ app.post('/api/create-checkout-session', optionalAuth, async (req, res) => {
             cancel_url: `${baseUrl}/?canceled=true`,
         };
         
-        // If user is authenticated, prefill their email
-        if (req.user) {
-            db.get('SELECT email FROM users WHERE id = ?', [req.user.userId], async (err, user) => {
-                if (!err && user) {
-                    sessionConfig.customer_email = user.email;
-                }
-                
-                const session = await stripe.checkout.sessions.create(sessionConfig);
-                
-                // Store session ID for manual verification (development)
-                db.run('UPDATE users SET last_checkout_session = ? WHERE id = ?', 
-                    [session.id, req.user.userId]);
-                
-                res.json({ sessionId: session.id });
-            });
-        } else {
-            const session = await stripe.checkout.sessions.create(sessionConfig);
-            
-            // Store session ID for manual verification (development)
-            if (req.user) {
-                db.run('UPDATE users SET last_checkout_session = ? WHERE id = ?', 
-                    [session.id, req.user.userId]);
+        // Get user's email to prefill in Stripe (user is now guaranteed to be authenticated)
+        db.get('SELECT email FROM users WHERE id = ?', [req.user.userId], async (err, user) => {
+            if (!err && user) {
+                sessionConfig.customer_email = user.email;
+                console.log('Prefilling email for checkout:', user.email);
             }
             
-            res.json({ sessionId: session.id });
-        }
+            try {
+                const session = await stripe.checkout.sessions.create(sessionConfig);
+                
+                // Store session ID for tracking
+                db.run('UPDATE users SET last_checkout_session = ? WHERE id = ?', 
+                    [session.id, req.user.userId], (updateErr) => {
+                        if (updateErr) {
+                            console.error('Failed to store checkout session:', updateErr);
+                        }
+                    });
+                
+                console.log('Checkout session created:', session.id);
+                res.json({ sessionId: session.id });
+            } catch (stripeError) {
+                console.error('Stripe session creation failed:', stripeError);
+                res.status(500).json({ error: 'Failed to create checkout session' });
+            }
+        });
 
     } catch (error) {
         console.error('Error creating checkout session:', error);
