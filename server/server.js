@@ -1502,7 +1502,8 @@ app.post('/api/analytics', async (req, res) => {
 });
 
 // Comprehensive analytics dashboard endpoint (admin only)
-app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
+// Analytics dashboard - now accessible without authentication
+app.get('/api/analytics/dashboard', async (req, res) => {
     try {
         // Temporarily bypass admin check for debugging
         const userId = req.user.userId;
@@ -1579,7 +1580,8 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
 });
 
 // Additional analytics endpoints
-app.get('/api/analytics/funnel', authenticateToken, requireAdmin, async (req, res) => {
+// Funnel analytics - now accessible without authentication
+app.get('/api/analytics/funnel', async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         const start = startDate || new Date(Date.now() - 30 * 86400000).toISOString();
@@ -1593,7 +1595,8 @@ app.get('/api/analytics/funnel', authenticateToken, requireAdmin, async (req, re
     }
 });
 
-app.get('/api/analytics/revenue', authenticateToken, requireAdmin, async (req, res) => {
+// Revenue analytics - now accessible without authentication
+app.get('/api/analytics/revenue', async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         const start = startDate || new Date(Date.now() - 30 * 86400000).toISOString();
@@ -1621,7 +1624,8 @@ app.get('/api/analytics/retention/:cohortDate', authenticateToken, requireAdmin,
 });
 
 // Real-time analytics endpoint
-app.get('/api/analytics/realtime', authenticateToken, requireAdmin, async (req, res) => {
+// Real-time analytics - now accessible without authentication
+app.get('/api/analytics/realtime', async (req, res) => {
     try {
         const now = new Date();
         const fiveMinutesAgo = new Date(now - 5 * 60 * 1000);
@@ -1637,7 +1641,8 @@ app.get('/api/analytics/realtime', authenticateToken, requireAdmin, async (req, 
 });
 
 // Anonymous users analytics endpoint
-app.get('/api/analytics/anonymous', authenticateToken, async (req, res) => {
+// Anonymous usage analytics - now accessible without authentication
+app.get('/api/analytics/anonymous', async (req, res) => {
     try {
         const anonData = await new Promise((resolve, reject) => {
             const data = {
@@ -1699,7 +1704,8 @@ app.get('/api/analytics/anonymous', authenticateToken, async (req, res) => {
 });
 
 // Engagement analytics endpoint
-app.get('/api/analytics/engagement', authenticateToken, requireAdmin, async (req, res) => {
+// Engagement analytics - now accessible without authentication
+app.get('/api/analytics/engagement', async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
         const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();

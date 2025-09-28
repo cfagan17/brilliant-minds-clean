@@ -542,12 +542,8 @@
     </div>
 
     <script>
-        // Authentication check - use authToken to match main app
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            alert('Please sign in first to access the analytics dashboard');
-            window.location.href = '/?showLogin=true';
-        }
+        // Authentication disabled - analytics now accessible without login
+        const token = null; // No longer using authentication
 
         // Global variables
         let dashboardData = {};
@@ -592,11 +588,7 @@
                 const startDate = document.getElementById('startDate').value;
                 const endDate = document.getElementById('endDate').value;
                 
-                const response = await fetch(`/api/analytics/dashboard?startDate=${startDate}&endDate=${endDate}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch(`/api/analytics/dashboard?startDate=${startDate}&endDate=${endDate}`);
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch analytics data');
@@ -817,11 +809,7 @@
         // Load real-time data
         async function loadRealtimeData() {
             try {
-                const response = await fetch('/api/analytics/realtime', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch('/api/analytics/realtime');
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -850,11 +838,7 @@
         // Load revenue data
         async function loadRevenueData() {
             try {
-                const response = await fetch('/api/analytics/revenue', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch('/api/analytics/revenue');
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -890,11 +874,7 @@
         // Load anonymous user data
         async function loadAnonymousData() {
             try {
-                const response = await fetch('/api/analytics/anonymous', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch('/api/analytics/anonymous');
                 
                 if (response.ok) {
                     const data = await response.json();
@@ -952,11 +932,7 @@
         // Load engagement data
         async function loadEngagementData() {
             try {
-                const response = await fetch('/api/analytics/engagement', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetch('/api/analytics/engagement');
                 
                 if (response.ok) {
                     const data = await response.json();
