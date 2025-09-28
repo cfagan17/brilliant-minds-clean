@@ -608,55 +608,55 @@
         function updateMetrics() {
             const metricsHTML = `
                 <div class="metric-card">
-                    <div class="metric-label">Total Users</div>
+                    <div class="metric-label">Total Unique Users</div>
                     <div class="metric-value">${dashboardData.totalUsers || 0}</div>
-                    <div class="metric-change ${dashboardData.userGrowth >= 0 ? 'positive' : 'negative'}">
-                        ${dashboardData.userGrowth >= 0 ? '↑' : '↓'} ${Math.abs(dashboardData.userGrowth || 0)}% from last period
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Pro Users</div>
-                    <div class="metric-value">${dashboardData.proUsers || 0}</div>
-                    <div class="metric-change positive">
-                        ${((dashboardData.proUsers / dashboardData.totalUsers) * 100 || 0).toFixed(1)}% conversion
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">Total Discussions</div>
-                    <div class="metric-value">${dashboardData.totalDiscussions || 0}</div>
                     <div class="metric-change">
-                        ${(dashboardData.avgDiscussionsPerUser || 0).toFixed(1)} per user
+                        All-time unique visitors
                     </div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">Active Users (7d)</div>
                     <div class="metric-value">${dashboardData.activeUsers7d || 0}</div>
                     <div class="metric-change">
-                        ${((dashboardData.activeUsers7d / dashboardData.totalUsers) * 100 || 0).toFixed(1)}% of total
+                        Recent activity
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-label">Total Revenue</div>
-                    <div class="metric-value">$${(dashboardData.totalRevenue || 0).toFixed(2)}</div>
-                    <div class="metric-change positive">
-                        MRR: $${(dashboardData.mrr || 0).toFixed(2)}
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-label">API Costs</div>
-                    <div class="metric-value">$${(dashboardData.totalApiCosts || 0).toFixed(2)}</div>
+                    <div class="metric-label">Total Discussions</div>
+                    <div class="metric-value">${dashboardData.totalDiscussions || 0}</div>
                     <div class="metric-change">
-                        Profit: $${((dashboardData.totalRevenue - dashboardData.totalApiCosts) || 0).toFixed(2)}
+                        ${dashboardData.avgDiscussionsPerUser || 0} per user
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Today's Sessions</div>
+                    <div class="metric-value">${dashboardData.todayStats?.sessions || 0}</div>
+                    <div class="metric-change">
+                        ${dashboardData.todayStats?.discussions || 0} discussions
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Events</div>
+                    <div class="metric-value">${dashboardData.totalEvents || 0}</div>
+                    <div class="metric-change">
+                        All tracked events
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">7-Day Discussions</div>
+                    <div class="metric-value">${dashboardData.totalDiscussions7d || 0}</div>
+                    <div class="metric-change">
+                        Last week activity
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('metricsGrid').innerHTML = metricsHTML;
         }
 
         // Update charts
         function updateCharts() {
-            // Daily Users Chart
+            // Daily Activity Chart
             if (charts.dailyUsers) charts.dailyUsers.destroy();
             const dailyUsersCtx = document.getElementById('dailyUsersChart').getContext('2d');
             charts.dailyUsers = new Chart(dailyUsersCtx, {
@@ -664,10 +664,17 @@
                 data: {
                     labels: dashboardData.dailyStats?.map(d => d.date) || [],
                     datasets: [{
-                        label: 'Active Users',
-                        data: dashboardData.dailyStats?.map(d => d.activeUsers) || [],
+                        label: 'Sessions',
+                        data: dashboardData.dailyStats?.map(d => d.sessions) || [],
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Discussions',
+                        data: dashboardData.dailyStats?.map(d => d.discussions) || [],
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.1)',
                         tension: 0.4
                     }]
                 },
@@ -769,10 +776,10 @@
                 const topUsersTableBody = document.querySelector('#topUsersTable tbody');
                 topUsersTableBody.innerHTML = dashboardData.topUsers.map(user => `
                     <tr>
-                        <td>${user.email}</td>
-                        <td>${user.total_discussions}</td>
-                        <td>${user.avg_daily.toFixed(1)}</td>
-                        <td>${user.favorite_format || 'N/A'}</td>
+                        <td>${user.userId.substring(0, 20)}...</td>
+                        <td>${user.sessions}</td>
+                        <td>${user.discussions}</td>
+                        <td>${user.firstSeen ? new Date(user.firstSeen).toLocaleDateString() : 'N/A'}</td>
                     </tr>
                 `).join('');
             }

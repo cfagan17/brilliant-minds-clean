@@ -1502,76 +1502,100 @@ app.post('/api/analytics', async (req, res) => {
 });
 
 // Comprehensive analytics dashboard endpoint (admin only)
-// Analytics dashboard - now accessible without authentication
+// Analytics dashboard - simplified for anonymous usage tracking
 app.get('/api/analytics/dashboard', async (req, res) => {
     try {
-        // Analytics now work without authentication
-        console.log('[Analytics Dashboard] Fetching analytics data (no auth required)');
-        
-        // For now, return simplified data that works with PostgreSQL
-        const simplifiedData = await new Promise((resolve, reject) => {
-            const data = {
-                totalUsers: 0,
-                proUsers: 0,
-                totalDiscussions: 0,
-                activeUsers7d: 0,
-                totalRevenue: 0,
-                mrr: 0,
-                totalApiCosts: 0,
-                userGrowth: 0,
-                avgDiscussionsPerUser: 0,
-                dailyStats: [],
-                revenueByDay: [],
-                formatPopularity: {},
-                userGrowthData: [],
-                recentUsers: [],
-                topUsers: []
-            };
-            
-            // Get basic user stats
-            db.get(`
-                SELECT 
-                    COUNT(*) as total,
-                    SUM(CASE WHEN is_pro = true THEN 1 ELSE 0 END) as pro_users,
-                    SUM(discussions_used) as total_discussions
-                FROM users
-            `, [], (err, stats) => {
-                if (err) {
-                    console.error('Stats query error:', err);
-                    return reject(err);
-                }
-                
-                data.totalUsers = stats?.total || 0;
-                data.proUsers = stats?.pro_users || 0;
-                data.totalDiscussions = stats?.total_discussions || 0;
-                data.avgDiscussionsPerUser = data.totalUsers > 0 ? data.totalDiscussions / data.totalUsers : 0;
-                data.mrr = data.proUsers * 2; // $2 per pro user
-                data.totalRevenue = data.mrr * 3; // Estimate 3 months average
-                
-                // Get recent users
-                db.all(`
-                    SELECT email, is_pro, discussions_used, created_at
-                    FROM users
-                    ORDER BY created_at DESC
-                    LIMIT 10
-                `, [], (err, users) => {
-                    if (err) {
-                        console.error('Recent users error:', err);
-                    }
-                    data.recentUsers = users || [];
-                    
-                    // Get format popularity from in-memory data
-                    if (global.analyticsData) {
-                        data.formatPopularity = global.analyticsData.formatPopularity || {};
-                    }
-                    
-                    resolve(data);
-                });
-            });
+        console.log('[Analytics Dashboard] Fetching in-memory analytics (no auth/db required)');
+
+        const analytics = global.analyticsData || {
+            totalEvents: 0,
+            dailyStats: {},
+            formatPopularity: {},
+            userSessions: {},
+            conversions: { totalUpgrades: 0, upgradesByDay: {} }
+        };
+
+        // Calculate metrics from in-memory data
+        const today = new Date().toISOString().split('T')[0];
+        const last7Days = Array.from({length: 7}, (_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d.toISOString().split('T')[0];
         });
-        
-        res.json(simplifiedData);
-        
+
+        // Count unique users (sessions) in last 7 days
+        const activeUsers7d = new Set();
+        let totalDiscussions7d = 0;
+
+        last7Days.forEach(day => {
+            if (analytics.dailyStats[day]) {
+                analytics.dailyStats[day].sessions.forEach(userId => activeUsers7d.add(userId));
+                totalDiscussions7d += analytics.dailyStats[day].discussions || 0;
+            }
+        });
+
+        // Get daily stats for chart
+        const dailyStats = last7Days.reverse().map(day => {
+            const dayData = analytics.dailyStats[day];
+            return {
+                date: day,
+                sessions: dayData ? dayData.sessions.size : 0,
+                discussions: dayData ? dayData.discussions : 0,
+                events: dayData ? Object.keys(dayData).length : 0
+            };
+        });
+
+        // Count total unique users ever
+        const totalUniqueUsers = Object.keys(analytics.userSessions).length;
+
+        // Calculate total discussions
+        const totalDiscussions = Object.values(analytics.userSessions)
+            .reduce((sum, session) => sum + (session.totalDiscussions || 0), 0);
+
+        // Get most active users
+        const topUsers = Object.entries(analytics.userSessions)
+            .map(([userId, data]) => ({
+                userId,
+                sessions: data.totalSessions || 0,
+                discussions: data.totalDiscussions || 0,
+                firstSeen: data.firstSession
+            }))
+            .sort((a, b) => b.discussions - a.discussions)
+            .slice(0, 10);
+
+        // Simplified response focused on usage metrics
+        const response = {
+            // Key metrics
+            totalUsers: totalUniqueUsers,
+            activeUsers7d: activeUsers7d.size,
+            totalDiscussions,
+            totalDiscussions7d,
+            totalEvents: analytics.totalEvents,
+
+            // Today's activity
+            todayStats: {
+                sessions: analytics.dailyStats[today]?.sessions.size || 0,
+                discussions: analytics.dailyStats[today]?.discussions || 0
+            },
+
+            // Trends
+            dailyStats,
+            formatPopularity: analytics.formatPopularity,
+
+            // User activity
+            topUsers,
+            avgDiscussionsPerUser: totalUniqueUsers > 0 ? (totalDiscussions / totalUniqueUsers).toFixed(1) : 0,
+
+            // No longer relevant (kept for compatibility)
+            proUsers: 0,
+            totalRevenue: 0,
+            mrr: 0,
+            revenueByDay: [],
+            recentUsers: []
+        };
+
+        res.json(response);
+
     } catch (error) {
         console.error('Dashboard error:', error);
         res.status(500).json({ error: 'Failed to get dashboard data' });
