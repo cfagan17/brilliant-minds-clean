@@ -1505,9 +1505,8 @@ app.post('/api/analytics', async (req, res) => {
 // Analytics dashboard - now accessible without authentication
 app.get('/api/analytics/dashboard', async (req, res) => {
     try {
-        // Temporarily bypass admin check for debugging
-        const userId = req.user.userId;
-        console.log('[Analytics Dashboard] User ID:', userId);
+        // Analytics now work without authentication
+        console.log('[Analytics Dashboard] Fetching analytics data (no auth required)');
         
         // For now, return simplified data that works with PostgreSQL
         const simplifiedData = await new Promise((resolve, reject) => {
