@@ -3184,6 +3184,100 @@
             margin-bottom: 30px;
         }
 
+        /* Instructions Section */
+        .instructions-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0 30px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .instructions-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .instructions-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .instructions-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .instruction-step {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .instruction-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .step-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 968px) {
+            .instructions-steps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .instructions-steps {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .instructions-section {
+                padding: 20px;
+                margin: 15px 0 20px 0;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -3203,29 +3297,64 @@
                 <button class="magic-demo-btn" onclick="startMagicDemo('innovation')">
                     ✨ Magic Demo
                 </button>
+                <!-- Authentication and payment features hidden
                 <button class="auth-btn" onclick="showLogin()">🔑 Sign In</button>
                 <a href="#" class="auth-btn" onclick="checkProAccessForConversations(); return false;">📚 My Conversations</a>
                 <button class="auth-btn upgrade-btn" onclick="showUpgradeModal()">⭐ Upgrade $2/mo</button>
+                -->
             </div>
-            
-            <!-- Free user controls -->
+
+            <!-- Free user controls - HIDDEN -->
             <div class="header-controls" id="freeUserControls" style="display: none;">
-                <button class="auth-btn upgrade-btn" onclick="showUpgradeModal()">⭐ Upgrade</button>
-                <button class="auth-btn" onclick="logout()">Logout</button>
+                <!-- <button class="auth-btn upgrade-btn" onclick="showUpgradeModal()">⭐ Upgrade</button>
+                <button class="auth-btn" onclick="logout()">Logout</button> -->
             </div>
-            
-            <!-- Pro user controls -->
+
+            <!-- Pro user controls - HIDDEN -->
             <div class="header-controls" id="proUserControls" style="display: none;">
-                <button class="magic-demo-btn" onclick="startMagicDemo('innovation')">
+                <!-- <button class="magic-demo-btn" onclick="startMagicDemo('innovation')">
                     ✨ Magic Demo
                 </button>
                 <a href="/conversations.html" class="auth-btn">📚 My Conversations</a>
                 <button class="auth-btn" onclick="showSubscriptionManagement()">⚙️ Subscription</button>
-                <button class="auth-btn" onclick="logout()">Logout</button>
+                <button class="auth-btn" onclick="logout()">Logout</button> -->
             </div>
         </div>
     </div>
 </div>
+
+        <!-- INSTRUCTIONS SECTION -->
+        <div class="instructions-section">
+            <div class="instructions-header">
+                <h2>How to Engage with History's Greatest Minds</h2>
+            </div>
+            <div class="instructions-steps">
+                <div class="instruction-step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">🎯</div>
+                    <div class="step-title">Select a Topic</div>
+                    <div class="step-description">Choose from 18 academic fields to discover relevant thinkers, or create your own custom topic</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">🎛️</div>
+                    <div class="step-title">Choose a Format</div>
+                    <div class="step-description">Select an academic discussion format: Arena, Panel, Symposium, Debate, or Roundtable</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">💭</div>
+                    <div class="step-title">Propose a Question</div>
+                    <div class="step-description">Frame your question or topic to guide the intellectual discussion</div>
+                </div>
+                <div class="instruction-step">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">🚀</div>
+                    <div class="step-title">Engage & Learn</div>
+                    <div class="step-description">Experience history's greatest intellectual discussions come to life</div>
+                </div>
+            </div>
+        </div>
 
         <!-- TOPIC SELECTION -->
         <div class="topics-container">
@@ -3236,32 +3365,81 @@
                 <!-- STREAMLINED TOPIC GRID -->
                 <div class="topic-types-streamlined">
                     <!-- First Row -->
-                    <div class="topic-type-slim" onclick="selectTopic('technology')">
-                        <div class="format-icon-small">🤖</div>
-                        <div class="topic-title">Technology</div>
+                    <div class="topic-type-slim" onclick="selectTopic('analytic_philosophy')">
+                        <div class="format-icon-small">🔬</div>
+                        <div class="topic-title">Analytic Philosophy</div>
                     </div>
-                    <div class="topic-type-slim" onclick="selectTopic('money')">
+                    <div class="topic-type-slim" onclick="selectTopic('continental_philosophy')">
+                        <div class="format-icon-small">📚</div>
+                        <div class="topic-title">Continental Philosophy</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('political_theory')">
+                        <div class="format-icon-small">🏛️</div>
+                        <div class="topic-title">Political Theory</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('economics')">
                         <div class="format-icon-small">💰</div>
-                        <div class="topic-title">Finance</div>
+                        <div class="topic-title">Economics/Finance</div>
                     </div>
-                    <div class="topic-type-slim" onclick="selectTopic('politics')">
-                        <div class="format-icon-small">🌍</div>
-                        <div class="topic-title">Politics</div>
+                    <div class="topic-type-slim" onclick="selectTopic('psychology')">
+                        <div class="format-icon-small">🧠</div>
+                        <div class="topic-title">Psychology</div>
                     </div>
-                    <div class="topic-type-slim" onclick="selectTopic('selfhelp')">
-                        <div class="format-icon-small">🌱</div>
-                        <div class="topic-title">Self-Help</div>
-                    </div>
-                    
-                    <!-- Second Row -->
-                    <div class="topic-type-slim" onclick="selectTopic('philosophy')">
-                        <div class="format-icon-small">🔍</div>
-                        <div class="topic-title">Philosophy</div>
-                    </div>
-                    
                     <div class="topic-type-slim" onclick="selectTopic('physics')">
                         <div class="format-icon-small">⚛️</div>
                         <div class="topic-title">Physics</div>
+                    </div>
+
+                    <!-- Second Row -->
+                    <div class="topic-type-slim" onclick="selectTopic('natural_sciences')">
+                        <div class="format-icon-small">🔬</div>
+                        <div class="topic-title">Natural Sciences</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('mathematics')">
+                        <div class="format-icon-small">📐</div>
+                        <div class="topic-title">Mathematics</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('computing')">
+                        <div class="format-icon-small">💻</div>
+                        <div class="topic-title">Computing/Tech</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('history')">
+                        <div class="format-icon-small">📜</div>
+                        <div class="topic-title">History</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('theology')">
+                        <div class="format-icon-small">🕊️</div>
+                        <div class="topic-title">Theology</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('literature')">
+                        <div class="format-icon-small">📖</div>
+                        <div class="topic-title">Literature</div>
+                    </div>
+
+                    <!-- Third Row -->
+                    <div class="topic-type-slim" onclick="selectTopic('anthropology')">
+                        <div class="format-icon-small">🌍</div>
+                        <div class="topic-title">Anthropology</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('law')">
+                        <div class="format-icon-small">⚖️</div>
+                        <div class="topic-title">Law & Justice</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('medicine')">
+                        <div class="format-icon-small">⚕️</div>
+                        <div class="topic-title">Medicine & Ethics</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('education')">
+                        <div class="format-icon-small">🎓</div>
+                        <div class="topic-title">Education</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('art')">
+                        <div class="format-icon-small">🎨</div>
+                        <div class="topic-title">Art & Aesthetics</div>
+                    </div>
+                    <div class="topic-type-slim" onclick="selectTopic('linguistics')">
+                        <div class="format-icon-small">💬</div>
+                        <div class="topic-title">Linguistics</div>
                     </div>
                 </div>
                 
@@ -3336,26 +3514,26 @@
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('symposium', 4)" data-format="symposium">
+                <div class="format-type-small" onclick="changeFormat('symposium', 4)" data-format="symposium">
                     <div class="format-icon-small">🏛️</div>
                     <div class="format-info">
-                        <div class="format-title-small">Academic Symposium <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Academic Symposium</div>
                         <div class="format-desc-small">4 scholars present research</div>
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('debate', 4)" data-format="debate">
+                <div class="format-type-small" onclick="changeFormat('debate', 4)" data-format="debate">
                     <div class="format-icon-small">⚖️</div>
                     <div class="format-info">
-                        <div class="format-title-small">Formal Debate <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Formal Debate</div>
                         <div class="format-desc-small">4 participants argue positions</div>
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('roundtable', 5)" data-format="roundtable">
+                <div class="format-type-small" onclick="changeFormat('roundtable', 5)" data-format="roundtable">
                     <div class="format-icon-small">🔄</div>
                     <div class="format-info">
-                        <div class="format-title-small">Roundtable <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Roundtable</div>
                         <div class="format-desc-small">5 minds collaborate</div>
                     </div>
                 </div>
@@ -3409,137 +3587,7 @@
         <!-- DISCUSSION CONTROLS -->
         <div class="discussion-controls" id="discussionControls"></div>
     </div>
-    <!-- Auth Modals - Add this before closing </body> tag -->
-<div class="auth-modal" id="authModal">
-    <div class="auth-content">
-        <button class="auth-close" onclick="closeAuthModal()">&times;</button>
-        
-        <!-- Login Form -->
-        <div id="loginForm">
-            <div class="auth-header">
-                <h2>Welcome Back</h2>
-                <p>Sign in to continue your intellectual journey</p>
-            </div>
-            
-            <div class="auth-error" id="loginError"></div>
-            
-            <form class="auth-form" onsubmit="handleLogin(event)">
-                <input type="email" class="auth-input" placeholder="Email" required id="loginEmail">
-                <input type="password" class="auth-input" placeholder="Password" required id="loginPassword">
-                <button type="submit" class="auth-submit" id="loginSubmit">Sign In</button>
-            </form>
-            
-            <div class="auth-toggle">
-                <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
-            </div>
-            
-            <div class="auth-toggle">
-                Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a>
-            </div>
-            <div class="auth-toggle" style="margin-top: 10px;">
-                Upgraded to Pro but can't sign in? <a href="#" onclick="switchToClaimPro()">Set password</a>
-            </div>
-        </div>
-        
-        <!-- Signup Form -->
-        <div id="signupForm" style="display: none;">
-            <div class="auth-header">
-                <h2>Join Iconoclash</h2>
-                <p>Start your journey with history's greatest thinkers</p>
-            </div>
-            
-            <div class="auth-error" id="signupError"></div>
-            <div class="auth-success" id="signupSuccess"></div>
-            
-            <form class="auth-form" onsubmit="handleSignup(event)">
-                <input type="email" class="auth-input" placeholder="Email" required id="signupEmail">
-                <input type="password" class="auth-input" placeholder="Password (min 6 characters)" required id="signupPassword" minlength="6">
-                <button type="submit" class="auth-submit" id="signupSubmit">Create Account</button>
-            </form>
-            
-            <div class="auth-toggle">
-                Already have an account? <a href="#" onclick="switchToLogin()">Sign in</a>
-            </div>
-            <div class="auth-toggle" style="margin-top: 10px;">
-                Paid but can't sign in? <a href="#" onclick="switchToClaimPro()">Claim Pro Account</a>
-            </div>
-        </div>
-
-        <!-- Claim Pro Form -->
-        <div id="claimProForm" style="display: none;">
-            <div class="auth-header">
-                <h2>Claim Your Pro Account</h2>
-                <p id="claimProMessage">If you upgraded to Pro but can't sign in, create a password for your account</p>
-            </div>
-            
-            <div class="auth-error" id="claimProError"></div>
-            <div class="auth-success" id="claimProSuccess"></div>
-            
-            <form class="auth-form" onsubmit="handleClaimPro(event)">
-                <input type="email" class="auth-input" placeholder="Email used for payment" required id="claimProEmail">
-                <input type="password" class="auth-input" placeholder="Create password (min 6 characters)" required id="claimProPassword" minlength="6">
-                <button type="submit" class="auth-submit" id="claimProSubmit">Set Password</button>
-            </form>
-            
-            <div class="auth-toggle">
-                Back to <a href="#" onclick="switchToLogin()">Sign in</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Subscription Management Modal -->
-<div class="auth-modal" id="subscriptionModal" style="display: none;">
-    <div class="auth-content">
-        <button class="auth-close" onclick="closeSubscriptionModal()">&times;</button>
-        
-        <div class="auth-header">
-            <h2>Manage Subscription</h2>
-            <p>You are currently on the Pro plan</p>
-        </div>
-        
-        <!-- Forgot Password Form -->
-        <div id="forgotPasswordForm" style="display: none;">
-            <div class="auth-header">
-                <h2>Reset Password</h2>
-                <p>Enter your email and we'll send you a reset link</p>
-            </div>
-            
-            <div class="auth-error" id="forgotPasswordError"></div>
-            <div class="auth-success" id="forgotPasswordSuccess" style="display: none; color: #4caf50; margin-bottom: 15px;"></div>
-            
-            <form class="auth-form" onsubmit="handleForgotPassword(event)">
-                <input type="email" class="auth-input" placeholder="Email" required id="forgotEmail">
-                <button type="submit" class="auth-submit" id="forgotSubmit">Send Reset Link</button>
-            </form>
-            
-            <div class="auth-toggle">
-                <a href="#" onclick="showLogin()">Back to Sign In</a>
-            </div>
-        </div>
-        
-        <div style="padding: 20px; text-align: center;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 10px 0;">Iconoclash Pro</h3>
-                <p style="margin: 0; font-size: 24px; font-weight: bold;">$2/month</p>
-                <p style="margin: 10px 0 0 0; opacity: 0.9;">Unlimited discussions</p>
-            </div>
-            
-            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                <p style="margin: 0; color: #666;">Your subscription will renew automatically each month.</p>
-            </div>
-            
-            <button onclick="cancelSubscription()" style="background: #dc3545; color: white; padding: 12px 30px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 10px;">
-                Cancel Subscription
-            </button>
-            
-            <p style="color: #999; font-size: 14px; margin-top: 15px;">
-                You can also manage your subscription directly in 
-                <a href="https://billing.stripe.com/p/login/9AQ01ZgtA8iN2T68ss" target="_blank" style="color: #667eea;">Stripe Customer Portal</a>
-            </p>
-        </div>
-    </div>
-</div>
+    <!-- All auth modals and subscription modals have been completely removed -->
 
     <script>
    
@@ -3632,94 +3680,134 @@ let selectedAIQuestion = null;
 let selectedTopic = null;
 let currentStep = 'topic'; // 'topic' -> 'format' -> 'speakers' -> 'question'
 
-// Topic categories data
+// Topic categories data with 18 academic fields
 const topicCategories = {
-   // CURRENT AFFAIRS TOPICS
-   politics: {
-      name: "Global Leaders",
-      icon: "🌍",
-      description: "World leaders, diplomats, heads of state, political strategists",
-      category: "current",
-      speakerGuidance: "Focus on international leaders, diplomats, foreign policy experts, and political strategists. AVOID suggesting recent US presidents (Trump, Biden, Obama), current heads of state of major powers, or figures who might have AI impersonation restrictions. Instead suggest: foreign ministers, UN officials, political scientists, policy advisors, historical leaders (pre-2000), political philosophers, and international relations experts who can discuss these topics without restrictions."
+   // ACADEMIC FIELDS
+   analytic_philosophy: {
+      name: "Analytic Philosophy",
+      icon: "🔬",
+      description: "Logic, language, mind, science",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Gottlob Frege, Bertrand Russell, Ludwig Wittgenstein, W.V.O. Quine, Saul Kripke, Kurt Gödel, George Boole, Hilary Putnam and other analytic philosophers focused on logic, philosophy of language, and philosophy of mind."
    },
-   technology: {
-      name: "Technology",
-      icon: "💻",
-      description: "Tech CEOs, VCs, startup founders, innovation leaders",
-      category: "current",
-      speakerGuidance: "Focus on current technology leaders, venture capitalists, startup founders, and innovators actively building companies and shaping tech trends today."
+   continental_philosophy: {
+      name: "Continental & Classical Philosophy",
+      icon: "📚",
+      description: "Classical and continental traditions",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Plato, Aristotle, Kant, Hegel, Nietzsche, Heidegger, Sartre, Simone de Beauvoir and other classical and continental philosophers."
    },
-   sports: {
-      name: "Sports",
-      icon: "⚽",
-      description: "Active athletes, coaches, sports analysts, journalists",
-      category: "current",
-      speakerGuidance: "Focus on current athletes, active coaches, sports journalists, and analysts who are part of today's sports conversations."
+   political_theory: {
+      name: "Political Theory",
+      icon: "🏛️",
+      description: "Political philosophy and theory",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Machiavelli, Hobbes, Locke, Marx, Hannah Arendt, John Rawls, Tocqueville, Rousseau and other political philosophers."
    },
-   entertainment: {
-      name: "Entertainment",
-      icon: "🎭",
-      description: "Musicians, actors, directors, content creators",
-      category: "current",
-      speakerGuidance: "Focus on current musicians, actors, directors, content creators, and entertainment industry leaders actively creating and shaping entertainment today."
-   },
-   money: {
-      name: "Money",
+   economics: {
+      name: "Economics/Finance",
       icon: "💰",
-      description: "Active investors, market analysts, financial strategists",
-      category: "current",
-      speakerGuidance: "Focus on current investors, fund managers, market analysts, and financial strategists actively managing money and discussing current market trends."
+      description: "Economic theory and finance",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Adam Smith, Karl Marx, John Maynard Keynes, Friedrich Hayek, Milton Friedman, Amartya Sen and other economists."
    },
-   selfhelp: {
-      name: "Self-Help",
-      icon: "🌱",
-      description: "Personal growth, productivity, habits, motivation",
-      category: "current",
-      speakerGuidance: "Focus on current self-help authors, productivity experts, and personal development coaches with active practices and recent publications."
+   psychology: {
+      name: "Psychology",
+      icon: "🧠",
+      description: "Mind, behavior, cognition",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Freud, Jung, William James, B.F. Skinner, Jean Piaget, Daniel Kahneman, Carl Rogers and other psychologists."
    },
-
-   // ACADEMIC TOPICS
    physics: {
       name: "Physics",
       icon: "⚛️",
-      description: "Theoretical physics, quantum mechanics, cosmology",
+      description: "Physical laws and universe",
       category: "academic",
-      speakerGuidance: "Focus on physicists throughout history who made groundbreaking contributions to our understanding of the universe, from Newton to modern quantum theorists."
+      speakerGuidance: "Suggest thinkers like Newton, Einstein, Galileo, Marie Curie, Niels Bohr, Richard Feynman, Stephen Hawking and other physicists."
+   },
+   natural_sciences: {
+      name: "Natural Sciences",
+      icon: "🔬",
+      description: "Biology, chemistry, earth sciences",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Darwin, Mendel, Watson & Crick, Pasteur, Lavoisier, Rachel Carson, Barbara McClintock and other natural scientists."
    },
    mathematics: {
       name: "Mathematics",
       icon: "📐",
-      description: "Pure math, mathematical theory, proofs, abstractions",
+      description: "Pure and applied mathematics",
       category: "academic",
-      speakerGuidance: "Focus on mathematicians throughout history who developed fundamental mathematical concepts, from ancient geometers to modern theorists."
+      speakerGuidance: "Suggest thinkers like Euclid, Al-Khwarizmi, Gauss, Emmy Noether, Gödel, Euler, Archimedes and other mathematicians."
    },
    computing: {
-      name: "Computer Science",
-      icon: "🧮",
-      description: "Computer science theory, algorithms, AI research",
+      name: "Computing/Technology",
+      icon: "💻",
+      description: "Computer science and technology",
       category: "academic",
-      speakerGuidance: "Focus on computer scientists and researchers who developed fundamental computing concepts, from Turing to modern AI researchers."
+      speakerGuidance: "Suggest thinkers like Alan Turing, Ada Lovelace, John von Neumann, Tim Berners-Lee, Grace Hopper, Steve Jobs and other computing pioneers."
    },
-   philosophy: {
-      name: "Analytic Philosophy",
-      icon: "🔍",
-      description: "Philosophy of language, mind, science, logic, and metaphysics",
+   history: {
+      name: "History",
+      icon: "📜",
+      description: "Historical analysis and methodology",
       category: "academic",
-      speakerGuidance: "Focus on analytic philosophers who worked on philosophy of language, philosophy of mind, philosophy of science, logic, and metaphysics. Include figures like Russell, Wittgenstein, Quine, Davidson, Kripke, Putnam, Dennett, and Chalmers. Exclude moral philosophers and ethicists."
+      speakerGuidance: "Suggest thinkers like Herodotus, Ibn Khaldun, Gibbon, Leopold von Ranke, Fernand Braudel, E.P. Thompson, Thucydides and other historians."
    },
-   psychology: {
-      name: "Psychology",
-      icon: "🎭",
-      description: "Human behavior, cognition, mental processes",
+   theology: {
+      name: "Theology & Religious Studies",
+      icon: "🕊️",
+      description: "Religious thought and theology",
       category: "academic",
-      speakerGuidance: "Focus on psychologists and researchers who developed our understanding of the human mind, behavior, and cognitive processes."
+      speakerGuidance: "Suggest thinkers like Augustine, Aquinas, Maimonides, Al-Ghazali, Paul Tillich, Rumi, Martin Luther and other theologians."
    },
-   arthistory: {
-      name: "Art History",
+   literature: {
+      name: "Literature & Literary Theory",
+      icon: "📖",
+      description: "Literary works and criticism",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Homer, Shakespeare, Goethe, Virginia Woolf, Jorge Luis Borges, Toni Morrison, Dante and other literary figures."
+   },
+   anthropology: {
+      name: "Anthropology & Sociology",
+      icon: "🌍",
+      description: "Society, culture, human behavior",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Émile Durkheim, Max Weber, Margaret Mead, Claude Lévi-Strauss, W.E.B. Du Bois, Franz Boas and other social scientists."
+   },
+   law: {
+      name: "Law & Jurisprudence",
+      icon: "⚖️",
+      description: "Legal theory and jurisprudence",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Hammurabi, Cicero, Blackstone, Oliver Wendell Holmes, Thurgood Marshall, Hugo Grotius and other legal scholars."
+   },
+   medicine: {
+      name: "Medicine & Ethics",
+      icon: "⚕️",
+      description: "Medical science and bioethics",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Hippocrates, Ibn Sina, William Harvey, Florence Nightingale, Jonas Salk, Aldo Leopold and other medical pioneers."
+   },
+   education: {
+      name: "Education & Pedagogy",
+      icon: "🎓",
+      description: "Educational theory and practice",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like John Dewey, Maria Montessori, Paulo Freire, Jean Piaget, Johann Pestalozzi, bell hooks and other educators."
+   },
+   art: {
+      name: "Art & Aesthetics",
       icon: "🎨",
-      description: "Art movements, artistic theory, cultural analysis",
+      description: "Art theory and aesthetics",
       category: "academic",
-      speakerGuidance: "Focus on art historians, critics, and scholars who have analyzed and interpreted artistic movements and cultural significance throughout history."
+      speakerGuidance: "Suggest thinkers like Giorgio Vasari, John Ruskin, Walter Benjamin, Susan Sontag, Clement Greenberg, Arthur Danto and other art theorists."
+   },
+   linguistics: {
+      name: "Linguistics",
+      icon: "💬",
+      description: "Language and linguistic theory",
+      category: "academic",
+      speakerGuidance: "Suggest thinkers like Ferdinand de Saussure, Noam Chomsky, Edward Sapir, Roman Jakobson, J.L. Austin, Dell Hymes and other linguists."
    },
 
    // CUSTOM
@@ -3890,7 +3978,8 @@ function populateAISuggestions(suggestedSpeakers) {
 async function startDiscussion() {
    console.log('Start discussion called');
 
-   // Check usage limits for anonymous users - fetch actual count from server
+   // Check usage limits for anonymous users - DISABLED - all users get unlimited access
+   /*
    if (!currentUser) {
       try {
          // Get or create anonymous session ID
@@ -3899,7 +3988,7 @@ async function startDiscussion() {
              anonSessionId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
              localStorage.setItem('anonSessionId', anonSessionId);
          }
-         
+
          const response = await fetch('/api/rate-limit-status', {
              headers: {
                  'X-Session-Id': anonSessionId
@@ -3909,7 +3998,7 @@ async function startDiscussion() {
             const data = await response.json();
             const remaining = data.rateLimit?.remaining ? parseInt(data.rateLimit.remaining) : 0;
             console.log('Start check - remaining discussions:', remaining);
-            
+
             if (remaining <= 0) {
                trackUpgradeFlow('limit_reached', {
                   attemptedFormat: discussionState.format,
@@ -3924,6 +4013,7 @@ async function startDiscussion() {
          console.error('Error checking usage limit:', error);
       }
    }
+   */
 
    // Generate a unique discussion ID for this session
    discussionState.discussionId = 'disc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -4606,26 +4696,26 @@ async function showAISpeakerSuggestions(suggestedSpeakers, format, count) {
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('symposium', 4)" data-format="symposium">
+                <div class="format-type-small" onclick="changeFormat('symposium', 4)" data-format="symposium">
                     <div class="format-icon-small">🏛️</div>
                     <div class="format-info">
-                        <div class="format-title-small">Academic Symposium <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Academic Symposium</div>
                         <div class="format-desc-small">4 scholars present research</div>
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('debate', 4)" data-format="debate">
+                <div class="format-type-small" onclick="changeFormat('debate', 4)" data-format="debate">
                     <div class="format-icon-small">⚖️</div>
                     <div class="format-info">
-                        <div class="format-title-small">Formal Debate <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Formal Debate</div>
                         <div class="format-desc-small">4 participants argue positions</div>
                     </div>
                 </div>
                 
-                <div class="format-type-small premium-format" onclick="changeFormat('roundtable', 5)" data-format="roundtable">
+                <div class="format-type-small" onclick="changeFormat('roundtable', 5)" data-format="roundtable">
                     <div class="format-icon-small">🔄</div>
                     <div class="format-info">
-                        <div class="format-title-small">Roundtable <span class="premium-badge">PRO</span></div>
+                        <div class="format-title-small">Roundtable</div>
                         <div class="format-desc-small">5 minds collaborate</div>
                     </div>
                 </div>
@@ -4859,14 +4949,16 @@ function removeSpeaker(speakerName) {
 }
 
 function changeFormat(newFormat, newCount) {
-   // Check if this is a premium format for non-pro users
+   // Premium format check DISABLED - all formats available to all users
+   /*
    const premiumFormats = ['symposium', 'debate', 'roundtable'];
    const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
-   
+
    if (!isProUser && premiumFormats.includes(newFormat)) {
       showUpgradeForFeature('format');
       return;
    }
+   */
 
    // Update visual selection
    document.querySelectorAll('.format-type-small').forEach(el => {
@@ -5708,8 +5800,10 @@ function updateUsageDisplayAdvanced(usage) {
    }
 }
 
-// Update the upgrade modal for authenticated users
+// Update the upgrade modal for authenticated users - DISABLED
 function showUpgradeModal() {
+   // Feature disabled - all users get unlimited access
+   return;
    // Remove any existing modal first
    const existingModal = document.querySelector('.upgrade-modal');
    if (existingModal) {
@@ -5743,11 +5837,15 @@ function showUpgradeModal() {
 
 
 function closeUpgradeModal() {
+   // Feature disabled
+   return;
+   /*
    const modal = document.querySelector('.upgrade-modal');
    if (modal) {
       modal.remove();
       console.log('Upgrade modal closed');
    }
+   */
 }
 
 // New function to show signup prompt for anonymous users
@@ -8095,12 +8193,14 @@ IMPORTANT: Only reference points, arguments, and insights that were actually mad
             <button class="control-button continue-button" onclick="continueDiscussion()">
                 ${continueButtonText}
             </button>
-            <button class="control-button share-button" onclick="quickShareDiscussion()">
+            <!-- Share and Save buttons hidden - functionality disabled
+            <button class="control-button share-button" onclick="quickShareDiscussion()" style="display: none;">
                 📤 Share Conversation
             </button>
-            <button class="control-button save-button" onclick="saveDiscussion()">
+            <button class="control-button save-button" onclick="saveDiscussion()" style="display: none;">
                 💾 Save Discussion
             </button>
+            -->
             <button class="control-button new-button" onclick="startNewDiscussion()">
                 ✨ Start Fresh
             </button>
@@ -9429,8 +9529,8 @@ Keep it concise and forward-looking.`;
       
       // Force update the UI to show Pro status
       setTimeout(() => {
-         // Update auth UI to show pro controls
-         updateAuthUI();
+         // Auth UI update disabled - running anonymous only
+         // updateAuthUI();
          
          // Also update if updateUsageDisplayAdvanced exists
          if (typeof updateUsageDisplayAdvanced === 'function') {
@@ -9464,9 +9564,9 @@ Keep it concise and forward-looking.`;
       }
       
       // ============================================================================
-      // AUTHENTICATION INITIALIZATION
+      // AUTHENTICATION INITIALIZATION - DISABLED
       // ============================================================================
-      initializeAuth();
+      // initializeAuth(); // Disabled - running anonymous only
       // Don't call checkExistingAuth() here - initializeAuth() handles it
       
       // Add test auth function for debugging
@@ -9538,8 +9638,8 @@ Keep it concise and forward-looking.`;
          usageState.totalDiscussions = 0;
          saveUsageState();
          
-         // Force update all UI elements
-         updateAuthUI();
+         // Auth UI update disabled - running anonymous only
+         // updateAuthUI();
          
          // Update usage display if not logged in
          if (!currentUser) {
@@ -9597,22 +9697,9 @@ Keep it concise and forward-looking.`;
    }
 
    function updateFormatDisplay() {
-      // Update format display based on user status
-      const premiumFormats = document.querySelectorAll('.premium-format');
-      const isProUser = currentUser && (currentUser.isProUser || currentUser.isAdmin);
-      
-      premiumFormats.forEach(format => {
-         const badge = format.querySelector('.premium-badge');
-         if (isProUser) {
-            // Remove PRO badge and overlay for pro users
-            if (badge) badge.style.display = 'none';
-            format.classList.remove('premium-format');
-         } else {
-            // Show PRO badge for non-pro users
-            if (badge) badge.style.display = 'inline-block';
-            format.classList.add('premium-format');
-         }
-      });
+      // All formats now available to all users - no restrictions
+      // Function disabled as there are no premium formats anymore
+      return;
    }
 
    function updateAuthUI() {
@@ -9667,6 +9754,9 @@ Keep it concise and forward-looking.`;
    }
 
    function showUpgradeForFeature(feature) {
+      // Feature disabled - all users get unlimited access
+      return;
+      /*
       const messages = {
          save: 'Save your conversations and access them anytime',
          conversations: 'View all your saved conversations',
@@ -9686,6 +9776,7 @@ Keep it concise and forward-looking.`;
       }
       
       showUpgradeModal();
+      */
    }
 
    // Modal functions
@@ -10302,12 +10393,14 @@ Keep it concise and forward-looking.`;
       controlsDiv.className = 'chat-controls';
       controlsDiv.innerHTML = `
         <div class="controls-buttons">
-            <button class="control-button share-button" onclick="quickShareDiscussion()">
+            <!-- Share and Save buttons hidden - functionality disabled
+            <button class="control-button share-button" onclick="quickShareDiscussion()" style="display: none;">
                 📤 Share Conversation
             </button>
-            <button class="control-button save-button" onclick="saveDiscussion()">
+            <button class="control-button save-button" onclick="saveDiscussion()" style="display: none;">
                 💾 Save Discussion
             </button>
+            -->
             <button class="control-button new-button" onclick="startNewDiscussion()">
                 ✨ Start Fresh
             </button>
@@ -10470,37 +10563,7 @@ console.log('Script reached the end successfully');
 
 </script>
 
-<!-- Footer -->
-<footer style="
-    margin-top: 60px;
-    padding: 30px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-align: center;
-    font-size: 14px;
-">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <p style="margin-bottom: 10px;">
-            Created with ❤️ by 
-            <a href="https://twitter.com/camfagan" 
-               style="color: white; text-decoration: underline; font-weight: 600;"
-               target="_blank"
-               rel="noopener noreferrer">
-                @camfagan
-            </a>
-        </p>
-        <p style="opacity: 0.9; font-size: 13px;">
-            AI conversations with brilliant minds - a new way to engage ideas
-        </p>
-        <p style="margin-top: 15px; opacity: 0.8; font-size: 12px;">
-            © 2025 Iconoclash • 
-            <a href="mailto:iconoclashai@gmail.com" 
-               style="color: white; text-decoration: underline;">
-                Contact
-            </a>
-        </p>
-    </div>
-</footer>
+<!-- Footer removed - running as anonymous-only app -->
 
 <script src="analytics-client.js"></script>
 </body>

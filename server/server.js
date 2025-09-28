@@ -385,7 +385,12 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // Auth middleware
+// AUTH DISABLED - All endpoints open
 function authenticateToken(req, res, next) {
+    // Authentication disabled - return 404 for auth-required endpoints
+    return res.status(404).json({ error: 'Feature temporarily unavailable' });
+
+    /* Original auth code - disabled
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -400,6 +405,7 @@ function authenticateToken(req, res, next) {
         req.user = user;
         next();
     });
+    */
 }
 
 // Optional auth middleware (allows both authenticated and guest users)
@@ -505,6 +511,8 @@ app.get('/api/test-auth', optionalAuth, (req, res) => {
     }
 });
 
+// AUTH ENDPOINTS DISABLED - App now runs fully anonymous
+/*
 // Register new user (10 daily discussions for free tier)
 app.post('/api/auth/register', async (req, res) => {
     try {
@@ -559,7 +567,10 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+*/
 
+// AUTH ENDPOINTS DISABLED
+/*
 // Login user
 app.post('/api/auth/login', async (req, res) => {
     try {
@@ -597,8 +608,10 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+*/
 
-// Password reset request - sends reset link via email
+// Password reset request - DISABLED
+/*
 app.post('/api/auth/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -724,8 +737,10 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+*/
 
-// Reset password with token
+// Reset password with token - DISABLED
+/*
 app.post('/api/auth/reset-password', async (req, res) => {
     try {
         const { token, newPassword } = req.body;
@@ -791,8 +806,10 @@ app.post('/api/auth/reset-password', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+*/
 
-// Get current user info
+// Get current user info - DISABLED
+/*
 app.get('/api/auth/me', authenticateToken, (req, res) => {
     db.get('SELECT * FROM users WHERE id = ?', [req.user.userId], (err, user) => {
         if (err || !user) {
@@ -819,8 +836,10 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
         });
     });
 });
+*/
 
-// Claim Pro account endpoint (for users who paid but don't have password)
+// Claim Pro account endpoint - DISABLED
+/*
 app.post('/api/auth/claim-pro', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -879,6 +898,7 @@ app.post('/api/auth/claim-pro', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+*/
 
 // ============================================================================
 // CLAUDE API (FIXED WITH CONSISTENT LIMITS)
@@ -909,9 +929,9 @@ async function getOrCreateAnonymousUser(sessionId, ip) {
             } else {
                 // Create new anonymous user
                 db.run(`
-                    INSERT INTO anonymous_users (session_id, discussions_used, created_at, last_active)
-                    VALUES (?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                `, [sessionId], function(err) {
+                    INSERT INTO anonymous_users (session_id, ip_address, discussions_used, created_at, last_active)
+                    VALUES (?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                `, [sessionId, ip || '0.0.0.0'], function(err) {
                     if (err) {
                         console.error('Error creating anonymous user:', err);
                         return reject(err);
